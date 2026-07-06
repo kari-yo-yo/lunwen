@@ -1488,9 +1488,312 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ========== AI Feature Styles ========== */
+/* Settings Button */
+.settings-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+  transition: var(--transition);
+}
+.settings-btn:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  transform: rotate(30deg);
+}
+
+/* Settings Modal */
+.settings-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.3s ease;
+}
+.settings-modal-overlay.open { opacity: 1; visibility: visible; }
+.settings-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 420px; max-width: 90vw;
+  padding: 28px;
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+.settings-modal-overlay.open .settings-modal { transform: translateY(0); }
+.settings-modal h3 {
+  font-size: 18px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.settings-field { margin-bottom: 16px; }
+.settings-field label {
+  display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px;
+}
+.settings-field input, .settings-field select {
+  width: 100%; padding: 10px 14px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 14px;
+}
+.settings-field input:focus, .settings-field select:focus {
+  outline: none; border-color: var(--primary);
+}
+.settings-actions {
+  display: flex; gap: 10px; margin-top: 20px;
+}
+.settings-actions button {
+  flex: 1; padding: 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text); cursor: pointer; font-size: 14px;
+  transition: var(--transition);
+}
+.settings-actions button.primary {
+  background: var(--primary); border-color: var(--primary); color: #fff;
+}
+.settings-actions button:hover { opacity: 0.9; }
+
+/* AI Tools Section in Sidebar */
+.ai-tools-section {
+  margin-top: auto;
+  padding: 16px 12px 0;
+  border-top: 1px solid var(--border);
+}
+.ai-tools-title {
+  font-size: 12px; font-weight: 600; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 10px; padding: 0 8px;
+}
+.ai-tool-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 12px;
+  margin-bottom: 6px;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted); font-size: 13px;
+  cursor: pointer; transition: var(--transition);
+  text-align: left;
+}
+.ai-tool-btn:hover {
+  background: rgba(99,102,241,0.1);
+  border-color: var(--primary);
+  color: var(--text);
+}
+.ai-tool-btn .icon { font-size: 16px; }
+.ai-tool-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Method Tags */
+.method-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 8px;
+}
+.method-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px;
+  background: rgba(99,102,241,0.15);
+  border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 20px;
+  font-size: 12px; color: var(--primary-light);
+  cursor: default;
+}
+.method-tag.type-channel {
+  background: rgba(34,197,94,0.15);
+  border-color: rgba(34,197,94,0.3);
+  color: var(--accent-green);
+}
+.method-tag.type-spatial {
+  background: rgba(59,130,246,0.15);
+  border-color: rgba(59,130,246,0.3);
+  color: var(--accent-blue);
+}
+.method-tag.type-attention {
+  background: rgba(168,85,247,0.15);
+  border-color: rgba(168,85,247,0.3);
+  color: var(--accent-purple);
+}
+.method-tag.type-frequency {
+  background: rgba(245,158,11,0.15);
+  border-color: rgba(245,158,11,0.3);
+  color: var(--accent-amber);
+}
+.method-tag .remove {
+  cursor: pointer; opacity: 0.6; font-size: 14px; line-height: 1;
+}
+.method-tag .remove:hover { opacity: 1; }
+
+/* Method Analysis Tab */
+.method-tabs {
+  display: flex; gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.method-tab {
+  padding: 8px 16px;
+  background: transparent; border: none;
+  color: var(--text-muted); font-size: 13px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+}
+.method-tab:hover { color: var(--text); }
+.method-tab.active {
+  color: var(--primary-light);
+  border-bottom-color: var(--primary);
+}
+
+/* AI Loading */
+.ai-loading {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px;
+  color: var(--text-muted); font-size: 13px;
+}
+.ai-loading .spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Batch Progress */
+.batch-progress-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.3s ease;
+}
+.batch-progress-overlay.open { opacity: 1; visibility: visible; }
+.batch-progress-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 400px; max-width: 90vw;
+  padding: 28px;
+  text-align: center;
+}
+.batch-progress-bar-wrap {
+  width: 100%; height: 8px;
+  background: var(--bg); border-radius: 4px;
+  margin: 16px 0; overflow: hidden;
+}
+.batch-progress-bar-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--primary), var(--accent-purple));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Pairing Analysis Result */
+.pairing-result {
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 16px; margin-top: 12px;
+}
+.pairing-score {
+  font-size: 32px; font-weight: 700;
+  color: var(--primary-light);
+  text-align: center; margin-bottom: 12px;
+}
+.pairing-score-label { font-size: 12px; color: var(--text-dim); text-align: center; }
+.pairing-section { margin-top: 16px; }
+.pairing-section h5 {
+  font-size: 13px; color: var(--text-muted);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+.pairing-item {
+  padding: 10px 12px;
+  background: rgba(99,102,241,0.06);
+  border-left: 3px solid var(--primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 6px; font-size: 13px;
+}
+.pairing-item.good { border-left-color: var(--accent-green); background: rgba(34,197,94,0.06); }
+.pairing-item.warn { border-left-color: var(--accent-amber); background: rgba(245,158,11,0.06); }
+.pairing-item.bad { border-left-color: var(--accent-red); background: rgba(239,68,68,0.06); }
+
+/* API Key Hint */
+.api-hint {
+  background: rgba(99,102,241,0.08);
+  border: 1px dashed rgba(99,102,241,0.3);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 12px; color: var(--text-muted);
+  margin-top: 12px;
+}
+.api-hint a { color: var(--primary-light); text-decoration: none; }
+.api-hint a:hover { text-decoration: underline; }
+
+/* Fallback Badge */
+.fallback-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(245,158,11,0.15);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 12px;
+  font-size: 11px; color: var(--accent-amber);
+  margin-left: 8px;
+}
+
+/* Detail Tabs */
+.detail-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 16px 0 12px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0;
+}
+.detail-tab-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .2s ease;
+  border-radius: 6px 6px 0 0;
+}
+.detail-tab-btn:hover { color: var(--text); background: rgba(99,102,241,0.06); }
+.detail-tab-btn.active {
+  color: var(--primary-light);
+  border-bottom-color: var(--primary-light);
+  background: rgba(99,102,241,0.08);
+  font-weight: 600;
+}
+.detail-tab-panel { display: none; }
+.detail-tab-panel.active { display: block; animation: fadeIn .3s ease; }
+
+.method-analysis-content { padding: 4px 0; }
+.method-empty {
+  color: var(--text-dim);
+  font-size: 14px;
+  padding: 16px;
+  text-align: center;
+  background: var(--bg-card);
+  border-radius: 10px;
+  border: 1px dashed var(--border-light);
+}
+.method-empty p { margin-bottom: 12px; }
 </style>
 </head>
 <body>
+
+<!-- Settings Button -->
+<button class="settings-btn" id="settingsBtn" title="API 设置">⚙️</button>
 
 <!-- ====== Sidebar ====== -->
 <aside class="sidebar" id="sidebar">
@@ -1498,6 +1801,20 @@ body {
     <h2>📚 论文库</h2>
   </div>
   <nav class="sidebar-nav" id="sidebarNav"></nav>
+
+  <!-- AI Tools Section -->
+  <div class="ai-tools-section" id="aiToolsSection">
+    <div class="ai-tools-title">🤖 AI 工具</div>
+    <button class="ai-tool-btn" id="btnAiExtract" title="提取当前选中/查看论文的方法">
+      <span class="icon">🧠</span> 提取方法
+    </button>
+    <button class="ai-tool-btn" id="btnAiPairing" title="对选中的论文进行搭配分析">
+      <span class="icon">📊</span> 搭配分析
+    </button>
+    <button class="ai-tool-btn" id="btnAiBatch" title="批量为所有旧论文补全方法">
+      <span class="icon">🔄</span> 批量补全
+    </button>
+  </div>
 </aside>
 
 <!-- ====== Main ====== -->
@@ -1586,6 +1903,43 @@ body {
 <!-- ====== Modal ====== -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modal"></div>
+</div>
+
+<!-- ====== Settings Modal ====== -->
+<div class="settings-modal-overlay" id="settingsModalOverlay">
+  <div class="settings-modal">
+    <h3>⚙️ API 设置</h3>
+    <div class="settings-field">
+      <label>DeepSeek API Key <span style="color:var(--accent-red)">*</span></label>
+      <input type="password" id="apiKeyInput" placeholder="sk-xxxxxxxxxxxxxxxx">
+    </div>
+    <div class="settings-field">
+      <label>模型选择</label>
+      <select id="modelSelect">
+        <option value="deepseek-chat">deepseek-chat（默认）</option>
+        <option value="deepseek-reasoner">deepseek-reasoner</option>
+      </select>
+    </div>
+    <div class="api-hint">
+      还没有 API Key？前往 <a href="https://platform.deepseek.com/" target="_blank">platform.deepseek.com</a> 申请
+    </div>
+    <div class="settings-actions">
+      <button id="settingsCancel">取消</button>
+      <button class="primary" id="settingsSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== Batch Progress Modal ====== -->
+<div class="batch-progress-overlay" id="batchProgressOverlay">
+  <div class="batch-progress-modal">
+    <h3>🔄 AI 批量补全</h3>
+    <div id="batchProgressText">准备中...</div>
+    <div class="batch-progress-bar-wrap">
+      <div class="batch-progress-bar-fill" id="batchProgressBar"></div>
+    </div>
+    <div id="batchProgressDetail" style="font-size:12px;color:var(--text-dim);"></div>
+  </div>
 </div>
 
 <!-- ====== Particle BG ====== -->
@@ -1705,6 +2059,143 @@ function parseLibrary(md) {
 let allPapers = [];
 let activeCategory = 'all';
 let activeStatus = 'all';
+let currentDetailIdx = -1;
+
+
+// ============================================================
+//  AI Configuration & Pre-built Method Library
+// ============================================================
+const AI_CONFIG = {
+  apiUrl: 'https://api.deepseek.com/v1/chat/completions',
+  get apiKey() { return localStorage.getItem('deepseek_api_key') || ''; },
+  get model() { return localStorage.getItem('deepseek_model') || 'deepseek-chat'; },
+  set apiKey(v) { localStorage.setItem('deepseek_api_key', v); },
+  set model(v) { localStorage.setItem('deepseek_model', v); }
+};
+
+// Pre-built method library for 12 classic papers
+const PRESET_METHOD_LIBRARY = {
+  'SE-Net': {
+    core_methods: ['SE'],
+    method_types: { 'SE': '通道注意力' },
+    core_formula: null,
+    scenario: '通用图像分类',
+    innovation: '显式建模通道间相互依赖关系',
+    complementary_methods: ['Non-local', 'CBAM'],
+    complementary_reason: 'SE关注通道，Non-local/CBAM补充空间注意力，形成完整注意力机制'
+  },
+  'CBAM': {
+    core_methods: ['CBAM'],
+    method_types: { 'CBAM': '通道+空间注意力' },
+    core_formula: null,
+    scenario: '通用视觉任务',
+    innovation: '通道与空间注意力的串行双重注意力机制',
+    complementary_methods: ['SE', 'Non-local'],
+    complementary_reason: 'CBAM已覆盖通道和空间，搭配SE可增强通道表达，搭配Non-local可增强长距离依赖'
+  },
+  'SCSE': {
+    core_methods: ['SCSE'],
+    method_types: { 'SCSE': '通道+空间注意力（并行）' },
+    core_formula: null,
+    scenario: '医学图像分割',
+    innovation: '通道与空间SE模块的并行融合',
+    complementary_methods: ['Non-local', 'CBAM'],
+    complementary_reason: '并行的SCSE可与串行的CBAM形成互补，Non-local增强全局上下文'
+  },
+  'Non-local': {
+    core_methods: ['Non-local'],
+    method_types: { 'Non-local': '自注意力' },
+    core_formula: null,
+    scenario: '视频理解、长距离依赖建模',
+    innovation: '将非局部均值操作扩展到深度神经网络',
+    complementary_methods: ['SE', 'CBAM'],
+    complementary_reason: 'Non-local计算开销大，搭配轻量级的SE或CBAM可在不增加太多计算的情况下增强局部注意力'
+  },
+  'Gather-Excitation': {
+    core_methods: ['GE'],
+    method_types: { 'GE': '空间上下文注意力' },
+    core_formula: null,
+    scenario: '通用视觉任务',
+    innovation: '在空间维度上Gather全局信息，Excitation局部响应',
+    complementary_methods: ['SE', 'CBAM'],
+    complementary_reason: 'GE在空间维度Gather信息，SE在通道维度Excitation，两者互补'
+  },
+  'GCNet': {
+    core_methods: ['GCNet'],
+    method_types: { 'GCNet': '全局上下文注意力' },
+    core_formula: null,
+    scenario: '通用视觉任务',
+    innovation: '结合Non-local和SE，简化全局上下文建模',
+    complementary_methods: ['CBAM', 'DANet'],
+    complementary_reason: 'GCNet提供全局上下文，CBAM/DANet提供局部精细化注意力'
+  },
+  'DANet': {
+    core_methods: ['DANet'],
+    method_types: { 'DANet': '双自注意力' },
+    core_formula: null,
+    scenario: '语义分割',
+    innovation: '位置注意力+通道注意力的双重自注意力',
+    complementary_methods: ['Non-local', 'GCNet'],
+    complementary_reason: 'DANet的双重自注意力与Non-local的全局依赖、GCNet的简化上下文形成互补'
+  },
+  'FcaNet': {
+    core_methods: ['FcaNet'],
+    method_types: { 'FcaNet': '频域通道注意力' },
+    core_formula: null,
+    scenario: '通用视觉任务',
+    innovation: '在频域（DCT）上进行通道注意力',
+    complementary_methods: ['SE', 'CBAM'],
+    complementary_reason: 'FcaNet在频域增强通道表达，SE/CBAM在空域增强，频域+空域互补'
+  },
+  'KSFA': {
+    core_methods: ['KSFA'],
+    method_types: { 'KSFA': '多尺度核选择融合' },
+    core_formula: null,
+    scenario: '图像恢复、分割',
+    innovation: '多尺度核选择融合注意力',
+    complementary_methods: ['CBAM', 'SE'],
+    complementary_reason: 'KSFA处理多尺度特征，CBAM/SE增强特征表达'
+  },
+  'DAWN+': {
+    core_methods: ['DAWN+'],
+    method_types: { 'DAWN+': '小波+方向感知注意力' },
+    core_formula: null,
+    scenario: '图像去雨',
+    innovation: '小波变换+方向感知注意力+互表示学习',
+    complementary_methods: ['DRSformer', 'DEA-Net'],
+    complementary_reason: 'DAWN+频域去雨，DRSformer稀疏Transformer去雨，DEA-Net细节增强，三者互补'
+  },
+  'DRSformer': {
+    core_methods: ['DRSformer'],
+    method_types: { 'DRSformer': '稀疏Transformer' },
+    core_formula: null,
+    scenario: '图像去雨',
+    innovation: '学习稀疏Transformer网络进行图像去雨',
+    complementary_methods: ['DAWN+', 'Non-local'],
+    complementary_reason: 'DRSformer稀疏注意力去雨，DAWN+频域去雨，Non-local全局依赖'
+  },
+  'DEA-Net': {
+    core_methods: ['DEA-Net'],
+    method_types: { 'DEA-Net': '细节增强卷积+内容引导注意力' },
+    core_formula: null,
+    scenario: '图像去雾',
+    innovation: '细节增强卷积+内容引导注意力（CGA）',
+    complementary_methods: ['SE', 'CBAM'],
+    complementary_reason: 'DEA-Net细节增强+CGA内容引导，SE/CBAM提供额外通道/空间注意力'
+  }
+};
+
+// Fallback keyword-based method extraction
+const FALLBACK_KEYWORDS = {
+  '通道注意力': ['SE', 'SENet', 'Squeeze-and-Excitation', 'FcaNet', 'GCNet', 'ECA', '通道注意力'],
+  '空间注意力': ['CBAM', 'Spatial Attention', '空间注意力'],
+  '自注意力': ['Transformer', 'ViT', 'DRSformer', 'Non-local', 'DANet', 'Self-Attention', '自注意力'],
+  '频域方法': ['DCT', 'Wavelet', 'FcaNet', 'DAWN+', '频域', '小波'],
+  '多尺度方法': ['KSFA', 'SKNet', 'ASPP', 'Gather-Excite', '多尺度', 'Multi-scale'],
+  '去雨方法': ['Derain', 'Rain', 'DAWN', 'DRSformer', '去雨'],
+  '去雾方法': ['Dehaze', 'DEA-Net', 'AOD-Net', '去雾', 'Dehazing'],
+  '去噪方法': ['Denoise', 'DnCNN', 'Noise', '去噪']
+};
 let searchQuery = '';
 
 const EL = {
@@ -1907,11 +2398,24 @@ function renderPapers() {
     return;
   }
 
+  const methodStore = loadMethodStore();
   EL.paperGrid.innerHTML = filtered.map((p, idx) => {
     const venue = detectVenue(p);
     const readingTime = estimateReadingTime(p);
     const globalIdx = allPapers.indexOf(p);
     const venueHtml = venue ? `<span class="venue-badge ${venue.cls}">${venue.emoji} ${venue.label}</span>` : '';
+    const mData = methodStore[p.title];
+    const methodTagsHtml = (mData && mData.core_methods && mData.core_methods.length)
+      ? `<div class="method-tags" style="margin-top:6px;">${mData.core_methods.slice(0,3).map(m => {
+          const type = (mData.method_types || {})[m] || '';
+          let cls = '';
+          if (type.includes('通道')) cls = 'type-channel';
+          else if (type.includes('空间')) cls = 'type-spatial';
+          else if (type.includes('注意力')) cls = 'type-attention';
+          else if (type.includes('频域')) cls = 'type-frequency';
+          return `<span class="method-tag ${cls}">${m}</span>`;
+        }).join('')}</div>`
+      : '';
 
     return `
     <div class="paper-card status-${p.status} fade-in" data-idx="${globalIdx}" onclick="openDetail(${globalIdx})">
@@ -1925,6 +2429,7 @@ function renderPapers() {
         ${p.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
         <span class="tag" style="background:rgba(168,85,247,0.12);color:#a855f7;">${p.categoryEmoji} ${p.category}</span>
       </div>
+      ${methodTagsHtml}
       <div class="meta">
         ${venueHtml}
         <span class="reading-time">⏱ ${readingTime}</span>
@@ -1947,62 +2452,93 @@ function renderPapers() {
 }
 
 function openDetail(idx) {
+  currentDetailIdx = idx;
   const p = allPapers[idx];
   if (!p) return;
+
+  const methodData = loadMethodStore()[p.title];
+  const hasMethods = methodData && methodData.core_methods && methodData.core_methods.length > 0;
 
   EL.modal.innerHTML = `
       <button class="modal-close" onclick="closeModal()">✕</button>
       <h2>${escapeHtml(p.title)}</h2>
       ${p.archImage ? `<div class="detail-arch"><img src="${p.archImage}" alt="${escapeHtml(p.title)} 架构图" loading="lazy" onerror="this.parentElement.style.display='none'" onclick="openArchLightbox(this.src)"><p class="detail-arch-caption">点击查看大图</p></div>` : ''}
 
-    <div class="detail-section">
-      <h4>📌 状态与分类</h4>
-      <p><span class="status-badge status-${p.status}">${p.status}</span> &nbsp; ${p.categoryEmoji} ${p.category}</p>
+    <div class="detail-tabs">
+      <button class="detail-tab-btn active" onclick="switchDetailTab(this,'tab-overview')">📋 概览</button>
+      <button class="detail-tab-btn" onclick="switchDetailTab(this,'tab-methods')">🧬 方法分析</button>
+      ${p.notesUrl ? `<button class="detail-tab-btn" onclick="switchDetailTab(this,'tab-notes')">📖 精读笔记</button>` : ''}
     </div>
 
-    <div class="detail-section">
-      <h4>💡 一句话总结</h4>
-      <p>${escapeHtml(p.summary)}</p>
-    </div>
+    <div class="detail-tab-panel active" id="tab-overview">
+      <div class="detail-section">
+        <h4>📌 状态与分类</h4>
+        <p><span class="status-badge status-${p.status}">${p.status}</span> &nbsp; ${p.categoryEmoji} ${p.category}</p>
+      </div>
 
-    <div class="detail-section">
-      <h4>🔴 核心痛点</h4>
-      <p>${escapeHtml(p.painPoints)}</p>
-    </div>
+      <div class="detail-section">
+        <h4>💡 一句话总结</h4>
+        <p>${escapeHtml(p.summary)}</p>
+      </div>
 
-    <div class="detail-section">
-      <h4>🛠️ 核心方法</h4>
-      <p>${escapeHtml(p.method)}</p>
-    </div>
+      <div class="detail-section">
+        <h4>🔴 核心痛点</h4>
+        <p>${escapeHtml(p.painPoints)}</p>
+      </div>
 
-    <div class="detail-section">
-      <h4>🎯 适用场景</h4>
-      <p>${escapeHtml(p.scenarios)}</p>
-    </div>
+      <div class="detail-section">
+        <h4>🛠️ 核心方法</h4>
+        <p>${escapeHtml(p.method)}</p>
+      </div>
 
-    <div class="detail-section">
-      <h4>🏷️ 标签</h4>
-      <div class="tags" style="margin-top:4px;">
-        ${p.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+      <div class="detail-section">
+        <h4>🎯 适用场景</h4>
+        <p>${escapeHtml(p.scenarios)}</p>
+      </div>
+
+      <div class="detail-section">
+        <h4>🏷️ 标签</h4>
+        <div class="tags" style="margin-top:4px;">
+          ${p.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+        </div>
+      </div>
+
+      <div class="detail-links">
+        ${p.arxivUrl ? `<a href="${p.arxivUrl}" target="_blank">📄 ${escapeHtml(p.arxiv)}</a>` : ''}
+        ${p.codeUrl ? `<a href="${p.codeUrl}" target="_blank">💻 代码仓库</a>` : ''}
+        ${p.date ? `<span style="padding:10px 18px;color:var(--text-dim);">📅 ${p.date}</span>` : ''}
       </div>
     </div>
 
-    <div class="detail-links">
-      ${p.arxivUrl ? `<a href="${p.arxivUrl}" target="_blank">📄 ${escapeHtml(p.arxiv)}</a>` : ''}
-      ${p.codeUrl ? `<a href="${p.codeUrl}" target="_blank">💻 代码仓库</a>` : ''}
-      ${p.date ? `<span style="padding:10px 18px;color:var(--text-dim);">📅 ${p.date}</span>` : ''}
+    <div class="detail-tab-panel" id="tab-methods">
+      <div class="method-analysis-content">
+        ${hasMethods ? formatMethodResult(methodData) : `
+          <div class="method-empty">
+            <p>🤖 尚未提取方法信息</p>
+            <button class="card-btn" onclick="triggerAiExtractForCurrent()">✨ AI 自动提取方法</button>
+            ${!hasApiKey() ? `<p style="margin-top:8px;font-size:12px;">未配置 API Key，将使用本地规则匹配</p>` : ''}
+          </div>
+        `}
+      </div>
+      ${hasMethods ? `
+        <div style="margin-top:12px;text-align:center;">
+          <button class="card-btn" onclick="triggerAiExtractForCurrent()">🔄 重新提取方法</button>
+        </div>
+      ` : ''}
     </div>
 
     ${p.notesUrl ? `
-    <div class="detail-section notes-section" id="notesSection">
-      <h4>📖 精读笔记</h4>
-      <div class="notes-loading" id="notesLoading">
-        <div class="notes-spinner"></div>
-        <span>加载笔记中…</span>
-      </div>
-      <div class="notes-content" id="notesContent"></div>
-      <div class="notes-error" id="notesError">
-        <p>笔记加载失败，请确认文件存在。</p>
+    <div class="detail-tab-panel" id="tab-notes">
+      <div class="detail-section notes-section" id="notesSection">
+        <h4>📖 精读笔记</h4>
+        <div class="notes-loading" id="notesLoading">
+          <div class="notes-spinner"></div>
+          <span>加载笔记中…</span>
+        </div>
+        <div class="notes-content" id="notesContent"></div>
+        <div class="notes-error" id="notesError">
+          <p>笔记加载失败，请确认文件存在。</p>
+        </div>
       </div>
     </div>
     ` : ''}
@@ -2015,6 +2551,19 @@ function openDetail(idx) {
   if (p.notesUrl) {
     loadNotes(p.notesUrl);
   }
+}
+
+function switchDetailTab(btn, panelId) {
+  document.querySelectorAll('.detail-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.detail-tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel = document.getElementById(panelId);
+  if (panel) panel.classList.add('active');
+}
+
+function triggerAiExtractForCurrent() {
+  if (currentDetailIdx < 0 || currentDetailIdx >= allPapers.length) return;
+  document.getElementById('btnAiExtract').click();
 }
 
 function simpleMd2Html(md) {
@@ -2492,7 +3041,7 @@ document.getElementById('btnCompare').addEventListener('click', () => {
 
   if (compareMode) {
     btn.classList.add('active');
-    btn.innerHTML = '📊 选择中 (0/2)';
+    btn.innerHTML = '📊 选择中 (0/4)';
     document.querySelectorAll('.paper-card.fade-in').forEach(card => {
       card.classList.add('compare-mode-card');
       card.addEventListener('click', handleCompareClick);
@@ -2518,13 +3067,13 @@ function handleCompareClick(e) {
     selectedCompare.splice(existIdx, 1);
     card.classList.remove('selected-compare');
   } else {
-    if (selectedCompare.length >= 2) return; // max 2
+    if (selectedCompare.length >= 4) return; // max 4 for AI pairing
     selectedCompare.push({ idx, paper: p });
     card.classList.add('selected-compare');
   }
 
   const btn = document.getElementById('btnCompare');
-  btn.innerHTML = `📊 选择中 (${selectedCompare.length}/2)`;
+  btn.innerHTML = `📊 选择中 (${selectedCompare.length}/4)`;
 
   if (selectedCompare.length === 2) {
     setTimeout(() => openCompareModal(selectedCompare[0].paper, selectedCompare[1].paper), 200);
@@ -2587,7 +3136,6 @@ function openCompareModal(p1, p2) {
 
   overlay.classList.add('open');
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeCompare(); });
-  cancelCompareMode();
 }
 
 function openArchLightbox(src) {
@@ -3001,6 +3549,7 @@ async function init() {
     const md = await resp.text();
     allPapers = parseLibrary(md);
     applySavedStatus();
+    migrateMethodData();
   } catch (err) {
     console.error('Failed to load papers library:', err);
     const msg = err.message.includes('404') || err.message.includes('Not Found')
@@ -3023,7 +3572,436 @@ async function init() {
   renderStats();
   renderPapers();
   renderHeatmap();
+
+  // First-time AI hint
+  if (!localStorage.getItem('ai_first_time_shown')) {
+    localStorage.setItem('ai_first_time_shown', '1');
+    setTimeout(() => {
+      showModal('🤖 AI 功能已上线', `
+        <p>论文库现已支持 AI 智能方法提取与分析！</p>
+        <p style="margin-top:12px;">配置 DeepSeek API Key 可获得更准确的结果：</p>
+        <p>1. 前往 <a href="https://platform.deepseek.com/" target="_blank" style="color:var(--primary-light)">platform.deepseek.com</a> 申请 API Key</p>
+        <p>2. 点击右上角 ⚙️ 设置按钮填入</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-dim);">不配置也可使用本地规则匹配进行简单提取</p>
+        <div style="margin-top:16px;">
+          <button class="card-btn" onclick="closeModal();openSettings();">去设置</button>
+          <button class="card-btn" onclick="closeModal();" style="margin-left:8px;">稍后再说</button>
+        </div>
+      `);
+    }, 1000);
+  }
 }
+
+// ============================================================
+//  AI Features
+// ============================================================
+
+// Settings Modal
+const settingsModalOverlay = document.getElementById('settingsModalOverlay');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const modelSelect = document.getElementById('modelSelect');
+
+function openSettings() {
+  apiKeyInput.value = AI_CONFIG.apiKey;
+  modelSelect.value = AI_CONFIG.model;
+  settingsModalOverlay.classList.add('open');
+}
+function closeSettings() {
+  settingsModalOverlay.classList.remove('open');
+}
+function saveSettings() {
+  AI_CONFIG.apiKey = apiKeyInput.value.trim();
+  AI_CONFIG.model = modelSelect.value;
+  closeSettings();
+  showToast('API 设置已保存');
+}
+document.getElementById('settingsBtn').addEventListener('click', openSettings);
+document.getElementById('settingsCancel').addEventListener('click', closeSettings);
+document.getElementById('settingsSave').addEventListener('click', saveSettings);
+settingsModalOverlay.addEventListener('click', (e) => {
+  if (e.target === settingsModalOverlay) closeSettings();
+});
+
+function hasApiKey() {
+  return !!AI_CONFIG.apiKey;
+}
+
+function showApiKeyHint() {
+  showModal('配置 DeepSeek API', `
+    <p>使用 AI 功能需要配置 DeepSeek API Key。</p>
+    <p style="margin-top:12px;">1. 前往 <a href="https://platform.deepseek.com/" target="_blank" style="color:var(--primary-light)">platform.deepseek.com</a> 申请</p>
+    <p>2. 点击右上角 ⚙️ 设置按钮填入 API Key</p>
+    <div style="margin-top:16px;">
+      <button class="card-btn" onclick="closeModal();openSettings();">去设置</button>
+      <button class="card-btn" onclick="closeModal();" style="margin-left:8px;">取消</button>
+    </div>
+  `);
+}
+
+// DeepSeek API Call
+async function callDeepSeek(messages, temperature = 0.3) {
+  const resp = await fetch(AI_CONFIG.apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + AI_CONFIG.apiKey
+    },
+    body: JSON.stringify({
+      model: AI_CONFIG.model,
+      messages,
+      temperature,
+      max_tokens: 2048
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${resp.status}`);
+  }
+  const data = await resp.json();
+  return data.choices[0].message.content;
+}
+
+// Fallback: keyword-based method extraction
+function fallbackExtractMethods(title, abstract) {
+  const text = (title + ' ' + (abstract || '')).toLowerCase();
+  const found = [];
+  const types = {};
+  for (const [typeName, keywords] of Object.entries(FALLBACK_KEYWORDS)) {
+    for (const kw of keywords) {
+      if (text.includes(kw.toLowerCase())) {
+        if (!found.includes(kw)) {
+          found.push(kw);
+          types[kw] = typeName;
+        }
+        break;
+      }
+    }
+  }
+  if (found.length === 0) {
+    found.push('未识别');
+    types['未识别'] = '其他';
+  }
+  return {
+    core_methods: found.slice(0, 3),
+    method_types: types,
+    core_formula: null,
+    scenario: '待分析',
+    innovation: '基于关键词匹配',
+    complementary_methods: [],
+    complementary_reason: '配置 DeepSeek API Key 可获得更准确的提取结果',
+    _fallback: true
+  };
+}
+
+// Extract methods for a single paper
+async function extractPaperMethods(paper, useAi = true) {
+  // Check preset library first
+  for (const [key, preset] of Object.entries(PRESET_METHOD_LIBRARY)) {
+    if (paper.title && paper.title.includes(key)) {
+      return { ...preset, _source: 'preset' };
+    }
+  }
+
+  if (useAi && hasApiKey()) {
+    try {
+      const prompt = `你是一位计算机视觉领域的论文分析专家。请分析以下论文：
+
+标题：${paper.title}
+摘要：${paper.abstract || '无摘要'}
+
+请提取并返回以下结构化信息，只返回JSON，不要其他内容：
+
+{
+  "core_methods": ["方法1", "方法2"],
+  "method_types": {"方法1": "通道注意力", "方法2": "空间注意力"},
+  "core_formula": "核心公式（LaTeX格式，没有则返回null）",
+  "scenario": "适用场景",
+  "innovation": "一句话创新点",
+  "complementary_methods": ["建议搭配的方法1", "建议搭配的方法2"],
+  "complementary_reason": "为什么建议搭配这些方法"
+}`;
+      const content = await callDeepSeek([
+        { role: 'system', content: '你是论文分析方法提取专家，只输出JSON格式结果。' },
+        { role: 'user', content: prompt }
+      ]);
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return { ...JSON.parse(jsonMatch[0]), _source: 'ai' };
+      }
+    } catch (e) {
+      console.warn('AI extraction failed:', e);
+    }
+  }
+
+  return fallbackExtractMethods(paper.title, paper.abstract);
+}
+
+function formatMethodResult(result) {
+  let html = '<div class="method-tags">';
+  for (const method of (result.core_methods || [])) {
+    const type = (result.method_types || {})[method] || '其他';
+    let typeClass = '';
+    if (type.includes('通道')) typeClass = 'type-channel';
+    else if (type.includes('空间')) typeClass = 'type-spatial';
+    else if (type.includes('注意力') || type.includes('自注意力')) typeClass = 'type-attention';
+    else if (type.includes('频域')) typeClass = 'type-frequency';
+    html += `<span class="method-tag ${typeClass}">${method}<small style="opacity:0.7;margin-left:4px;">(${type})</small></span>`;
+  }
+  if (result._fallback) {
+    html += '<span class="fallback-badge">本地规则</span>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// Pairing analysis
+async function analyzePairing(papers) {
+  if (papers.length < 2) {
+    showToast('请至少选择2篇论文进行对比搭配');
+    return null;
+  }
+  if (papers.length > 4) {
+    showToast('最多支持4篇论文搭配分析');
+    return null;
+  }
+
+  let paperDesc = '';
+  for (const p of papers) {
+    const methods = (p.methods?.core_methods || []).join('、');
+    paperDesc += `${p.title}：${methods || '未提取方法'}\n`;
+  }
+
+  if (hasApiKey()) {
+    try {
+      const prompt = `你是一位深度学习模型架构设计专家。请分析以下论文的方法搭配：
+
+${paperDesc}
+
+请返回以下结构化JSON：
+
+{
+  "total_score": 85,
+  "score_breakdown": {
+    "互补性": 90,
+    "计算效率": 80,
+    "任务适配度": 88,
+    "创新冗余度": 75
+  },
+  "recommendations": {
+    "good": [{"combination": "方法A+方法B", "reason": "原因"}],
+    "optimizable": [{"combination": "方法C+方法D", "suggestion": "建议替换为...", "reason": "原因"}],
+    "bad": [{"combination": "方法E+方法F", "problem": "问题描述"}]
+  },
+  "improvement": {
+    "remove": ["要删除的模块", "原因"],
+    "replace": {"from": "原方法", "to": "建议方法", "reason": "原因"},
+    "add": ["要补充的模块", "原因"]
+  },
+  "reference_combinations": ["参考组合1", "参考组合2"]
+}`;
+      const content = await callDeepSeek([
+        { role: 'system', content: '你是深度学习架构设计专家，只输出JSON格式结果。' },
+        { role: 'user', content: prompt }
+      ], 0.5);
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return { ...JSON.parse(jsonMatch[0]), _source: 'ai' };
+      }
+    } catch (e) {
+      console.warn('AI pairing failed:', e);
+    }
+  }
+
+  // Fallback: simple heuristic
+  const allMethods = [];
+  for (const p of papers) {
+    allMethods.push(...(p.methods?.core_methods || []));
+  }
+  return {
+    total_score: 70,
+    score_breakdown: { '互补性': 70, '计算效率': 70, '任务适配度': 70, '创新冗余度': 70 },
+    recommendations: {
+      good: [{ combination: allMethods.slice(0, 2).join('+') || '未知', reason: '基础搭配' }],
+      optimizable: [],
+      bad: []
+    },
+    improvement: { remove: [], replace: {}, add: [] },
+    reference_combinations: allMethods,
+    _source: 'fallback',
+    _fallbackMsg: hasApiKey() ? 'AI 分析失败，使用本地规则' : '未配置 API Key，使用本地规则'
+  };
+}
+
+function renderPairingResult(result) {
+  let html = '<div class="pairing-result">';
+  html += `<div class="pairing-score">${result.total_score || '--'}<span style="font-size:16px;">/100</span></div>`;
+  html += '<div class="pairing-score-label">综合搭配评分</div>';
+
+  if (result.score_breakdown) {
+    html += '<div class="pairing-section"><h5>📊 评分细项</h5>';
+    for (const [k, v] of Object.entries(result.score_breakdown)) {
+      html += `<div class="pairing-item">${k}: <strong>${v}</strong></div>`;
+    }
+    html += '</div>';
+  }
+
+  if (result.recommendations?.good?.length) {
+    html += '<div class="pairing-section"><h5>✅ 推荐搭配</h5>';
+    for (const item of result.recommendations.good) {
+      html += `<div class="pairing-item good"><strong>${item.combination}</strong><br><small>${item.reason}</small></div>`;
+    }
+    html += '</div>';
+  }
+
+  if (result.recommendations?.optimizable?.length) {
+    html += '<div class="pairing-section"><h5>⚠️ 可优化</h5>';
+    for (const item of result.recommendations.optimizable) {
+      html += `<div class="pairing-item warn"><strong>${item.combination}</strong><br><small>建议: ${item.suggestion} | ${item.reason}</small></div>`;
+    }
+    html += '</div>';
+  }
+
+  if (result.recommendations?.bad?.length) {
+    html += '<div class="pairing-section"><h5>❌ 避免搭配</h5>';
+    for (const item of result.recommendations.bad) {
+      html += `<div class="pairing-item bad"><strong>${item.combination}</strong><br><small>${item.problem}</small></div>`;
+    }
+    html += '</div>';
+  }
+
+  if (result._fallbackMsg) {
+    html += `<div class="fallback-badge">${result._fallbackMsg}</div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+// Batch completion
+async function batchCompleteMethods() {
+  const targets = allPapers.filter(p => !p.methods || !p.methods.core_methods?.length);
+  if (targets.length === 0) {
+    showToast('所有论文已有方法信息');
+    return;
+  }
+
+  const overlay = document.getElementById('batchProgressOverlay');
+  const bar = document.getElementById('batchProgressBar');
+  const text = document.getElementById('batchProgressText');
+  const detail = document.getElementById('batchProgressDetail');
+  overlay.classList.add('open');
+
+  let success = 0, fail = 0;
+  for (let i = 0; i < targets.length; i++) {
+    const p = targets[i];
+    const pct = Math.round(((i) / targets.length) * 100);
+    bar.style.width = pct + '%';
+    text.textContent = `正在处理: ${p.title}`;
+    detail.textContent = `进度: ${i}/${targets.length} | 成功: ${success} | 失败: ${fail}`;
+
+    try {
+      const result = await extractPaperMethods(p, true);
+      p.methods = result;
+      success++;
+    } catch (e) {
+      console.error(e);
+      fail++;
+    }
+
+    if (i < targets.length - 1) {
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+
+  bar.style.width = '100%';
+  text.textContent = '处理完成!';
+  detail.textContent = `成功: ${success} | 失败: ${fail}`;
+
+  saveMethodStore();
+  renderPapers();
+
+  setTimeout(() => {
+    overlay.classList.remove('open');
+    showToast(`批量补全完成: 成功 ${success} 篇, 失败 ${fail} 篇`);
+  }, 1500);
+}
+
+// Method store persistence
+function saveMethodStore() {
+  const store = {};
+  for (const p of allPapers) {
+    if (p.methods) store[p.title] = p.methods;
+  }
+  localStorage.setItem('paper_methods_store', JSON.stringify(store));
+}
+
+function loadMethodStore() {
+  try {
+    return JSON.parse(localStorage.getItem('paper_methods_store') || '{}');
+  } catch { return {}; }
+}
+
+// Data migration
+function migrateMethodData() {
+  const store = loadMethodStore();
+  let migrated = 0;
+  for (const p of allPapers) {
+    if (store[p.title]) {
+      p.methods = store[p.title];
+      migrated++;
+    }
+  }
+  if (migrated > 0) console.log(`Migrated methods for ${migrated} papers`);
+}
+
+// AI Tool Buttons
+document.getElementById('btnAiExtract').addEventListener('click', async () => {
+  if (currentDetailIdx < 0 || currentDetailIdx >= allPapers.length) {
+    showToast('请先打开一篇论文详情');
+    return;
+  }
+  const paper = allPapers[currentDetailIdx];
+  const useAi = hasApiKey();
+  showToast(useAi ? '正在分析论文方法...' : '正在使用本地规则匹配...');
+  try {
+    const result = await extractPaperMethods(paper, useAi);
+    paper.methods = result;
+    saveMethodStore();
+    openDetail(currentDetailIdx);
+    if (!useAi) {
+      showToast('方法提取完成（本地规则）');
+      setTimeout(() => showApiKeyHint(), 800);
+    } else {
+      showToast('方法提取完成');
+    }
+  } catch (e) {
+    showToast('提取失败: ' + e.message);
+  }
+});
+
+document.getElementById('btnAiPairing').addEventListener('click', async () => {
+  const selected = selectedCompare.map(s => s.paper).filter(Boolean);
+  if (selected.length < 2) {
+    showToast('请先选择2-4篇论文（点击卡片进入对比模式后选择）');
+    return;
+  }
+  showModal('AI 搭配分析', '<div class="ai-loading"><div class="spinner"></div>正在分析论文方法搭配...</div>');
+  try {
+    const result = await analyzePairing(selected);
+    if (result) {
+      showModal('AI 搭配分析', renderPairingResult(result));
+    }
+  } catch (e) {
+    showModal('AI 搭配分析', `<p style="color:var(--accent-red)">分析失败: ${escapeHtml(e.message)}</p>`);
+  }
+});
+
+document.getElementById('btnAiBatch').addEventListener('click', () => {
+  if (!hasApiKey()) {
+    showApiKeyHint();
+    return;
+  }
+  batchCompleteMethods();
+});
 
 initParticles();
 init();
