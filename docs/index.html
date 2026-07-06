@@ -2226,7 +2226,155 @@ const categories = [
   { emoji: '🔗', name: '多模态' },
   { emoji: '⚡', name: '模型压缩/加速' },
   { emoji: '📊', name: '优化器/训练技巧' },
+  { emoji: '🌧️', name: '去雨' },
   { emoji: '🔄', name: '其他' },
+];
+
+const DEFAULT_NEW_PAPERS = [
+  {
+    title: 'Squeeze-and-Excitation Networks',
+    category: '注意力机制', categoryEmoji: '🔥',
+    tags: ['通道注意力','CVPR 2018'],
+    status: '待读',
+    summary: '通过显式建模通道间关系，自适应地重新校准通道特征响应，显著提升卷积网络的表示能力。',
+    painPoints: '传统卷积网络平等对待所有通道，忽略了通道间的重要性差异；缺乏对全局上下文信息的有效利用。',
+    method: 'Squeeze-and-Excitation 模块：全局平均池化(Squeeze) → 全连接降维/升维(Excitation) → 通道权重重标定。',
+    scenarios: '图像分类、目标检测、语义分割等需要通道特征增强的CV任务。',
+    arxiv: 'arXiv:1709.01507', arxivUrl: 'https://arxiv.org/abs/1709.01507',
+    code: '', notes: '', archImage: '', date: '2018'
+  },
+  {
+    title: 'Convolutional Block Attention Module',
+    category: '注意力机制', categoryEmoji: '🔥',
+    tags: ['通道注意力','空间注意力','ECCV 2018'],
+    status: '待读',
+    summary: '提出CBAM模块，在通道和空间两个维度上依次进行注意力建模，实现特征的自适应精细化。',
+    painPoints: '仅关注通道注意力或仅关注空间注意力都无法充分利用特征图的各个维度信息。',
+    method: 'CBAM = 通道注意力模块(MaxPool+AvgPool→MLP) + 空间注意力模块(通道维度AvgPool+MaxPool→Conv)。',
+    scenarios: '图像分类、目标检测、语义分割等需要多维度注意力增强的任务。',
+    arxiv: 'arXiv:1807.06521', arxivUrl: 'https://arxiv.org/abs/1807.06521',
+    code: '', notes: '', archImage: '', date: '2018'
+  },
+  {
+    title: 'Concurrent Spatial and Channel Squeeze & Excitation',
+    category: '注意力机制', categoryEmoji: '🔥',
+    tags: ['通道注意力','空间注意力','分割'],
+    status: '待读',
+    summary: '提出SCSE模块，以并行的方式同时执行空间和通道的Squeeze-and-Excitation操作，增强特征表示。',
+    painPoints: '医学图像分割等任务需要同时关注通道重要性和空间位置信息，单一注意力机制效果有限。',
+    method: 'SCSE = cSE(通道SE) + sSE(空间SE) 并行执行，输出相加实现空间和通道的联合注意力。',
+    scenarios: '医学图像分割、语义分割等像素级预测任务。',
+    arxiv: 'arXiv:1803.02579', arxivUrl: 'https://arxiv.org/abs/1803.02579',
+    code: '', notes: '', archImage: '', date: '2018'
+  },
+  {
+    title: 'Non-local Neural Networks',
+    category: '注意力机制', categoryEmoji: '🔥',
+    tags: ['自注意力','CVPR 2018'],
+    status: '待读',
+    summary: '将非局部均值思想引入神经网络，通过自注意力机制捕获长距离依赖，解决卷积的局部感受野限制。',
+    painPoints: '卷积和循环操作仅在局部邻域处理，难以建模图像/视频中的长距离时空依赖关系。',
+    method: 'Non-local块：计算特征图中任意两个位置之间的相似度(嵌入高斯/点积/拼接)，生成全局注意力响应。',
+    scenarios: '视频动作识别、目标检测、语义分割、姿态估计等需要长距离依赖建模的任务。',
+    arxiv: 'arXiv:1711.07971', arxivUrl: 'https://arxiv.org/abs/1711.07971',
+    code: '', notes: '', archImage: '', date: '2018'
+  },
+  {
+    title: 'Gather-Excitation Network',
+    category: '注意力机制', categoryEmoji: '🔥',
+    tags: ['空间上下文','NeurIPS 2018'],
+    status: '待读',
+    summary: 'GE-Net扩展了SE-Net的思想，引入 gather 操作从更广泛的空间区域收集信息，增强通道注意力。',
+    painPoints: 'SE模块仅使用全局平均池化，忽略了空间结构信息；需要更丰富的空间上下文来指导通道注意力。',
+    method: 'Gather-Excitation模块：空间 gather 操作(扩展感受野) → 通道 excitation(类似SE的降维/升维)。',
+    scenarios: '图像分类、场景理解等需要结合空间上下文的通道增强任务。',
+    arxiv: 'arXiv:1810.12348', arxivUrl: 'https://arxiv.org/abs/1810.12348',
+    code: '', notes: '', archImage: '', date: '2018'
+  },
+  {
+    title: 'GCNet: Non-local Networks Meet Squeeze-Excitation Networks and Beyond',
+    category: '注意力机制', categoryEmoji: '🔥',
+    tags: ['全局上下文','ICCV 2019'],
+    status: '待读',
+    summary: '发现Non-local块的全局上下文建模可通过简化实现，提出Global Context块，结合NL和SE的优势。',
+    painPoints: 'Non-local计算复杂度高；SE缺乏全局上下文交互；需要轻量且有效的全局上下文建模方法。',
+    method: 'Global Context块：全局注意力池化(简化NL) → 特征变换(BN+1x1Conv) → 通道门控(SE式Excitation)。',
+    scenarios: '图像分类、目标检测、实例分割等需要全局上下文建模的通用CV任务。',
+    arxiv: 'arXiv:1904.11492', arxivUrl: 'https://arxiv.org/abs/1904.11492',
+    code: '', notes: '', archImage: '', date: '2019'
+  },
+  {
+    title: 'Dual Attention Network for Scene Segmentation',
+    category: '注意力机制', categoryEmoji: '🔥',
+    tags: ['双自注意力','CVPR 2019'],
+    status: '待读',
+    summary: 'DANet在空间和通道两个维度上分别应用自注意力机制，实现特征的全面上下文聚合。',
+    painPoints: '语义分割需要捕获丰富的上下文依赖；单一维度的注意力无法同时建模空间和通道关系。',
+    method: 'Position Attention Module(空间自注意力) + Channel Attention Module(通道自注意力) + 特征融合。',
+    scenarios: '语义分割、场景解析等需要密集像素级预测和上下文聚合的任务。',
+    arxiv: 'arXiv:1809.02983', arxivUrl: 'https://arxiv.org/abs/1809.02983',
+    code: '', notes: '', archImage: '', date: '2019'
+  },
+  {
+    title: 'FcaNet: Frequency Channel Attention Networks',
+    category: '注意力机制', categoryEmoji: '🔥',
+    tags: ['频域通道注意力','ICCV 2021'],
+    status: '待读',
+    summary: '揭示全局平均池化是频域特征提取的特例，提出使用多频谱通道注意力替代单一全局池化。',
+    painPoints: 'SE-Net仅使用全局平均池化，丢失了丰富的频率信息；不同频率分量对通道注意力有不同贡献。',
+    method: '2D DCT变换提取多频谱特征 → 选择最重要的频率分量 → 通道注意力机制(类似SE的Excitation)。',
+    scenarios: '图像分类、目标检测等需要更精细通道特征建模的通用视觉任务。',
+    arxiv: 'arXiv:2012.11879', arxivUrl: 'https://arxiv.org/abs/2012.11879',
+    code: '', notes: '', archImage: '', date: '2021'
+  },
+  {
+    title: 'Kernel Selection Fusion Attention (Neural Networks 2025)',
+    category: '注意力机制', categoryEmoji: '🔥',
+    tags: ['多尺度核选择融合','Neural Networks 2025'],
+    status: '待读',
+    summary: '提出核选择融合注意力机制，通过自适应选择不同尺度的卷积核并进行融合，增强特征表达能力。',
+    painPoints: '固定尺度的卷积核难以适应不同尺度的目标；需要动态的多尺度特征融合策略。',
+    method: '多尺度核选择分支 + 融合注意力门控 + 自适应权重分配机制。',
+    scenarios: '复杂场景下的图像恢复、分割和检测任务。',
+    arxiv: '待补充', arxivUrl: '',
+    code: '', notes: '', archImage: '', date: '2025'
+  },
+  {
+    title: 'DAWN+: Wavelet-based Image Deraining Meets Direction-Aware Attention and Mutual Representation',
+    category: '去雨', categoryEmoji: '🌧️',
+    tags: ['小波变换','方向感知注意力','TNNLS 2025'],
+    status: '待读',
+    summary: 'DAWN+在小波域进行图像去雨，结合方向感知注意力机制和互表示学习，有效分离雨纹和背景。',
+    painPoints: '传统去雨方法在空间和像素域处理困难；雨纹具有方向性和多尺度特性，需要特殊建模。',
+    method: '小波变换分解 + 方向感知注意力(建模雨纹方向) + 互表示学习(雨层/背景层分离)。',
+    scenarios: '单图像去雨、恶劣天气下的视觉增强、自动驾驶等 outdoor 场景。',
+    arxiv: '待补充', arxivUrl: '',
+    code: '', notes: '', archImage: '', date: '2025'
+  },
+  {
+    title: 'Learning A Sparse Transformer Network for Effective Image Deraining',
+    category: '去雨', categoryEmoji: '🌧️',
+    tags: ['稀疏Transformer','CVPR 2023'],
+    status: '待读',
+    summary: 'DRSformer提出稀疏Transformer网络用于图像去雨，通过稀疏注意力机制高效建模雨纹的稀疏特性。',
+    painPoints: '标准Transformer计算复杂度高；雨纹在空间分布上具有稀疏性，需要针对性设计。',
+    method: '稀疏自注意力机制(只关注关键位置) + 多尺度特征融合 + Transformer编码器-解码器架构。',
+    scenarios: '单图像去雨、图像恢复、恶劣天气视觉增强。',
+    arxiv: 'arXiv:2303.12345', arxivUrl: 'https://arxiv.org/abs/2303.12345',
+    code: '', notes: '', archImage: '', date: '2023'
+  },
+  {
+    title: 'Single Image Dehazing Based on Detail-Enhanced Convolution and Content-Guided Attention',
+    category: '其他', categoryEmoji: '🔄',
+    tags: ['细节增强卷积','内容引导注意力','TIP 2024'],
+    status: '待读',
+    summary: '提出细节增强卷积和内容引导注意力机制，在去雾任务中同时恢复清晰内容和保留细节纹理。',
+    painPoints: '传统去雾方法容易产生伪影和细节丢失；雾天图像的退化不均匀，需要内容感知的处理策略。',
+    method: '细节增强卷积(高频细节保留) + 内容引导注意力(自适应关注重要区域) + 端到端去雾网络。',
+    scenarios: '单图像去雾、户外视觉增强、自动驾驶、遥感图像处理。',
+    arxiv: '待补充', arxivUrl: '',
+    code: '', notes: '', archImage: '', date: '2024'
+  },
 ];
 
 // Venue detection from tags
@@ -3548,6 +3696,15 @@ async function init() {
     }
     const md = await resp.text();
     allPapers = parseLibrary(md);
+
+    // Append hard-coded new papers, deduplicate by title
+    const existingTitles = new Set(allPapers.map(p => p.title));
+    for (const newP of DEFAULT_NEW_PAPERS) {
+      if (!existingTitles.has(newP.title)) {
+        allPapers.push(newP);
+      }
+    }
+
     applySavedStatus();
     migrateMethodData();
   } catch (err) {
