@@ -2399,6 +2399,54 @@ const DEFAULT_NEW_PAPERS = [
     arxiv: 'IEEE TIP 2025', arxivUrl: 'https://ieeexplore.ieee.org/document/10825584',
     code: '', notes: 'reading-notes/RQ-D2UNet.md', archImage: '', date: '2025'
   },
+  {
+    title: 'Restormer: Efficient Transformer for High-Resolution Image Restoration',
+    category: '通道增强/特征增强', categoryEmoji: '🌊',
+    tags: ['高效Transformer','跨通道注意力','门控FFN','CVPRW 2022'],
+    status: '待读',
+    summary: 'Restormer通过MDTA将自注意力从空间维度转置到通道维度，实现线性复杂度，结合GDFN门控前馈网络，首次将Transformer应用于高分辨率图像恢复任务。',
+    painPoints: '标准Transformer自注意力复杂度随分辨率二次增长无法处理高分辨率图像；CNN感受野有限难以建模长距离像素依赖。',
+    method: 'MDTA(Multi-Dconv Head Transposed Attention,跨通道线性注意力) + GDFN(Gated-Dconv FFN,门控前馈网络) + 多尺度编码器-解码器 + 渐进式训练。',
+    scenarios: '去雨、去噪、去模糊、超分辨率等高分辨率图像恢复任务。',
+    arxiv: 'arXiv:2111.09881', arxivUrl: 'https://arxiv.org/abs/2111.09881',
+    code: 'https://github.com/swz30/Restormer', notes: 'reading-notes/Restormer.md', archImage: '', date: '2022'
+  },
+  {
+    title: 'Uformer: A General U-Shaped Transformer for Image Restoration',
+    category: '通道增强/特征增强', categoryEmoji: '🌊',
+    tags: ['U-shaped Transformer','窗口注意力','空间偏差','CVPR 2022'],
+    status: '待读',
+    summary: 'Uformer提出LeWin Transformer Block(局部增强窗口注意力)，在U-shaped编码器-解码器架构中使用窗口自注意力降低计算开销，配合多尺度空间偏差调制器恢复细节。',
+    painPoints: '全局自注意力计算开销过大无法直接用于高分辨率图像；纯CNN架构缺乏长距离依赖建模能力。',
+    method: 'LeWin Block(窗口划分→窗口多头自注意力→Depth-wise Conv FFN) + 多尺度空间偏差调制器 + 三种跳接方案比较。',
+    scenarios: '去噪、去模糊、去雨、超分辨率等通用图像恢复任务。',
+    arxiv: 'arXiv:2106.03106', arxivUrl: 'https://arxiv.org/abs/2106.03106',
+    code: 'https://github.com/ZhendongWang6/Uformer', notes: 'reading-notes/Uformer.md', archImage: '', date: '2022'
+  },
+  {
+    title: 'Structure-Preserving Deraining with Residue Channel Prior Guidance',
+    category: '去雨', categoryEmoji: '🌧️',
+    tags: ['结构保持','残差通道先验','小波变换','ICCV 2021'],
+    status: '待读',
+    summary: 'SPDNet首次发现残差通道(RGB通道间关系)包含比有雨图像更准确的结构信息，利用RCP引导去雨网络保护图像结构，结合小波多级模块和交互融合实现结构保持去雨。',
+    painPoints: '现有方法难以恢复结构清晰准确的无雨图像；依赖雨生成假设导致真实场景泛化差；高频雨纹与边缘信息纠缠难以分离。',
+    method: '残差通道先验RCP(引导结构保持) + 小波多级模块WMLM(高低频分离) + 交互融合模块IFM(RCP与骨干特征交互) + 迭代引导策略。',
+    scenarios: '单图像去雨、需要结构保持的图像恢复任务。',
+    arxiv: 'arXiv:2108.09079', arxivUrl: 'https://arxiv.org/abs/2108.09079',
+    code: 'https://github.com/Joyies/SPDNet', notes: 'reading-notes/SPDNet.md', archImage: '', date: '2021'
+  },
+  {
+    title: 'Image De-Raining Transformer',
+    category: '去雨', categoryEmoji: '🌧️',
+    tags: ['专用去雨Transformer','互补注意力','窗口+空间注意力','TPAMI 2024'],
+    status: '待读',
+    summary: 'IDT是首个专门为去雨设计的Transformer架构，将局部性和层次性先验引入网络，通过互补的窗口Transformer(局部)和空间Transformer(全局)实现高效去雨，无需大规模预训练即达SOTA。',
+    painPoints: 'CNN感受野有限难以捕获复杂长距离雨迹；通用恢复Transformer缺乏去雨针对性；标准自注意力缺乏位置感知。',
+    method: '窗口Transformer(局部特征增强) + 空间Transformer(全局依赖建模) + 相对位置增强多头自注意力 + 层次性U-shaped架构。',
+    scenarios: '单图像去雨、复杂雨纹场景。',
+    arxiv: 'IEEE TPAMI 2024', arxivUrl: 'https://ieeexplore.ieee.org/document/9798773',
+    code: '', notes: 'reading-notes/IDT.md', archImage: '', date: '2022'
+  },
 ];
 
 // Venue detection from tags
