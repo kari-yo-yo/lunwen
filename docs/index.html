@@ -2375,6 +2375,30 @@ const DEFAULT_NEW_PAPERS = [
     arxiv: '待补充', arxivUrl: '',
     code: '', notes: '', archImage: '', date: '2024'
   },
+  {
+    title: 'MFFDNet: Single Image Deraining via Dual-Channel Mixed Feature Fusion',
+    category: '去雨', categoryEmoji: '🌧️',
+    tags: ['CNN-Transformer混合','通道-空间注意力','特征融合','TIM 2024'],
+    status: '待读',
+    summary: 'MFFDNet巧妙结合CNN和Transformer的优势，通过CSAB提取局部特征、WTB捕获全局特征、MFFU实现深度互补融合，在单图像去雨任务上达到SOTA。',
+    painPoints: 'CNN感受野受限难以建模全局上下文；Transformer忽略局部细节；缺乏有效的局部-全局特征融合机制；高频雨纹与低频背景信息纠缠难以分离。',
+    method: '通道-空间注意力块CSAB(残差通道注意力+增强空间注意力) + 窗口Transformer块WTB + 混合特征融合单元MFFU(互补融合策略)。',
+    scenarios: '单图像去雨、恶劣天气视觉增强、自动驾驶等outdoor场景。',
+    arxiv: 'IEEE TIM 2024', arxivUrl: 'https://ieeexplore.ieee.org/document/10380987',
+    code: 'https://github.com/taowenyin/MFFDNet', notes: 'reading-notes/MFFDNet.md', archImage: '', date: '2024'
+  },
+  {
+    title: 'Reduced Biquaternion Dual-Branch Deraining U-Network via Multi-Attention Mechanism',
+    category: '去雨', categoryEmoji: '🌧️',
+    tags: ['约化双四元数','双分支架构','多注意力机制','超复数神经网络','TIP 2025'],
+    status: '待读',
+    summary: 'RQ-D2UNet首次将约化双四元数神经网络引入去雨领域，利用RQ代数结构将RGB三通道整合为单一单元，通过双分支U-Net交互解耦雨纹与背景，并定制RQ域多注意力机制实现SOTA性能。',
+    painPoints: '复杂雨纹模式拟合能力不足；合成到真实场景泛化性差；欠去雨或过去雨；实值神经网络对彩色图像通道关系建模不足，颜色保真度受限。',
+    method: '约化双四元数神经网络RQV-NN + 双分支联合表示模块DBJRM + RQ-SCformer(自注意力+Inception) + RQ域多注意力(RQ-SAU/RQ-CAU/RQ-EGAU) + 三阶段重建模块。',
+    scenarios: '单图像去雨、图像去雪、低光增强、下游视觉任务预处理(目标检测/语义分割)。',
+    arxiv: 'IEEE TIP 2025', arxivUrl: 'https://ieeexplore.ieee.org/document/10825584',
+    code: '', notes: 'reading-notes/RQ-D2UNet.md', archImage: '', date: '2025'
+  },
 ];
 
 // Venue detection from tags
