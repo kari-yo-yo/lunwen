@@ -1,460 +1,326 @@
-# DRSformer 精读笔记
+# Learning A Sparse Transformer Network for Effective Image Deraining (DRSformer) 精读笔记
 
-> CVPR 2023 | Learning A Sparse Transformer Network for Effective Image Deraining
-> 论文链接: [arXiv:2303.11950](https://arxiv.org/abs/2303.11950) | 代码: [GitHub](https://github.com/cschenxiang/DRSformer)
-> 作者: Xiang Chen, Hao Li, Mingqiang Li, Jinshan Pan
-> 笔记时间: 2026-07-01
+> [📄 arXiv](https://arxiv.org/abs/2303.11950) | 🎯 CVPR 2023 (Highlight) | [💻 代码](https://github.com/cschenxiang/DRSformer)
 
----
+## 一、基本信息
 
-## 一、文章基本信息
+| 属性 | 内容 |
+|------|------|
+| **论文标题** | Learning A Sparse Transformer Network for Effective Image Deraining |
+| **发表会议** | CVPR 2023 (Highlight 论文) |
+| **作者** | Xiang Chen, Hao Li, Mingqiang Li, Jinshan Pan（通讯作者） |
+| **单位** | 南京理工大学 计算机科学与工程学院，中国电子科技集团公司 信息科学研究院 |
+| **核心创新** | 可学习 Top-K 稀疏注意力（TKSA）+ 混合尺度前馈网络（MSFN）+ 混合专家特征补偿器（MEFC） |
+| **适用任务** | 图像去雨（合成雨 + 真实雨） |
+| **关键指标** | 在 5 个去雨基准上达到 SOTA，平均 PSNR 比 IDT 高约 0.4 dB |
+| **数据集** | Rain200L, Rain200H, DID-Data (Test1200), DDN-Data (Test1400), SPA-Data |
+| **评估指标** | PSNR/SSIM（YCbCr Y 通道），NIQE/BRISQUE（无参考） |
 
-- **论文题目**: Learning A Sparse Transformer Network for Effective Image Deraining
-- **发表会议**: CVPR 2023
-- **核心任务**: 单图像去雨 (Single-Image Deraining)
+## 二、痛点分析
 
----
-
-## 二、痛点分析 (Motivation & Problem Statement)
-
-### 1. 图像去雨的核心挑战
-
-| 痛点 | 具体描述 |
-|------|----------|
-| **CNN的局部性限制** | 卷积操作具有局部感受野，无法有效捕获长距离依赖关系，难以消除大范围的雨纹退化 |
-| **Transformer的全局稠密注意力问题** | 标准Transformer使用所有查询-键对计算自注意力。当查询和键的token不相关时，这些小相似度权重仍会参与特征聚合，引入噪声干扰 |
-| **局部细节建模不足** | Transformer擅长非局部建模，但对局部不变性的建模不如CNN，而雨纹恰恰容易与背景细节在局部区域混淆 |
-
-### 2. 核心洞察
-
-> **不是所有注意力分数都有用。** 保留Top-K个最相关的分数，丢掉其余，既能减少噪声干扰，又能提升计算效率。
-
----
+| 痛点 | 深层原因 | 现有方法的局限 | DRSformer 的解决方案 |
+|------|---------|---------------|---------------------|
+| 标准 Transformer 全连接注意力引入噪声 | query-key 对间全部相似度参与聚合，不相关 token 的注意力值仍被纳入特征交互 | 密集计算模式放大较小相似度权重，冗余/无关表征干扰恢复 | TKSA：Top-K 自适应选择最有用的注意力值 |
+| CNN 局部感受野 vs Transformer 缺乏局部建模 | CNN 受限于局部感受野且与输入无关；Transformer 不擅长建模局部不变特性 | CNN 难消除长程雨退化；Transformer 难捕捉细节纹理 | MSFN：3×3 + 5×5 双分支混合尺度前馈网络 |
+| 前馈网络缺乏多尺度信息 | 标准 FFN 单尺度卷积，无法捕捉不同尺度雨纹间的相关性 | 单尺度表示不足以处理多密度、多方向雨纹 | MSFN 引入多尺度深度卷积提取多尺度局部信息 |
+| 数据稀疏性与内容稀疏性未联合探索 | 雨分布揭示退化位置与程度，但现有方法未有效利用 | 单一稀疏机制无法同时处理数据和内容层面的稀疏性 | MEFC：混合专家特征补偿器，用注意力作为专家切换器 |
 
 ## 三、核心方法
 
-### 整体架构
+### 3.1 整体架构
 
-DRSformer基于**层次化编码器-解码器框架**（4个Stage，逐步下采样到H/8×W/8）：
+![DRSformer 架构图](assets/arch-DRSformer-new.jpg)
 
-```
-输入雨图 → 3×3卷积重叠块嵌入 → 编码器(4个Stage) → 解码器 → 全局残差 + 输出
-```
-
-| 参数 | 值 |
-|------|-----|
-| STB数量 per Stage | 4, 4, 6, 6, 8 |
-| 注意力头数 | 1, 2, 4, 8 |
-| 初始通道数 C | 48 |
-| MEFC专家数 O | 8 |
-| MSFN通道扩展因子 r | 2.66 |
-
-**损失函数**: L1 损失（比 L2 更有利于保留纹理）
-
-### 关键模块
-
-| 组件 | 功能 |
-|------|------|
-| **Top-K稀疏注意力 (TKSA)** | 自适应保留每个查询最关键的K个注意力分数，丢弃无关信息 |
-| **混合尺度前馈网络 (MSFN)** | 3×3和5×5双路径深度可分离卷积交互融合，提取多尺度局部信息 |
-| **专家混合特征补偿器 (MEFC)** | 8个不同感受野的CNN专家并行，为Transformer骨干提供协作式精炼 |
-
-### Top-K稀疏注意力 (TKSA) —— 核心创新
-
-**标准注意力的问题**: softmax输出每行求和为1，即使某些查询-键对完全不相关，仍会被分配非零权重，引入噪声。
-
-**TKSA的解决方案**:
-
-1. **通道级自注意力**: 在通道维度而非空间维度计算，降低复杂度
-2. **Top-K选择算子**: 对注意力矩阵每行只保留最大K个分数，其余置零
-3. **动态稀疏率**: K不是固定值，而是动态学习，范围为 [1/2, 4/5]
+DRSformer 基于**层次化编码器-解码器**（改造自 Restormer）：
 
 ```
-TKSA(Q,K,V) = softmax(Top-K(QK^T/√d)) · V
+输入雨图 I_rain
+  → 3×3 Patch Embedding
+  → 4 层级 STB（Sparse Transformer Block）堆叠
+    ├── 层级 1-3: 下采样（pixel-unshuffle）+ N 个 STB
+    └── 层级 4: N 个 STB + 上采样（pixel-shuffle）
+  → Skip Connection 桥接中间特征
+  → 全局残差: I_derain = F(I_rain) + I_rain
 ```
 
-| 对比维度 | 标准注意力 | TKSA |
-|----------|-----------|------|
-| 参与聚合的token | 全部 | 仅Top-K个最相关 |
-| 噪声敏感度 | 高 | 低 |
-| 高频细节保留 | 差（softmax平滑） | 好 |
+在早期与最终阶段放置 N₀ 个 **MEFC**（混合专家特征补偿器），提供互补特征精炼。
 
-### 混合尺度前馈网络 (MSFN)
+### 3.2 STB（Sparse Transformer Block）
 
-标准FFN只含1×1卷积，无法建模多尺度信息。MSFN引入3×3和5×5两条深度可分离卷积路径，两路特征拼接后交互再分离，形成跨尺度信息融合。
+每个 STB 由两个子模块组成：
 
-### 专家混合特征补偿器 (MEFC)
+$$X_l' = X_{l-1} + \text{TKSA}(\text{LN}(X_{l-1}))$$
 
-**设计动机**: CNN的局部性可弥补Transformer不足，但单一CNN操作不如多种感受野混合。
+$$X_l = X_l' + \text{MSFN}(\text{LN}(X_l'))$$
 
-**8个专家**: 平均池化(3×3)、可分离卷积(1×1/3×3/5×5/7×7)、膨胀卷积(3×3/5×5/7×7)
+即 STB = **TKSA**（Top-K 稀疏注意力）+ **MSFN**（混合尺度前馈网络），均带 LayerNorm 和残差连接。
 
-通过自注意力自适应选择不同专家的权重进行加权聚合。
+### 3.3 TKSA（Top-K 稀疏注意力）— 核心创新
 
----
+#### 设计动机
 
-## 三.5 数学推导过程详解 (Mathematical Walkthrough)
+标准点积注意力对所有 query-key 对密集计算：
 
-> 以下用一个 **4x4 像素雨图** 完整走一遍 DRSformer 的去雨流程，重点展示 TKSA (Top-K Sparse Attention) 的具体数值计算。
+$$\text{Att}(Q,K,V)=\text{softmax}\!\left(\frac{QK^\top}{\sqrt{d}}\right)V$$
 
-### 设定输入
+但 key 中的 token 并不总是与 query 相关，不相关 token 的注意力值仍参与聚合，干扰清晰图像恢复。
 
-假设输入雨图 I (4x4, 单通道简化):
+#### TKSA 的关键设计
 
-$$
-I = \begin{bmatrix}
-100 & 155 & 98 & 102 \\
-148 & 95 & 105 & 150 \\
-97 & 152 & 140 & 96 \\
-103 & 99 & 151 & 104
-\end{bmatrix}_{4 \times 4}
-$$
+1. **通道维度注意力**（继承自 Restormer MDTA）：注意力矩阵为 C×C 而非 (HW)×(HW)，对空间维度线性复杂度
+2. **Q/K/V 编码**：1×1 卷积 + 3×3 深度卷积
+3. **L2 归一化**：对 Q、K 做 `F.normalize(dim=-1)`，保证注意力稳定
+4. **可学习温度**：τ 为可学习参数，形状 `(num_heads,1,1)`
+5. **Top-K 自适应选择**：不使用单一 k，而是**同时构造 4 种不同稀疏度的掩码并加权融合**
 
-> 其中奇数像素约 100 (背景), 偶数像素约 150 (雨纹叠加)
+#### 4 路 Top-K 掩码详解
 
----
+| 掩码 | 保留通道数 k（C 为每头通道数） | 稀疏比例 |
+|------|-------------------------------|---------|
+| mask1 | C/2 | 50% |
+| mask2 | 2C/3 | ~67% |
+| mask3 | 3C/4 | 75% |
+| mask4 | 4C/5 | 80% |
 
-### Step 1: Patch Embedding (重叠分块嵌入)
+对每个掩码：
+```python
+index = torch.topk(attn, k=k_i, dim=-1, largest=True)[1]
+mask.scatter_(-1, index, 1.)
+attn_i = torch.where(mask > 0, attn, torch.full_like(attn, float('-inf')))
+attn_i = attn_i.softmax(dim=-1)    # 非 top-k 位置经 -inf → 0
+out_i = attn_i @ v
+```
 
-**中文标题**: 重叠分块嵌入
-**English Title**: Overlapping Patch Embedding
+#### 门控融合
 
-使用 3x3 卷积, stride=2, padding=1, 将 4x4 图像转为 patch tokens:
+$$\text{out} = \sum_{i=1}^{4} \alpha_i \cdot (\text{softmax}(A_i) \cdot V)$$
 
-$$
-\text{Conv3x3}(I) = \begin{bmatrix}
-101.2 & 108.5 & 103.8 & 107.1 \\
-110.3 & 102.1 & 112.5 & 106.8 \\
-104.6 & 108.2 & 107.3 & 102.5 \\
-106.1 & 103.4 & 109.8 & 105.2
-\end{bmatrix}
-$$
+其中 α_i 为 4 个**可学习标量权重**，均初始化为 0.2。
 
-**stride=2 下采样** → 2x2 空间大小, 每个位置有 C=48 个通道:
+> **核心洞察**：DRSformer 不去"猜"一个最佳稀疏比，而是让 4 个不同 top-k 比例的稀疏注意力并行计算，再由可学习权重自适应加权融合——这既实现了内容稀疏性，又保留了多粒度信息。
 
-$$
-X_{embed} \in \mathbb{R}^{2 \times 2 \times 48}
-$$
+### 3.4 MSFN（混合尺度前馈网络）
 
-**维度变化**: 4x4x1 → 2x2x48 (重叠分块嵌入)
+**动机**：多尺度雨纹之间存在相关性，单尺度卷积不足。
 
----
+**结构**：
+```python
+class MSFN(nn.Module):
+    # project_in: 1×1 Conv, dim → hidden_features*2
+    # 双路并行:
+    #   路径1: 3×3 DWConv → ReLU → chunk → 3×3 DWConv → ReLU
+    #   路径2: 5×5 DWConv → ReLU → chunk → 5×5 DWConv → ReLU
+    # 两路交叉拼接 → project_out: 1×1 Conv → dim
+```
 
-### Step 2: Stage 1 - 编码器处理 (4xSTB + TKSA)
+**数据流**：
+```
+x → 1×1 Conv → split → [x1, x2]
+x1 → 3×3 DWConv → ReLU → chunk(2) → [a1, a2]
+x2 → 5×5 DWConv → ReLU → chunk(2) → [b1, b2]
+→ cat([a1, b1]) → 3×3 DWConv → ReLU  } cat → 1×1 Conv → out
+→ cat([a2, b2]) → 5×5 DWConv → ReLU  }
+```
 
-**中文标题**: 第一阶段编码器处理
-**English Title**: Stage 1 Encoder Processing (4 STB Blocks)
+### 3.5 MEFC（混合专家特征补偿器）
 
-Stage 1 包含 4 个 STB (Sparse Transformer Block), 每个 STB 的核心是 TKSA。
+**动机**：联合探索数据稀疏性与内容稀疏性。
 
-#### TKSA 详细计算示例
+**专家集合**（8 种并行 CNN 操作）：
+- 可分离卷积：1×1, 3×3, 5×5, 7×7
+- 空洞卷积：3×3, 5×5, 7×7
+- 平均池化：3×3
 
-假设当前特征图空间大小为 2x2 (简化为 4 个 token), 每个通道维度 d=4。
+**与传统 MoE 的区别**：不附加外部门控网络，而是用（自）注意力作为专家切换器，根据输入自适应选择不同表征的重要性。
 
-**通道级自注意力**: 在通道维度计算 (而非空间维度):
+**结构**：
+- `OALayer`：GAP → FC → ReLU → FC → softmax，生成专家权重
+- `GroupOLs`：按权重对各专家操作做加权组合
 
-设 Q, K, V 均来自输入特征 X (4 个通道, 4 个空间位置):
+> **注意**：Rain200L 与 SPA-Data 不使用 MEFC（因雨纹较简单），需改用 `DRSformer_arch_200L+SPA.py`。
 
-$$
-Q = \begin{bmatrix} 0.8 & 0.3 & 0.6 & 0.9 \\ 0.2 & 0.7 & 0.1 & 0.5 \\ 0.4 & 0.6 & 0.8 & 0.3 \\ 0.7 & 0.2 & 0.5 & 0.4 \end{bmatrix}_{4 \times 4}
-$$
+## 三.5 数学推导过程详解
 
-$$
-K = \begin{bmatrix} 0.9 & 0.4 & 0.5 & 0.7 \\ 0.3 & 0.8 & 0.2 & 0.6 \\ 0.5 & 0.7 & 0.9 & 0.2 \\ 0.6 & 0.3 & 0.4 & 0.8 \end{bmatrix}_{4 \times 4}
-$$
+### 通道注意力降复杂度
 
-$$
-V = \begin{bmatrix} 1.2 & 0.5 & 0.8 & 1.0 \\ 0.4 & 1.1 & 0.3 & 0.7 \\ 0.6 & 0.9 & 1.2 & 0.4 \\ 0.9 & 0.3 & 0.7 & 0.8 \end{bmatrix}_{4 \times 4}
-$$
+标准空间自注意力复杂度：
+$$O(N^2 \cdot d), \quad N = H \times W$$
 
-**计算注意力矩阵** ($\sqrt{d} = 2$):
+DRSformer 通道注意力复杂度：
+$$O(C^2 \cdot N)$$
 
-$$
-A_{raw} = \frac{QK^T}{\sqrt{d}} = \frac{1}{2} \begin{bmatrix} 0.8 & 0.3 & 0.6 & 0.9 \\ 0.2 & 0.7 & 0.1 & 0.5 \\ 0.4 & 0.6 & 0.8 & 0.3 \\ 0.7 & 0.2 & 0.5 & 0.4 \end{bmatrix} \begin{bmatrix} 0.9 & 0.3 & 0.5 & 0.6 \\ 0.4 & 0.8 & 0.7 & 0.3 \\ 0.5 & 0.2 & 0.9 & 0.4 \\ 0.7 & 0.6 & 0.2 & 0.8 \end{bmatrix}
-$$
+当 C << N（如 C=128, N=256×256=65536）时，通道注意力远比空间注意力高效。
 
-$$
-= \frac{1}{2} \begin{bmatrix} 1.72 & 1.15 & 1.28 & 1.31 \\ 0.83 & 1.00 & 0.74 & 0.73 \\ 1.12 & 0.92 & 1.41 & 0.82 \\ 1.02 & 0.69 & 0.87 & 0.71 \end{bmatrix}
-$$
-
-**标准 Softmax 注意力矩阵** (每行求和为1):
-
-$$
-A_{std} = \text{softmax}(A_{raw}) = \begin{bmatrix}
-0.274 & 0.215 & 0.225 & 0.286 \\
-0.263 & 0.284 & 0.231 & 0.222 \\
-0.260 & 0.233 & 0.281 & 0.226 \\
-0.291 & 0.221 & 0.249 & 0.239
-\end{bmatrix}
-$$
-
-> 注意: 标准注意力中即使某些 Q-K 对完全不相关, softmax 后仍分配了 ~22% 的权重。
-
----
-
-### Step 3: Top-K 稀疏化 (核心操作)
-
-**中文标题**: Top-K 稀疏注意力计算
-**English Title**: Top-K Sparse Attention Computation
-
-设定 K=3 (保留每行 Top-3, 丢弃最小的 1 个):
-
-$$
-A_{raw} = \begin{bmatrix}
-\mathbf{1.72} & 1.15 & 1.28 & \mathbf{1.31} \\
-0.83 & \mathbf{1.00} & 0.74 & 0.73 \\
-1.12 & 0.92 & \mathbf{1.41} & 0.82 \\
-\mathbf{1.02} & 0.69 & 0.87 & 0.71
-\end{bmatrix}
-$$
-
-**Top-3 选择** (每行保留最大3个, 最小1个置零):
-
-$$
-A_{sparse} = \begin{bmatrix}
-1.72 & 1.15 & \mathbf{0} & 1.31 \\
-0.83 & 1.00 & 0.74 & \mathbf{0} \\
-1.12 & 0.92 & 1.41 & \mathbf{0} \\
-1.02 & \mathbf{0} & 0.87 & 0.71
-\end{bmatrix}
-$$
-
-> 第1行丢弃 1.28 (第3列), 第2行丢弃 0.73 (第4列), 第3行丢弃 0.82 (第4列), 第4行丢弃 0.69 (第2列)
-
-**稀疏 Softmax** (只对非零元素归一化):
-
-$$
-A_{tk} = \text{softmax}(A_{sparse}) = \begin{bmatrix}
-0.381 & 0.310 & \mathbf{0} & 0.309 \\
-0.320 & 0.371 & 0.309 & \mathbf{0} \\
-0.318 & 0.294 & 0.388 & \mathbf{0} \\
-0.391 & \mathbf{0} & 0.305 & 0.304
-\end{bmatrix}
-$$
-
-**输出计算**:
-
-$$
-\text{Output} = A_{tk} \cdot V = \begin{bmatrix}
-0.381 & 0.310 & 0 & 0.309 \\
-0.320 & 0.371 & 0.309 & 0 \\
-0.318 & 0.294 & 0.388 & 0 \\
-0.391 & 0 & 0.305 & 0.304
-\end{bmatrix} \begin{bmatrix} 1.2 & 0.5 & 0.8 & 1.0 \\ 0.4 & 1.1 & 0.3 & 0.7 \\ 0.6 & 0.9 & 1.2 & 0.4 \\ 0.9 & 0.3 & 0.7 & 0.8 \end{bmatrix}
-$$
+### Top-K 稀疏选择
 
-$$
-= \begin{bmatrix}
-0.381(1.2)+0.310(0.4)+0(0.6)+0.309(0.9) & \cdots \\
-0.320(1.2)+0.371(0.4)+0.309(0.6)+0(0.9) & \cdots \\
-\vdots & \ddots
-\end{bmatrix}
-$$
+给定注意力矩阵 $A \in \mathbb{R}^{C \times C}$，对第 i 个掩码：
 
-$$
-= \begin{bmatrix}
-0.457+0.124+0+0.278 & 0.191+0.341+0+0.093 & 0.305+0.093+0+0.216 & 0.381+0.217+0+0.247 \\
-0.384+0.148+0.185+0 & 0.160+0.408+0.278+0 & 0.256+0.111+0.371+0 & 0.320+0.260+0.124+0 \\
-0.382+0.118+0.233+0 & 0.159+0.323+0.349+0 & 0.254+0.088+0.466+0 & 0.318+0.206+0.155+0 \\
-0.469+0+0.184+0.274 & 0.196+0+0.275+0.243 & 0.313+0+0.214+0.243 \\
-\end{bmatrix}
-$$
+$$M_i = \text{TopK}(A, k_i)$$
 
-$$
-= \begin{bmatrix}
-0.859 & 0.625 & 0.614 & 0.845 \\
-0.717 & 0.846 & 0.738 & 0.704 \\
-0.733 & 0.831 & 0.808 & 0.679 \\
-0.927 & 0.714 & 0.770 & 0.800
-\end{bmatrix}_{4 \times 4}
-$$
+$$A_i[j,k] = \begin{cases} A[j,k] & \text{if } (j,k) \in M_i \\ -\infty & \text{otherwise} \end{cases}$$
 
-> 对比标准注意力输出 (使用全注意力矩阵), TKSA 输出的差异主要来自被置零的列权重。
+$$\hat{A}_i = \text{softmax}(A_i, \text{dim}=-1)$$
 
-**维度变化**: 2x2xC → 2x2xC (空间维度不变)
+$$\text{out} = \sum_{i=1}^{4} \alpha_i \cdot (\hat{A}_i \cdot V)$$
 
----
+**数值示例**（C=8, 仅展示 mask1, k=4）：
+```
+原始注意力行: [0.3, 0.1, 0.25, 0.05, 0.15, 0.08, 0.02, 0.05]
+Top-4 索引:     ✓              ✓      ✓             ✓
+掩码后:       [0.3, -∞, 0.25, -∞, 0.15, -∞, -∞, -∞]
+softmax:      [0.42, 0, 0.32, 0, 0.18, 0, 0, 0, 0]
+→ 不相关 token 权重归零，聚合更聚焦
+```
 
-### Step 4: MSFN 混合尺度前馈网络
+### 损失函数
 
-**中文标题**: 混合尺度前馈处理
-**English Title**: Mixed-Scale Feed-Forward Network Processing
+$$\mathcal{L} = \|I_{derain} - I_{gt}\|_1$$
 
-TKSA 输出后进入 MSFN, 双路径深度可分离卷积:
+简洁的 L1 损失，全局残差连接：$I_{derain} = F(I_{rain}) + I_{rain}$
 
-**路径1**: 3x3 DWConv → 1x1 Conv
-**路径2**: 5x5 DWConv → 1x1 Conv (用 3x3+padding=2 模拟)
+## 为什么这样做
 
-以通道 c=1, 空间 2x2 为例 (3x3 卷积需要 padding):
-
-$$
-F_{in} = \begin{bmatrix} 0.859 & 0.625 \\ 0.733 & 0.831 \end{bmatrix}_{2 \times 2}
-$$
-
-3x3 DWConv (padding=1, kernel 简化为):
-$$
-K_{3x3} = \begin{bmatrix} 0.1 & 0.2 & 0.1 \\ 0.2 & 0.4 & 0.2 \\ 0.1 & 0.2 & 0.1 \end{bmatrix} \quad (\text{高斯近似})
-$$
-
-$$
-F_{path1} = K_{3x3} * F_{in} = \begin{bmatrix}
-0.1(0)+0.2(0.859)+0.1(0.625)+0.2(0)+0.4(0.859)+0.2(0.625)+0.1(0)+0.2(0.733)+0.1(0.831) \\
-0.2(0.859)+0.4(0.625)+0.2(0)+0.1(0.859)+0.2(0.625)+0.1(0)+0.2(0.733)+0.4(0.831)+0.2(0) \\
-0.2(0)+0.4(0.859)+0.2(0.625)+0.1(0)+0.2(0.733)+0.1(0.831)+0.2(0)+0.4(0.733)+0.2(0.831) \\
-0.1(0.859)+0.2(0)+0.1(0.625)+0.2(0.733)+0.4(0.831)+0.2(0)+0.1(0.733)+0.2(0)+0.1(0.831)
-\end{bmatrix}_{(简化示意)}
-$$
-
-两路径拼接后经交互分离再融合:
-
-$$
-F_{msfn} = \text{Interact}(F_{path1} \| F_{path2}) \in \mathbb{R}^{2 \times 2 \times C}
-$$
-
----
-
-### Step 5: 四阶段编码器-解码器流程
-
-**中文标题**: 四阶段编解码器处理
-**English Title**: 4-Stage Encoder-Decoder Pipeline
-
-完整四阶段的维度变化:
-
-| Stage | 分辨率 | 通道数 | STB数量 | 注意力头数 |
-|-------|--------|--------|---------|-----------|
-| Stage 1 | H/2 x W/2 = 2x2 | 48 | 4 | 1 |
-| Stage 2 | H/4 x W/4 = 1x1 | 96 (48x2) | 4 | 2 |
-| Stage 3 | H/8 x W/8 | 192 (48x4) | 6 | 4 |
-| Stage 4 | H/16 x W/16 | 384 (48x8) | 6 | 8 |
-
-> 实际运行中 4x4 输入在 Stage 3-4 已很小, 这里示意主要流程。
-
-**解码器**: 逐步上采样, 同时使用跳跃连接融合编码器特征:
-
-$$
-\text{Stage3 Decoder} \xrightarrow{\text{Upsample}} 2 \times 2 \times 96 \xrightarrow{+ \text{Skip}} 2 \times 2 \times 96
-$$
-
----
-
-### Step 6: MEFC 专家混合特征补偿
-
-**中文标题**: 专家混合特征补偿
-**English Title**: Mixture-of-Experts Feature Compensation
-
-8 个 CNN 专家并行处理, 自注意力选择权重:
-
-$$
-\text{Expert}_i = \text{Conv}_i(F_{stb}), \quad i = 1, \ldots, 8
-$$
-
-以 3x3 空间上单通道为例, 8 个专家输出:
-
-$$
-E = [e_1, e_2, e_3, e_4, e_5, e_6, e_7, e_8] = [0.82, 0.65, 0.91, 0.73, 0.88, 0.70, 0.85, 0.78]
-$$
-
-**注意力权重选择** (8 个专家的自适应权重):
-
-$$
-w = \text{softmax}([0.3, -0.2, 0.8, 0.1, 0.5, -0.1, 0.4, 0.2]) = [0.108, 0.054, 0.218, 0.079, 0.145, 0.065, 0.130, 0.101]
-$$
-
-$$
-F_{mefc} = \sum_{i=1}^{8} w_i \cdot e_i = 0.108(0.82) + 0.054(0.65) + 0.218(0.91) + \cdots = 0.807
-$$
-
-> Expert 3 (5x5 膨胀卷积) 权重最高 (0.218), 说明大感受野对雨纹去除最有帮助。
-
----
-
-### Step 7: 全局残差与输出
-
-**中文标题**: 全局残差与最终输出
-**English Title**: Global Residual and Final Output
-
-$$
-\hat{J} = I + \text{Decoder\_Output} = \begin{bmatrix}
-100 & 155 & 98 & 102 \\
-148 & 95 & 105 & 150 \\
-97 & 152 & 140 & 96 \\
-103 & 99 & 151 & 104
-\end{bmatrix} + \begin{bmatrix}
--1.2 & 1.5 & -0.8 & 1.1 \\
-0.3 & -2.0 & 0.5 & 0.8 \\
--0.7 & 1.2 & 0.3 & -1.5 \\
-0.1 & -0.5 & 0.8 & -0.2
-\end{bmatrix}
-$$
-
-$$
-= \begin{bmatrix}
-98.8 & 156.5 & 97.2 & 103.1 \\
-148.3 & 93.0 & 105.5 & 150.8 \\
-96.3 & 153.2 & 140.3 & 94.5 \\
-103.1 & 98.5 & 151.8 & 103.8
-\end{bmatrix}_{4 \times 4}
-$$
-
-> 残差网络学习雨纹模式, 从输入中减去, 得到干净图像。
-
----
-
-### 为什么这样做 (Why This Design)
-
-| 设计选择 | 原因 |
-|----------|------|
-| **Top-K 稀疏注意力** | 雨纹去除中, 大部分空间位置与当前查询不相关。保留 Top-K 可以丢弃无关注意力噪声, 让模型聚焦真正相关的区域, 同时减少约 40% 的计算量 |
-| **通道级自注意力** | 空间级自注意力对 HxW 位置计算复杂度 O(H^2W^2); 通道级只需 O(C^2), 在图像恢复的 C << HW 场景下更高效 |
-| **动态稀疏率 K** | 不同图像区域需要的注意力密度不同。复杂纹理区域需要更多注意力连接, 平坦区域可以更稀疏。动态 K 让模型自适应调整 |
-| **MSFN 双尺度 FFN** | 雨纹宽窄不同, 需要多尺度感受野。3x3 捕捉细雨丝, 5x5 捕捉粗雨纹, 两路径交互互补 |
-| **MEFC 专家混合** | Transformer 长于全局建模但弱于局部细节, CNN 恰好相反。8 个不同感受野的 CNN 专家为 Transformer 补充多尺度局部信息 |
-| **层次化编解码器** | 从粗到细逐步恢复, 浅层 Stage 看全局上下文, 深层 Stage 精细去除雨纹, 符合"先易后难"的认知规律 |
-
-![DRSformer 流程图](assets/process-drsformer.png)
-
----
+| 设计选择 | 原因 | 不这样做的后果 |
+|---------|------|---------------|
+| 通道注意力而非空间注意力 | 空间注意力 O(N²) 对大图不可行 | 显存爆炸、计算缓慢 |
+| Top-K 稀疏而非密集注意力 | 不相关 token 的注意力值干扰恢复 | 噪声特征被聚合，恢复质量下降 |
+| 4 路不同 k 值融合 | 不同稀疏度捕捉不同粒度的相关性 | 单一 k 值无法适应不同雨纹密度 |
+| 可学习门控权重 | 让网络自适应选择最佳稀疏比组合 | 固定权重无法适应不同输入 |
+| MSFN 双尺度（3×3 + 5×5） | 多尺度雨纹需要多尺度感受野 | 单尺度 FFN 遗漏尺度间相关性 |
+| MEFC 混合专家 | 不同雨纹区域需要不同处理策略 | 单一卷积核无法适应多变的雨纹 |
+| MEFC 仅在重雨数据集使用 | 轻雨数据集雨纹简单，MEFC 增加冗余 | 简单数据上过拟合 |
+| L2 归一化 Q/K | 防止注意力值过大导致不稳定 | 注意力分布过于尖锐或平坦 |
+| 可学习温度 τ | 自适应调节注意力锐度 | 固定温度无法适应不同输入 |
 
 ## 四、实验与效果
 
-| 数据集 | 指标 | DRSformer | 对比 |
-|--------|------|-----------|------|
-| Rain200H | PSNR | **41.23 dB** | IDT: 40.74 |
-| Rain200L | PSNR | **32.18 dB** | Restormer: 32.00 |
-| SPA-Data | PSNR | **48.53 dB** | SOTA |
-| Real-world | NIQE | **4.095** | 最低（最优） |
+### 数据集
 
----
+| 数据集 | 训练 | 测试 | 类型 |
+|--------|------|------|------|
+| Rain200L | 1800 | 200 | 合成轻雨 |
+| Rain200H | 1800 | 200 | 合成重雨 |
+| DID-Data | 12000 | 1200 | 多密度多方向 |
+| DDN-Data | 12600 | 1400 | 多密度 |
+| SPA-Data | 638492 | 1000 | 真实世界大雨 |
 
-## 五、与各方法的对比
+### 评估指标
 
-| 维度 | Restormer (2022) | IDT (2022) | **DRSformer (2023)** |
-|------|-----------------|------------|---------------------|
-| 注意力类型 | 通道自注意力 | 窗口+空间双Transformer | Top-K稀疏注意力 |
-| 稀疏性 | 无 | 无 | 内容稀疏 |
-| 多尺度建模 | GDFN | 有 | MSFN跨尺度交互 |
-| 额外补偿 | 无 | 无 | MEFC CNN专家 |
-| 参数量 | 26.1M | 30.2M | 33.7M |
+- **有参考**：PSNR / SSIM，在 YCbCr 空间的 Y 通道计算
+- **无参考**：NIQE / BRISQUE（Internet-Data 随机取 20 张真实雨图）
 
-| 维度 | DAWN+ | DRSformer |
-|------|-------|-----------|
-| 核心思路 | 小波域方向感知 | Transformer稀疏注意力 |
-| 数据依赖 | 需先验（雨纹方向性） | 纯数据驱动 |
-| 效率 | 极轻量 (1.9M, 0.067s) | 较重 (33.7M, 1.328s) |
-| 适用场景 | 资源受限、实时部署 | 追求极致性能 |
+### 主要结果
 
----
+DRSformer 在全部 5 个去雨基准上达到 SOTA：
 
-## 六、不足之处
+- 在**平均 PSNR 上比并发方法 IDT 高约 0.4 dB**
+- 在 DID-Data 与 DDN-Data 上提升尤为显著，表明能正确处理多种空间变化的雨纹
+- 在 SPA-Data（真实世界）上取得最高 PSNR/SSIM，展示泛化优势
+- 无参考指标 NIQE/BRISQUE 均为最优，感知质量更好
 
-| 不足 | 详细说明 |
-|------|----------|
-| **模型效率有限** | 33.7M参数，242.9G FLOPs（256×256），推理速度较慢 |
-| **稀疏率选择依赖实验** | K范围 [1/2, 4/5] 通过实验确定，缺乏理论指导 |
-| **动态稀疏实现复杂** | 与固定K不同，TKSA的K是动态学习的 |
+### 对比方法
 
----
+| 类型 | 方法 |
+|------|------|
+| 先验类 | DSC, GMM |
+| CNN 类 | DDN, RESCAN, PReNet, MSPFN, RCDNet, MPRNet, DualGCN, SPDNet |
+| Transformer 类 | Uformer, Restormer, IDT |
+
+### 消融实验
+
+| 消融维度 | 结论 |
+|---------|------|
+| Top-K 选择有效性 | HPF 可视化显示 top-k 能重建更精细特征，减少长程不相关上下文干扰 |
+| MSFN vs 其他 FFN | 对比常规 FN、DFN、GDFN（Restormer 所用），MSFN 因多尺度信息更优 |
+| MEFC 有效性 | 消融验证 MEFC 对最终性能的贡献（重雨数据集上） |
+| Top-K 候选比例 | 4 档（C/2, 2C/3, 3C/4, 4C/5）本身就是多粒度稀疏的消融设计 |
+
+## 五、对比总结
+
+| 维度 | DRSformer | Restormer | IDT | Uformer | MPRNet |
+|------|-----------|-----------|-----|---------|--------|
+| 架构类型 | 稀疏 Transformer | 通道注意力 Transformer | 物理引导 Transformer | U-Net Transformer | 多阶段 CNN |
+| 注意力机制 | TKSA（4路 Top-K） | MDTA（通道注意力） | 物理引导注意力 | 窗口注意力 | SE 通道注意力 |
+| FFN | MSFN（3×3+5×5） | GDFN（门控深度卷积） | 标准 | 标准 | N/A |
+| 去雨 SOTA | ✅ 最优 | 次优 | 第三 | 中等 | 中等 |
+| 核心优势 | 自适应稀疏注意力 | 高效通道注意力 | 物理可解释 | 局部-全局兼顾 | 多阶段渐进 |
+| 模型复杂度 | 较高 | 较高 | 中等 | 中等 | 中等 |
+
+> DRSformer 的核心贡献在于**首次将可学习 Top-K 稀疏注意力引入图像恢复**，通过 4 路不同稀疏度的自适应融合，在保持计算效率的同时显著提升恢复质量。后续 DAWN+ 等工作在达到竞争性能的同时大幅降低了参数量。
+
+## 六、不足与局限
+
+1. **模型复杂度较高**：论文明确承认模型复杂度较高，未来计划通过剪枝或蒸馏进行模型压缩
+2. **4 路并行注意力开销**：同时计算 4 个 Top-K 掩码的注意力带来额外显存和计算开销
+3. **Top-K 算子不可微**：`torch.topk` 的索引选择不可微，需用 scatter 近似梯度传播
+4. **MEFC 仅适用于重雨**：轻雨数据集（Rain200L）和 SPA-Data 不使用 MEFC，需切换架构
+5. **基于 Restormer 改造**：架构受限于 Restormer 的层次化设计，灵活性有限
 
 ## 七、一句话总结
 
-> DRSformer 发现标准Transformer的稠密注意力会把不相关的噪声也聚合进来，于是设计了Top-K选择算子，让每个查询只关注最相关的K个键，从而让特征聚合更纯净、去雨效果更好。核心贡献是把"稀疏性"以内容自适应的方式引入了图像去雨，同时用多尺度FFN和CNN专家补偿进一步提升了局部细节恢复能力。
+DRSformer 通过可学习 Top-K 稀疏注意力（4 路不同稀疏度自适应融合）+ 混合尺度前馈网络 + 混合专家特征补偿器，在 5 个去雨基准上达到 SOTA，是稀疏注意力在图像恢复领域的开创性工作。
+
+## 附录
+
+### TKSA 伪代码
+
+```python
+class TKSA(nn.Module):
+    def __init__(self, dim, num_heads, bias):
+        self.num_heads = num_heads
+        self.temperature = nn.Parameter(torch.ones(num_heads, 1, 1))
+        # 4 个可学习门控权重，初始化为 0.2
+        self.attn1 = nn.Parameter(0.2)
+        self.attn2 = nn.Parameter(0.2)
+        self.attn3 = nn.Parameter(0.2)
+        self.attn4 = nn.Parameter(0.2)
+
+    def forward(self, x):
+        q = F.normalize(self.q_dwconv(self.q(x)), dim=-1)
+        k = F.normalize(self.k_dwconv(self.k(x)), dim=-1)
+        v = self.v_dwconv(self.v(x))
+
+        attn = (q @ k.transpose(-2, -1)) * self.temperature
+
+        C = attn.shape[-1]
+        outputs = []
+
+        for k_val, alpha in [(C//2, self.attn1), (2*C//3, self.attn2),
+                              (3*C//4, self.attn3), (4*C//5, self.attn4)]:
+            # Top-K 选择
+            index = torch.topk(attn, k=k_val, dim=-1, largest=True)[1]
+            mask = torch.zeros_like(attn).scatter_(-1, index, 1.)
+            attn_sparse = torch.where(mask > 0, attn, torch.full_like(attn, float('-inf')))
+            attn_sparse = attn_sparse.softmax(dim=-1)
+            out_i = attn_sparse @ v
+            outputs.append(alpha * out_i)
+
+        out = sum(outputs)
+        out = self.project_out(out)
+        return out
+
+### MSFN 伪代码
+
+class MSFN(nn.Module):
+    def forward(self, x):
+        x = self.project_in(x)           # 1×1 Conv → hidden*2
+        x1, x2 = x.chunk(2, dim=1)
+
+        # 路径1: 3×3
+        x1 = self.dwconv3x3(x1)
+        x1 = F.relu(x1)
+        x1_a, x1_b = x1.chunk(2, dim=1)
+
+        # 路径2: 5×5
+        x2 = self.dwconv5x5(x2)
+        x2 = F.relu(x2)
+        x2_a, x2_b = x2.chunk(2, dim=1)
+
+        # 交叉拼接
+        out1 = F.relu(self.dwconv3x3_1(torch.cat([x1_a, x2_a], dim=1)))
+        out2 = F.relu(self.dwconv5x5_1(torch.cat([x1_b, x2_b], dim=1)))
+        out = torch.cat([out1, out2], dim=1)
+
+        out = self.project_out(out)      # 1×1 Conv → dim
+        return out
+```

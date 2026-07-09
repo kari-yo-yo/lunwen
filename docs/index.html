@@ -2348,8 +2348,8 @@ const DEFAULT_NEW_PAPERS = [
     painPoints: '传统去雨方法在空间和像素域处理困难；雨纹具有方向性和多尺度特性，需要特殊建模。',
     method: '小波变换分解 + 方向感知注意力(建模雨纹方向) + 互表示学习(雨层/背景层分离)。',
     scenarios: '单图像去雨、恶劣天气下的视觉增强、自动驾驶等 outdoor 场景。',
-    arxiv: '待补充', arxivUrl: '',
-    code: '', notes: '', archImage: 'reading-notes/assets/arch-DAWN-plus(1).jpg', date: '2025'
+    arxiv: 'DOI:10.1109/TNNLS.2025.3587248', arxivUrl: 'https://doi.org/10.1109/TNNLS.2025.3587248',
+    code: 'https://github.com/kuijiang94/DAWN-plus', notes: 'reading-notes/dawn+.md', archImage: 'reading-notes/assets/arch-DAWN-plus(1).jpg', date: '2025'
   },
   {
     title: 'Learning A Sparse Transformer Network for Effective Image Deraining',
@@ -2360,8 +2360,8 @@ const DEFAULT_NEW_PAPERS = [
     painPoints: '标准Transformer计算复杂度高；雨纹在空间分布上具有稀疏性，需要针对性设计。',
     method: '稀疏自注意力机制(只关注关键位置) + 多尺度特征融合 + Transformer编码器-解码器架构。',
     scenarios: '单图像去雨、图像恢复、恶劣天气视觉增强。',
-    arxiv: 'arXiv:2303.12345', arxivUrl: 'https://arxiv.org/abs/2303.12345',
-    code: '', notes: '', archImage: 'reading-notes/assets/arch-DRSformer-new.jpg', date: '2023'
+    arxiv: 'arXiv:2303.11950', arxivUrl: 'https://arxiv.org/abs/2303.11950',
+    code: 'https://github.com/cschenxiang/DRSformer', notes: 'reading-notes/drsformer.md', archImage: 'reading-notes/assets/arch-DRSformer-new.jpg', date: '2023'
   },
   {
     title: 'Single Image Dehazing Based on Detail-Enhanced Convolution and Content-Guided Attention',
@@ -2372,8 +2372,8 @@ const DEFAULT_NEW_PAPERS = [
     painPoints: '传统去雾方法容易产生伪影和细节丢失；雾天图像的退化不均匀，需要内容感知的处理策略。',
     method: '细节增强卷积(高频细节保留) + 内容引导注意力(自适应关注重要区域) + 端到端去雾网络。',
     scenarios: '单图像去雾、户外视觉增强、自动驾驶、遥感图像处理。',
-    arxiv: '待补充', arxivUrl: '',
-    code: '', notes: '', archImage: 'reading-notes/assets/arch-DEA-Net-new.jpg', date: '2024'
+    arxiv: 'arXiv:2301.04805', arxivUrl: 'https://arxiv.org/abs/2301.04805',
+    code: 'https://github.com/cecret3350/DEA-Net', notes: 'reading-notes/DEA-Net.md', archImage: 'reading-notes/assets/arch-DEA-Net-new.jpg', date: '2024'
   },
   {
     title: 'MFFDNet: Single Image Deraining via Dual-Channel Mixed Feature Fusion',
@@ -3775,6 +3775,11 @@ async function init() {
       if (!existingTitles.has(newP.title)) {
         allPapers.push(newP);
       }
+    }
+
+    // Ensure notesUrl is set for papers that have notes but no notesUrl
+    for (const p of allPapers) {
+      if (!p.notesUrl && p.notes) p.notesUrl = p.notes;
     }
 
     applySavedStatus();
