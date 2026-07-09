@@ -2241,7 +2241,7 @@ const DEFAULT_NEW_PAPERS = [
     method: 'Squeeze-and-Excitation 模块：全局平均池化(Squeeze) → 全连接降维/升维(Excitation) → 通道权重重标定。',
     scenarios: '图像分类、目标检测、语义分割等需要通道特征增强的CV任务。',
     arxiv: 'arXiv:1709.01507', arxivUrl: 'https://arxiv.org/abs/1709.01507',
-    code: '', notes: '', archImage: '', date: '2018'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-SENet.jpg', date: '2018'
   },
   {
     title: 'Convolutional Block Attention Module',
@@ -2253,7 +2253,7 @@ const DEFAULT_NEW_PAPERS = [
     method: 'CBAM = 通道注意力模块(MaxPool+AvgPool→MLP) + 空间注意力模块(通道维度AvgPool+MaxPool→Conv)。',
     scenarios: '图像分类、目标检测、语义分割等需要多维度注意力增强的任务。',
     arxiv: 'arXiv:1807.06521', arxivUrl: 'https://arxiv.org/abs/1807.06521',
-    code: '', notes: '', archImage: '', date: '2018'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-CBAM.jpg', date: '2018'
   },
   {
     title: 'Concurrent Spatial and Channel Squeeze & Excitation',
@@ -2265,7 +2265,7 @@ const DEFAULT_NEW_PAPERS = [
     method: 'SCSE = cSE(通道SE) + sSE(空间SE) 并行执行，输出相加实现空间和通道的联合注意力。',
     scenarios: '医学图像分割、语义分割等像素级预测任务。',
     arxiv: 'arXiv:1803.02579', arxivUrl: 'https://arxiv.org/abs/1803.02579',
-    code: '', notes: '', archImage: '', date: '2018'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-SCSE.jpg', date: '2018'
   },
   {
     title: 'Non-local Neural Networks',
@@ -2277,7 +2277,7 @@ const DEFAULT_NEW_PAPERS = [
     method: 'Non-local块：计算特征图中任意两个位置之间的相似度(嵌入高斯/点积/拼接)，生成全局注意力响应。',
     scenarios: '视频动作识别、目标检测、语义分割、姿态估计等需要长距离依赖建模的任务。',
     arxiv: 'arXiv:1711.07971', arxivUrl: 'https://arxiv.org/abs/1711.07971',
-    code: '', notes: '', archImage: '', date: '2018'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-Non-local.jpg', date: '2018'
   },
   {
     title: 'Gather-Excitation Network',
@@ -2289,7 +2289,7 @@ const DEFAULT_NEW_PAPERS = [
     method: 'Gather-Excitation模块：空间 gather 操作(扩展感受野) → 通道 excitation(类似SE的降维/升维)。',
     scenarios: '图像分类、场景理解等需要结合空间上下文的通道增强任务。',
     arxiv: 'arXiv:1810.12348', arxivUrl: 'https://arxiv.org/abs/1810.12348',
-    code: '', notes: '', archImage: '', date: '2018'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-GE-Net.jpg', date: '2018'
   },
   {
     title: 'GCNet: Non-local Networks Meet Squeeze-Excitation Networks and Beyond',
@@ -2301,7 +2301,7 @@ const DEFAULT_NEW_PAPERS = [
     method: 'Global Context块：全局注意力池化(简化NL) → 特征变换(BN+1x1Conv) → 通道门控(SE式Excitation)。',
     scenarios: '图像分类、目标检测、实例分割等需要全局上下文建模的通用CV任务。',
     arxiv: 'arXiv:1904.11492', arxivUrl: 'https://arxiv.org/abs/1904.11492',
-    code: '', notes: '', archImage: '', date: '2019'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-GCNet.jpg', date: '2019'
   },
   {
     title: 'Dual Attention Network for Scene Segmentation',
@@ -2313,7 +2313,7 @@ const DEFAULT_NEW_PAPERS = [
     method: 'Position Attention Module(空间自注意力) + Channel Attention Module(通道自注意力) + 特征融合。',
     scenarios: '语义分割、场景解析等需要密集像素级预测和上下文聚合的任务。',
     arxiv: 'arXiv:1809.02983', arxivUrl: 'https://arxiv.org/abs/1809.02983',
-    code: '', notes: '', archImage: '', date: '2019'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-DANet.jpg', date: '2019'
   },
   {
     title: 'FcaNet: Frequency Channel Attention Networks',
@@ -2325,7 +2325,7 @@ const DEFAULT_NEW_PAPERS = [
     method: '2D DCT变换提取多频谱特征 → 选择最重要的频率分量 → 通道注意力机制(类似SE的Excitation)。',
     scenarios: '图像分类、目标检测等需要更精细通道特征建模的通用视觉任务。',
     arxiv: 'arXiv:2012.11879', arxivUrl: 'https://arxiv.org/abs/2012.11879',
-    code: '', notes: '', archImage: '', date: '2021'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-FcaNet.jpg', date: '2021'
   },
   {
     title: 'Kernel Selection Fusion Attention (Neural Networks 2025)',
@@ -2337,7 +2337,7 @@ const DEFAULT_NEW_PAPERS = [
     method: '多尺度核选择分支 + 融合注意力门控 + 自适应权重分配机制。',
     scenarios: '复杂场景下的图像恢复、分割和检测任务。',
     arxiv: '待补充', arxivUrl: '',
-    code: '', notes: '', archImage: '', date: '2025'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-KSFA.jpg', date: '2025'
   },
   {
     title: 'DAWN+: Wavelet-based Image Deraining Meets Direction-Aware Attention and Mutual Representation',
@@ -2349,7 +2349,7 @@ const DEFAULT_NEW_PAPERS = [
     method: '小波变换分解 + 方向感知注意力(建模雨纹方向) + 互表示学习(雨层/背景层分离)。',
     scenarios: '单图像去雨、恶劣天气下的视觉增强、自动驾驶等 outdoor 场景。',
     arxiv: '待补充', arxivUrl: '',
-    code: '', notes: '', archImage: '', date: '2025'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-DAWN-plus(1).jpg', date: '2025'
   },
   {
     title: 'Learning A Sparse Transformer Network for Effective Image Deraining',
@@ -2361,7 +2361,7 @@ const DEFAULT_NEW_PAPERS = [
     method: '稀疏自注意力机制(只关注关键位置) + 多尺度特征融合 + Transformer编码器-解码器架构。',
     scenarios: '单图像去雨、图像恢复、恶劣天气视觉增强。',
     arxiv: 'arXiv:2303.12345', arxivUrl: 'https://arxiv.org/abs/2303.12345',
-    code: '', notes: '', archImage: '', date: '2023'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-DRSformer-new.jpg', date: '2023'
   },
   {
     title: 'Single Image Dehazing Based on Detail-Enhanced Convolution and Content-Guided Attention',
@@ -2373,7 +2373,7 @@ const DEFAULT_NEW_PAPERS = [
     method: '细节增强卷积(高频细节保留) + 内容引导注意力(自适应关注重要区域) + 端到端去雾网络。',
     scenarios: '单图像去雾、户外视觉增强、自动驾驶、遥感图像处理。',
     arxiv: '待补充', arxivUrl: '',
-    code: '', notes: '', archImage: '', date: '2024'
+    code: '', notes: '', archImage: 'reading-notes/assets/arch-DEA-Net-new.jpg', date: '2024'
   },
   {
     title: 'MFFDNet: Single Image Deraining via Dual-Channel Mixed Feature Fusion',
@@ -2385,7 +2385,7 @@ const DEFAULT_NEW_PAPERS = [
     method: '通道-空间注意力块CSAB(残差通道注意力+增强空间注意力) + 窗口Transformer块WTB + 混合特征融合单元MFFU(互补融合策略)。',
     scenarios: '单图像去雨、恶劣天气视觉增强、自动驾驶等outdoor场景。',
     arxiv: 'IEEE TIM 2024', arxivUrl: 'https://ieeexplore.ieee.org/document/10380987',
-    code: 'https://github.com/taowenyin/MFFDNet', notes: 'reading-notes/MFFDNet.md', archImage: '', date: '2024'
+    code: 'https://github.com/taowenyin/MFFDNet', notes: 'reading-notes/MFFDNet.md', archImage: 'reading-notes/assets/arch-MFFDNet.jpg', date: '2024'
   },
   {
     title: 'Reduced Biquaternion Dual-Branch Deraining U-Network via Multi-Attention Mechanism',
@@ -2397,7 +2397,7 @@ const DEFAULT_NEW_PAPERS = [
     method: '约化双四元数神经网络RQV-NN + 双分支联合表示模块DBJRM + RQ-SCformer(自注意力+Inception) + RQ域多注意力(RQ-SAU/RQ-CAU/RQ-EGAU) + 三阶段重建模块。',
     scenarios: '单图像去雨、图像去雪、低光增强、下游视觉任务预处理(目标检测/语义分割)。',
     arxiv: 'IEEE TIP 2025', arxivUrl: 'https://ieeexplore.ieee.org/document/10825584',
-    code: '', notes: 'reading-notes/RQ-D2UNet.md', archImage: '', date: '2025'
+    code: '', notes: 'reading-notes/RQ-D2UNet.md', archImage: 'reading-notes/assets/arch-RQ-D2UNet.jpg', date: '2025'
   },
   {
     title: 'Restormer: Efficient Transformer for High-Resolution Image Restoration',
@@ -2409,7 +2409,7 @@ const DEFAULT_NEW_PAPERS = [
     method: 'MDTA(Multi-Dconv Head Transposed Attention,跨通道线性注意力) + GDFN(Gated-Dconv FFN,门控前馈网络) + 多尺度编码器-解码器 + 渐进式训练。',
     scenarios: '去雨、去噪、去模糊、超分辨率等高分辨率图像恢复任务。',
     arxiv: 'arXiv:2111.09881', arxivUrl: 'https://arxiv.org/abs/2111.09881',
-    code: 'https://github.com/swz30/Restormer', notes: 'reading-notes/Restormer.md', archImage: '', date: '2022'
+    code: 'https://github.com/swz30/Restormer', notes: 'reading-notes/Restormer.md', archImage: 'reading-notes/assets/arch-Restormer.jpg', date: '2022'
   },
   {
     title: 'Uformer: A General U-Shaped Transformer for Image Restoration',
@@ -2421,7 +2421,7 @@ const DEFAULT_NEW_PAPERS = [
     method: 'LeWin Block(窗口划分→窗口多头自注意力→Depth-wise Conv FFN) + 多尺度空间偏差调制器 + 三种跳接方案比较。',
     scenarios: '去噪、去模糊、去雨、超分辨率等通用图像恢复任务。',
     arxiv: 'arXiv:2106.03106', arxivUrl: 'https://arxiv.org/abs/2106.03106',
-    code: 'https://github.com/ZhendongWang6/Uformer', notes: 'reading-notes/Uformer.md', archImage: '', date: '2022'
+    code: 'https://github.com/ZhendongWang6/Uformer', notes: 'reading-notes/Uformer.md', archImage: 'reading-notes/assets/arch-Uformer.jpg', date: '2022'
   },
   {
     title: 'Structure-Preserving Deraining with Residue Channel Prior Guidance',
@@ -2433,7 +2433,7 @@ const DEFAULT_NEW_PAPERS = [
     method: '残差通道先验RCP(引导结构保持) + 小波多级模块WMLM(高低频分离) + 交互融合模块IFM(RCP与骨干特征交互) + 迭代引导策略。',
     scenarios: '单图像去雨、需要结构保持的图像恢复任务。',
     arxiv: 'arXiv:2108.09079', arxivUrl: 'https://arxiv.org/abs/2108.09079',
-    code: 'https://github.com/Joyies/SPDNet', notes: 'reading-notes/SPDNet.md', archImage: '', date: '2021'
+    code: 'https://github.com/Joyies/SPDNet', notes: 'reading-notes/SPDNet.md', archImage: 'reading-notes/assets/arch-SPDNet.jpg', date: '2021'
   },
   {
     title: 'Image De-Raining Transformer',
@@ -2445,7 +2445,7 @@ const DEFAULT_NEW_PAPERS = [
     method: '窗口Transformer(局部特征增强) + 空间Transformer(全局依赖建模) + 相对位置增强多头自注意力 + 层次性U-shaped架构。',
     scenarios: '单图像去雨、复杂雨纹场景。',
     arxiv: 'IEEE TPAMI 2024', arxivUrl: 'https://ieeexplore.ieee.org/document/9798773',
-    code: '', notes: 'reading-notes/IDT.md', archImage: '', date: '2022'
+    code: '', notes: 'reading-notes/IDT.md', archImage: 'reading-notes/assets/arch-IDT.jpg', date: '2022'
   },
 ];
 
