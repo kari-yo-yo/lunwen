@@ -61,15 +61,15 @@
 - **架构图**: reading-notes/assets/arch-PHENet.jpg
 - **添加时间**: 2026-07-01
 
-### SSFA-Net: Spatial-Spectral Fusion Attention Network
-- **分类**: 🔄 其他
-- **标签**: hyperspectral, spatial-spectral-fusion, attention, classification
+### SSFA-Net: Sparse Strip and Dual-Domain Spatial-Frequency Attention for Efficient Image Dehazing
+- **分类**: 🌫️ 去雾
+- **标签**: image-dehazing, sparse-strip-attention, spatial-frequency-attention, LSH, efficient-attention, Neurocomputing2026
 - **状态**: 待读
-- **一句话总结**: 空间-光谱融合注意力网络，用于高光谱图像分类等遥感任务。
-- **核心痛点**: 高光谱数据空间和光谱维度信息提取分离，融合效率低
-- **核心方法**: 空间-光谱融合注意力机制 (SSFA)
-- **适用场景**: 高光谱图像分类；遥感图像分析
-- **arXiv/DOI**: 待补充
+- **一句话总结**: SSA稀疏条带注意力(O(L log L)) + DDSFA空间-频率双域注意力，3.86M参数/30ms延迟在9个去雾基准达SOTA。
+- **核心痛点**: ViT二次方注意力计算开销大；空间域与频率域割裂处理；非均匀雾局部差异被忽略
+- **核心方法**: LSH哈希+能量选择+动态条带滤波(SSA); Avg/Max/Var三路池化+DC/残差分解(DDSFA); 多尺度残差块(MSRBlock)
+- **适用场景**: 图像去雾、低光增强、遥感图像去雾、自动驾驶视觉预处理
+- **arXiv/DOI**: [10.1016/j.neucom.2026.133671](https://doi.org/10.1016/j.neucom.2026.133671)
 - **代码链接**: [GitHub - hafeezbabar/SSFA-Net](https://github.com/hafeezbabar/SSFA-Net)
 - **笔记链接**: [SSFA-Net 精读笔记](reading-notes/SSFA-Net.md)
 - **架构图**: reading-notes/assets/arch-SSFA-Net.jpg
@@ -235,7 +235,7 @@
 - [ ] CDT - Efficient Transformer for Image Restoration (CVPR 2023)
 - [ ] ASSANet - Adaptive Sparse Self-Attention for Super-Resolution (TPAMI 2026)
 - [ ] PHENet - Physics-Guided Height-Enhanced Change Detection (2026)
-- [ ] SSFA-Net - Spatial-Spectral Fusion Attention Network
+- [ ] SSFA-Net - Sparse Strip and Dual-Domain Spatial-Frequency Attention for Efficient Image Dehazing (Neurocomputing 2026)
 - [ ] DAWN+ - Wavelet-Based Direction-Aware Deraining (TNNLS 2025)
 
 ---
