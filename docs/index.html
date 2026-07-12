@@ -1956,6 +1956,9 @@ function parseLibrary(md) {
   const categories = [
     { id: 'attention', emoji: '🔥', name: '注意力机制', desc: 'Attention Mechanisms' },
     { id: 'channel', emoji: '🌊', name: '通道增强/特征增强', desc: 'Channel/Feature Enhancement' },
+    { id: 'deraining', emoji: '🌧️', name: '去雨', desc: 'Image Deraining' },
+    { id: 'dehazing', emoji: '🌫️', name: '去雾', desc: 'Image Dehazing' },
+    { id: 'irstd', emoji: '🎯', name: '红外小目标检测', desc: 'Infrared Small Target Detection' },
     { id: 'backbone', emoji: '🏗️', name: '骨干网络', desc: 'Backbones' },
     { id: 'detection', emoji: '🎯', name: '目标检测', desc: 'Object Detection' },
     { id: 'segmentation', emoji: '🖼️', name: '语义分割', desc: 'Semantic Segmentation' },
@@ -2219,6 +2222,9 @@ const EL = {
 const categories = [
   { emoji: '🔥', name: '注意力机制' },
   { emoji: '🌊', name: '通道增强/特征增强' },
+  { emoji: '🌧️', name: '去雨' },
+  { emoji: '🌫️', name: '去雾' },
+  { emoji: '🎯', name: '红外小目标检测' },
   { emoji: '🏗️', name: '骨干网络' },
   { emoji: '🎯', name: '目标检测' },
   { emoji: '🖼️', name: '语义分割' },
@@ -2226,7 +2232,6 @@ const categories = [
   { emoji: '🔗', name: '多模态' },
   { emoji: '⚡', name: '模型压缩/加速' },
   { emoji: '📊', name: '优化器/训练技巧' },
-  { emoji: '🌧️', name: '去雨' },
   { emoji: '🔄', name: '其他' },
 ];
 
@@ -2365,7 +2370,7 @@ const DEFAULT_NEW_PAPERS = [
   },
   {
     title: 'Single Image Dehazing Based on Detail-Enhanced Convolution and Content-Guided Attention',
-    category: '其他', categoryEmoji: '🔄',
+    category: '去雾', categoryEmoji: '🌫️',
     tags: ['细节增强卷积','内容引导注意力','TIP 2024'],
     status: '待读',
     summary: '提出细节增强卷积和内容引导注意力机制，在去雾任务中同时恢复清晰内容和保留细节纹理。',

@@ -1,7 +1,7 @@
 # 📚 深度学习论文库
 
 > 创建时间: 2026-07-01
-> 分类体系: 注意力机制 / 通道增强 / 骨干网络 / 目标检测 / 语义分割 / 生成模型 / 多模态 / 模型压缩 / 优化器 / 其他
+> 分类体系: 注意力机制 / 通道增强/特征增强 / 去雨 / 去雾 / 红外小目标检测 / 骨干网络 / 目标检测 / 语义分割 / 生成模型 / 多模态 / 模型压缩 / 优化器 / 其他
 
 <!--
 ## 🔍 部分未确认的论文（待补充）
@@ -17,8 +17,10 @@
 
 | 分类 | 数量 | 已读 | 待读 | 精读中 | 已复现 |
 |------|------|------|------|--------|--------|
-| 🔥 注意力机制 | 5 | 0 | 5 | 0 | 0 |
-| 🌊 通道增强/特征增强 | 3 | 0 | 3 | 0 | 0 |
+| 🔥 注意力机制 | 2 | 0 | 2 | 0 | 0 |
+| 🌊 通道增强/特征增强 | 2 | 0 | 2 | 0 | 0 |
+| 🌧️ 去雨 | 2 | 0 | 2 | 0 | 0 |
+| 🌫️ 去雾 | 2 | 0 | 2 | 0 | 0 |
 | 🏗️ 骨干网络 | 0 | 0 | 0 | 0 | 0 |
 | 🎯 目标检测 | 0 | 0 | 0 | 0 | 0 |
 | 🖼️ 语义分割 | 0 | 0 | 0 | 0 | 0 |
@@ -26,8 +28,8 @@
 | 🔗 多模态 | 0 | 0 | 0 | 0 | 0 |
 | ⚡ 模型压缩/加速 | 0 | 0 | 0 | 0 | 0 |
 | 📊 优化器/训练技巧 | 0 | 0 | 0 | 0 | 0 |
-| 🔄 其他 | 3 | 0 | 3 | 0 | 0 |
-| **总计** | **11** | **0** | **11** | **0** | **0** |
+| 🔄 其他 | 2 | 0 | 2 | 0 | 0 |
+| **总计** | **10** | **0** | **10** | **0** | **0** |
 
 ---
 
@@ -47,33 +49,23 @@
 - **架构图**: reading-notes/assets/arch-MPRNet.jpg
 - **添加时间**: 2026-07-01
 
-### PHENet: Physics-Guided Height-Enhanced Network for Fog-Resilient Change Detection
-- **分类**: 🔄 其他
-- **标签**: remote-sensing, change-detection, fog-resilient, physics-guided, Sciencedirect2026
+### HINet: Half Instance Normalization Network for Image Restoration
+- **分类**: 🌊 通道增强/特征增强
+- **标签**: image-restoration, half-instance-normalization, multi-stage, lightweight, CVPRW2021
 - **状态**: 待读
-- **一句话总结**: 基于物理引导的高程增强网络，解决遥感影像中雾霾干扰下的变化检测问题。
-- **核心痛点**: 遥感影像受雾霾影响严重；传统变化检测难抗雾
-- **核心方法**: Physics-guided 物理引导 + Height-enhanced 高程增强机制
-- **适用场景**: 遥感影像变化检测、抗雾场景分析
-- **arXiv/DOI**: [ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S0925231226010684)
-- **代码链接**: [GitHub - sssy3/PHENet](https://github.com/sssy3/PHENet)
-- **笔记链接**: [PHENet 精读笔记](reading-notes/PHENet.md)
-- **架构图**: reading-notes/assets/arch-PHENet.jpg
+- **一句话总结**: 提出半实例归一化块(HIN Block)来提升图像恢复网络性能，基于HIN Block设计了简洁高效的多阶段网络HINet，在去噪/去模糊/去雨任务上以极低计算量实现SOTA。
+- **核心痛点**: BatchNorm消除范围灵活性不适合恢复任务；InstanceNorm虽有帮助但会丢弃部分有用信息
+- **核心方法**: HIN Block（半实例半批归一化）+ 多阶段编解码子网络 + 跨阶段特征融合 + 监督注意力模块
+- **适用场景**: 图像去噪(SIDD)、去模糊(GoPro/REDS)、去雨
+- **arXiv/DOI**: [arXiv:2105.06086](https://arxiv.org/abs/2105.06086)
+- **代码链接**: [GitHub - megvii-model/HINet](https://github.com/megvii-model/HINet)
+- **笔记链接**: [HINet 精读笔记](reading-notes/HINet.md)
+- **架构图**: reading-notes/assets/arch-HINet.jpg
 - **添加时间**: 2026-07-01
 
-### SSFA-Net: Sparse Strip and Dual-Domain Spatial-Frequency Attention for Efficient Image Dehazing
-- **分类**: 🌫️ 去雾
-- **标签**: image-dehazing, sparse-strip-attention, spatial-frequency-attention, LSH, efficient-attention, Neurocomputing2026
-- **状态**: 待读
-- **一句话总结**: SSA稀疏条带注意力(O(L log L)) + DDSFA空间-频率双域注意力，3.86M参数/30ms延迟在9个去雾基准达SOTA。
-- **核心痛点**: ViT二次方注意力计算开销大；空间域与频率域割裂处理；非均匀雾局部差异被忽略
-- **核心方法**: LSH哈希+能量选择+动态条带滤波(SSA); Avg/Max/Var三路池化+DC/残差分解(DDSFA); 多尺度残差块(MSRBlock)
-- **适用场景**: 图像去雾、低光增强、遥感图像去雾、自动驾驶视觉预处理
-- **arXiv/DOI**: [10.1016/j.neucom.2026.133671](https://doi.org/10.1016/j.neucom.2026.133671)
-- **代码链接**: [GitHub - hafeezbabar/SSFA-Net](https://github.com/hafeezbabar/SSFA-Net)
-- **笔记链接**: [SSFA-Net 精读笔记](reading-notes/SSFA-Net.md)
-- **架构图**: reading-notes/assets/arch-SSFA-Net.jpg
-- **添加时间**: 2026-07-01
+---
+
+## 🔥 注意力机制
 
 ### Comprehensive and Delicate: An Efficient Transformer for Image Restoration (CDT)
 - **分类**: 🔥 注意力机制
@@ -103,36 +95,12 @@
 - **架构图**: reading-notes/assets/arch-ASSANet.jpg
 - **添加时间**: 2026-07-01
 
-### HINet: Half Instance Normalization Network for Image Restoration
-- **分类**: 🌊 通道增强/特征增强
-- **标签**: image-restoration, half-instance-normalization, multi-stage, lightweight, CVPRW2021
-- **状态**: 待读
-- **一句话总结**: 提出半实例归一化块(HIN Block)来提升图像恢复网络性能，基于HIN Block设计了简洁高效的多阶段网络HINet，在去噪/去模糊/去雨任务上以极低计算量实现SOTA。
-- **核心痛点**: BatchNorm消除范围灵活性不适合恢复任务；InstanceNorm虽有帮助但会丢弃部分有用信息
-- **核心方法**: HIN Block（半实例半批归一化）+ 多阶段编解码子网络 + 跨阶段特征融合 + 监督注意力模块
-- **适用场景**: 图像去噪(SIDD)、去模糊(GoPro/REDS)、去雨
-- **arXiv/DOI**: [arXiv:2105.06086](https://arxiv.org/abs/2105.06086)
-- **代码链接**: [GitHub - megvii-model/HINet](https://github.com/megvii-model/HINet)
-- **笔记链接**: [HINet 精读笔记](reading-notes/HINet.md)
-- **架构图**: reading-notes/assets/arch-HINet.jpg
-- **添加时间**: 2026-07-01
+---
 
-### DEA-Net: Single Image Dehazing Based on Detail-Enhanced Convolution and Content-Guided Attention
-- **分类**: 🌊 通道增强/特征增强
-- **标签**: image-dehazing, detail-enhanced-convolution, content-guided-attention, lightweight, arXiv2023
-- **状态**: 待读
-- **一句话总结**: 通过细节增强卷积（DEConv）和内容引导注意力（CGA）组成的DEAB模块，以仅3.653M参数在去雾任务上突破41dB PSNR，DEConv通过重参数化技术推理时不增加额外开销。
-- **核心痛点**: 普通卷积缺乏细节先验信息；现有注意力机制对内容感知不足
-- **核心方法**: DEConv（细节增强卷积）+ CGA（内容引导注意力）+ CGA-based mixup融合 + 重参数化
-- **适用场景**: 图像去雾(SOTS/OTS/HazeRD)；特征增强模块可迁移至其他2D视觉任务
-- **arXiv/DOI**: [arXiv:2301.04805](https://arxiv.org/abs/2301.04805)
-- **代码链接**: [GitHub - cecret3350/DEA-Net](https://github.com/cecret3350/DEA-Net)
-- **笔记链接**: [DEA-Net 精读笔记](reading-notes/DEA-Net.md)
-- **架构图**: reading-notes/assets/arch-DEA-Net.jpg
-- **添加时间**: 2026-07-01
+## 🌧️ 去雨
 
 ### DAWN+: Wavelet-Based Image Deraining with Direction-Aware Attention and Mutual Representation
-- **分类**: 🔥 注意力机制
+- **分类**: 🌧️ 去雨
 - **标签**: image-deraining, wavelet, direction-aware-attention, mutual-representation, lightweight, TNNLS2025
 - **状态**: 待读
 - **一句话总结**: 在小波域中结合方向感知注意力和互表示学习进行图像去雨，以1.9M超轻量参数在Test1200上达到33.14dB PSNR，推理仅0.067秒。
@@ -145,12 +113,8 @@
 - **架构图**: reading-notes/assets/arch-dawn-plus.jpg
 - **添加时间**: 2026-07-01
 
----
-
-## 🔥 注意力机制
-
 ### Learning A Sparse Transformer Network for Effective Image Deraining (DRSformer)
-- **分类**: 🔥 注意力机制
+- **分类**: 🌧️ 去雨
 - **标签**: image-deraining, sparse-transformer, attention, top-k, CVPR2023
 - **状态**: 待读
 - **一句话总结**: 提出稀疏Transformer网络，通过Top-K稀疏注意力只关注最重要的特征交互，大幅降低Transformer在图像去雨中的计算开销同时保持高性能。
@@ -161,6 +125,38 @@
 - **代码链接**: [GitHub - cschenxiang/DRSformer](https://github.com/cschenxiang/DRSformer)
 - **笔记链接**: [DRSformer 精读笔记](reading-notes/drsformer.md)
 - **架构图**: reading-notes/assets/arch-DRSformer.jpg
+- **添加时间**: 2026-07-01
+
+---
+
+## 🌫️ 去雾
+
+### DEA-Net: Single Image Dehazing Based on Detail-Enhanced Convolution and Content-Guided Attention
+- **分类**: 🌫️ 去雾
+- **标签**: image-dehazing, detail-enhanced-convolution, content-guided-attention, lightweight, arXiv2023
+- **状态**: 待读
+- **一句话总结**: 通过细节增强卷积（DEConv）和内容引导注意力（CGA）组成的DEAB模块，以仅3.653M参数在去雾任务上突破41dB PSNR，DEConv通过重参数化技术推理时不增加额外开销。
+- **核心痛点**: 普通卷积缺乏细节先验信息；现有注意力机制对内容感知不足
+- **核心方法**: DEConv（细节增强卷积）+ CGA（内容引导注意力）+ CGA-based mixup融合 + 重参数化
+- **适用场景**: 图像去雾(SOTS/OTS/HazeRD)；特征增强模块可迁移至其他2D视觉任务
+- **arXiv/DOI**: [arXiv:2301.04805](https://arxiv.org/abs/2301.04805)
+- **代码链接**: [GitHub - cecret3350/DEA-Net](https://github.com/cecret3350/DEA-Net)
+- **笔记链接**: [DEA-Net 精读笔记](reading-notes/DEA-Net.md)
+- **架构图**: reading-notes/assets/arch-DEA-Net.jpg
+- **添加时间**: 2026-07-01
+
+### SSFA-Net: Sparse Strip and Dual-Domain Spatial-Frequency Attention for Efficient Image Dehazing
+- **分类**: 🌫️ 去雾
+- **标签**: image-dehazing, sparse-strip-attention, spatial-frequency-attention, LSH, efficient-attention, Neurocomputing2026
+- **状态**: 待读
+- **一句话总结**: SSA稀疏条带注意力(O(L log L)) + DDSFA空间-频率双域注意力，3.86M参数/30ms延迟在9个去雾基准达SOTA。
+- **核心痛点**: ViT二次方注意力计算开销大；空间域与频率域割裂处理；非均匀雾局部差异被忽略
+- **核心方法**: LSH哈希+能量选择+动态条带滤波(SSA); Avg/Max/Var三路池化+DC/残差分解(DDSFA); 多尺度残差块(MSRBlock)
+- **适用场景**: 图像去雾、低光增强、遥感图像去雾、自动驾驶视觉预处理
+- **arXiv/DOI**: [10.1016/j.neucom.2026.133671](https://doi.org/10.1016/j.neucom.2026.133671)
+- **代码链接**: [GitHub - hafeezbabar/SSFA-Net](https://github.com/hafeezbabar/SSFA-Net)
+- **笔记链接**: [SSFA-Net 精读笔记](reading-notes/SSFA-Net.md)
+- **架构图**: reading-notes/assets/arch-SSFA-Net.jpg
 - **添加时间**: 2026-07-01
 
 ---
@@ -208,6 +204,20 @@
 ---
 
 ## 🔄 其他
+
+### PHENet: Physics-Guided Height-Enhanced Network for Fog-Resilient Change Detection
+- **分类**: 🔄 其他
+- **标签**: remote-sensing, change-detection, fog-resilient, physics-guided, Sciencedirect2026
+- **状态**: 待读
+- **一句话总结**: 基于物理引导的高程增强网络，解决遥感影像中雾霾干扰下的变化检测问题。
+- **核心痛点**: 遥感影像受雾霾影响严重；传统变化检测难抗雾
+- **核心方法**: Physics-guided 物理引导 + Height-enhanced 高程增强机制
+- **适用场景**: 遥感影像变化检测、抗雾场景分析
+- **arXiv/DOI**: [ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S0925231226010684)
+- **代码链接**: [GitHub - sssy3/PHENet](https://github.com/sssy3/PHENet)
+- **笔记链接**: [PHENet 精读笔记](reading-notes/PHENet.md)
+- **架构图**: reading-notes/assets/arch-PHENet.jpg
+- **添加时间**: 2026-07-01
 
 ### Deep Generalized Unfolding Networks for Image Restoration (DGUNet)
 - **分类**: 🔄 其他
