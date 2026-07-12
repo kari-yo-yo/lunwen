@@ -2447,6 +2447,18 @@ const DEFAULT_NEW_PAPERS = [
     arxiv: 'IEEE TPAMI 2024', arxivUrl: 'https://ieeexplore.ieee.org/document/9798773',
     code: '', notes: 'reading-notes/IDT.md', archImage: 'reading-notes/assets/arch-IDT.jpg', date: '2022'
   },
+  {
+    title: 'SD-PSFNet: Sequential and Dynamic Point Spread Function Network for Image Deraining',
+    category: '🌧️ 去雨', categoryEmoji: '🌧️',
+    tags: ['image-deraining', 'point-spread-function', 'physics-aware', 'multi-stage', 'dynamic-PSF', 'AAAI2026'],
+    status: '待读',
+    summary: '首次将光学成像中的点扩散函数(PSF)引入深度学习去雨网络，提出数据驱动的动态可学习PSF机制，通过Multi-Scale PSF Head(3×3/5×5/7×7)捕获多尺度雨纹退化，结合三阶段序列化渐进恢复和自适应门控融合，在保持CNN高效性的同时大幅超越纯数据驱动方法，在RealRain-1k-L上比MPRNet提升5.04dB。',
+    painPoints: '纯数据驱动方法缺乏物理可解释性；固定PSF模板无法适应雨纹多样性；多尺度雨纹建模不足；Transformer计算开销大。',
+    method: '动态可学习PSF + Multi-Scale PSF Head(3×3/5×5/7×7) + PSF Channel Reducer + PSF-Aware Attention + 三阶段渐进恢复 + Adaptive Gated Fusion + 空间归一化物理约束。',
+    scenarios: '图像去雨、物理感知图像恢复、可解释性要求高的去雨场景。',
+    arxiv: 'AAAI 2026', arxivUrl: 'https://arxiv.org/abs/2511.17993',
+    code: 'https://github.com/Aster-1024/SD-PSFNet', notes: 'reading-notes/sd-psfnet.md', archImage: 'reading-notes/assets/arch-SD-PSFNet.jpg', date: '2026'
+  },
 ];
 
 // Venue detection from tags
