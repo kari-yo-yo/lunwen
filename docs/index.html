@@ -2464,9 +2464,9 @@ const DEFAULT_NEW_PAPERS = [
     category: '🎯 红外小目标检测', categoryEmoji: '🎯',
     tags: ['infrared-small-target-detection', 'motion-aided', 'spatial-temporal', 'motion-saliency', 'TGRS2026'],
     status: '待读',
-    summary: '提出运动辅助的时空一体化网络(MAISTNet)用于运动红外小目标检测，通过Motion-Aided Module(帧差+运动显著性)显式建模运动信息，结合空间分支与时间分支的交互融合机制，在红外序列中精准检测高机动性弱小目标。与去雨任务中的运动信息利用理念相通。',
+    summary: '提出MIST-Net，用Taylor级数展开+统计动态加权将多帧运动信息(位移/速度/加速度)编码为单帧"运动帧"，仅需2帧输入即可实现高效检测；结合MCM互校正模块和基于熵理论的MSCM耦合状态空间模块深度融合运动与空间特征，在SIRSTD上AP₅₀=67.32、ITSDT-15K上AP₅₀=82.41均达SOTA。',
     painPoints: '静态检测方法忽略帧间运动信息导致高机动目标丢失；单帧检测信噪比极低；时空特征融合不充分；现有方法对运动模糊和复杂背景适应性差。',
-    method: 'Motion-Aided Module(帧差法+运动显著性图) + Integrated Spatial-Temporal Network(空间分支+时间分支+交互融合) + Detection Head。',
+    method: 'Taylor级数动态运动帧生成(位移+速度+加速度) + MCM互校正模块(空间校准+运动增强) + MSCM熵理论耦合状态空间模块 + CSPDarknet特征提取 + YOLOX检测头。',
     scenarios: '红外小目标检测、卫星遥感、无人机侦察、运动目标跟踪。',
     arxiv: 'IEEE TGRS 2026', arxivUrl: 'https://doi.org/10.1109/TGRS.2026.3673387',
     notes: 'reading-notes/motion-aided-irstd.md', archImage: 'reading-notes/assets/arch-Motion-Aided-IRTD.jpg', date: '2026'
