@@ -1564,6 +1564,95 @@ body {
 }
 .settings-actions button:hover { opacity: 0.9; }
 
+/* Drawing Guide Panel */
+.guide-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-top: 20px;
+  animation: fadeIn 0.4s ease;
+}
+.guide-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.guide-header h2 {
+  font-size: 22px; color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+}
+.guide-subtitle {
+  font-size: 13px; color: var(--text-muted);
+  width: 100%;
+}
+.guide-close-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 13px;
+  transition: var(--transition);
+}
+.guide-close-btn:hover {
+  background: var(--accent-red); color: #fff; border-color: var(--accent-red);
+}
+.guide-body {
+  font-size: 14px; line-height: 1.8; color: var(--text);
+}
+.guide-body h3 {
+  font-size: 17px; color: var(--primary-light);
+  margin: 28px 0 14px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.guide-body h4 {
+  font-size: 15px; color: var(--text);
+  margin: 20px 0 10px;
+}
+.guide-body table {
+  width: 100%; border-collapse: collapse;
+  margin: 14px 0; font-size: 13px;
+}
+.guide-body th, .guide-body td {
+  padding: 10px 12px; text-align: left;
+  border: 1px solid var(--border);
+}
+.guide-body th {
+  background: rgba(99,102,241,0.08); font-weight: 600;
+}
+.guide-body td code {
+  font-family: 'Consolas', monospace;
+  font-size: 12px; padding: 2px 6px;
+  background: rgba(255,255,255,0.05); border-radius: 4px;
+}
+.color-swatch {
+  display: inline-block; width: 14px; height: 14px;
+  border-radius: 3px; margin-right: 6px; vertical-align: middle;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.guide-body pre {
+  background: rgba(0,0,0,0.25); padding: 14px 16px;
+  border-radius: var(--radius-sm); overflow-x: auto;
+  font-size: 12px; line-height: 1.6; margin: 12px 0;
+  border: 1px solid var(--border);
+}
+.guide-body ul, .guide-body ol {
+  padding-left: 22px; margin: 10px 0;
+}
+.guide-body li { margin: 4px 0; }
+.guide-step {
+  background: rgba(99,102,241,0.06);
+  border-left: 3px solid var(--primary);
+  padding: 14px 18px; margin: 14px 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.guide-step strong {
+  color: var(--primary-light); font-size: 14px;
+}
+
 /* AI Tools Section in Sidebar */
 .ai-tools-section {
   margin-top: auto;
@@ -1815,6 +1904,14 @@ body {
       <span class="icon">🔄</span> 批量补全
     </button>
   </div>
+
+  <!-- Drawing Guide Section -->
+  <div class="ai-tools-section" id="guideSection" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+    <div class="ai-tools-title">🎨 实用工具</div>
+    <button class="ai-tool-btn" id="btnDrawingGuide" title="查看论文架构图 PPT 绘制指南">
+      <span class="icon">🎨</span> 绘图指南
+    </button>
+  </div>
 </aside>
 
 <!-- ====== Main ====== -->
@@ -1897,6 +1994,18 @@ body {
     <div class="paper-card skeleton skel-card"></div>
     <div class="paper-card skeleton skel-card"></div>
     <div class="paper-card skeleton skel-card"></div>
+  </div>
+
+  <!-- Drawing Guide Panel -->
+  <div class="guide-panel" id="guidePanel" style="display:none;">
+    <div class="guide-header">
+      <h2>🎨 论文架构图 PPT 绘制指南</h2>
+      <p class="guide-subtitle">"莱昂的科研日记" 风格 — 莫兰迪低饱和色系</p>
+      <button class="guide-close-btn" id="guideCloseBtn">✕ 关闭</button>
+    </div>
+    <div class="guide-body" id="guideBody">
+      <!-- Content injected by JS -->
+    </div>
   </div>
 </main>
 
@@ -4265,6 +4374,188 @@ document.getElementById('btnAiBatch').addEventListener('click', () => {
   }
   batchCompleteMethods();
 });
+
+// ============================================================
+//  Drawing Guide Toggle
+// ============================================================
+const DRAWING_GUIDE_HTML = `
+<h3>一、核心色彩体系（莫兰迪低饱和色系）</h3>
+<h4>1.1 主色调（按模块功能分配）</h4>
+<table>
+<thead><tr><th>模块类型</th><th>颜色名称</th><th>HEX</th><th>RGB</th><th>适用场景</th></tr></thead>
+<tbody>
+<tr><td><span class="color-swatch" style="background:#F2CEB0"></span>输入/输出层</td><td>暖桃色</td><td><code>#F2CEB0</code></td><td><code>RGB(242,206,176)</code></td><td>输入图像、输出结果、数据流起点终点</td></tr>
+<tr><td><span class="color-swatch" style="background:#B0D194"></span>特征提取/编码器</td><td>鼠尾草绿</td><td><code>#B0D194</code></td><td><code>RGB(176,209,148)</code></td><td>卷积层、编码器、特征提取模块</td></tr>
+<tr><td><span class="color-swatch" style="background:#EA9D9D"></span>注意力/核心创新</td><td>玫瑰粉</td><td><code>#EA9D9D</code></td><td><code>RGB(234,157,157)</code></td><td>注意力模块、核心创新点、关键操作</td></tr>
+<tr><td><span class="color-swatch" style="background:#385492"></span>融合/解码器</td><td>深藏青</td><td><code>#385492</code></td><td><code>RGB(56,84,146)</code></td><td>特征融合、解码器、上采样、拼接</td></tr>
+<tr><td><span class="color-swatch" style="background:#A72A35"></span>损失/辅助分支</td><td>暗砖红</td><td><code>#A72A35</code></td><td><code>RGB(167,42,53)</code></td><td>损失函数、辅助监督、残差连接</td></tr>
+<tr><td><span class="color-swatch" style="background:#C5B9CD"></span>频率/频域模块</td><td>淡紫灰</td><td><code>#C5B9CD</code></td><td><code>RGB(197,185,205)</code></td><td>FFT、DCT、小波变换、频域处理</td></tr>
+<tr><td><span class="color-swatch" style="background:#A8C5B5"></span>空间/像素模块</td><td>薄荷灰绿</td><td><code>#A8C5B5</code></td><td><code>RGB(168,197,181)</code></td><td>空间注意力、像素级操作、池化</td></tr>
+<tr><td><span class="color-swatch" style="background:#F5F0EB"></span>中性/通用模块</td><td>米白色</td><td><code>#F5F0EB</code></td><td><code>RGB(245,240,235)</code></td><td>通用处理模块、中间层</td></tr>
+</tbody>
+</table>
+
+<h4>1.2 辅助色（线条、文字、装饰）</h4>
+<table>
+<thead><tr><th>元素</th><th>HEX</th><th>RGB</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td>主标题文字</td><td><code>#2D3436</code></td><td><code>RGB(45,52,54)</code></td><td>图标题、大标题</td></tr>
+<tr><td>模块内文字</td><td><code>#4A4A4A</code></td><td><code>RGB(74,74,74)</code></td><td>模块内部标签、公式符号</td></tr>
+<tr><td>数据流箭头</td><td><code>#6C7A89</code></td><td><code>RGB(108,122,137)</code></td><td>主数据流箭头</td></tr>
+<tr><td>跳跃连接/残差</td><td><code>#95A5A6</code></td><td><code>RGB(149,165,166)</code></td><td>Skip Connection（虚线）</td></tr>
+<tr><td>外框描边</td><td><code>#BDC3C7</code></td><td><code>RGB(189,195,199)</code></td><td>模块矩形外框（1pt）</td></tr>
+</tbody>
+</table>
+
+<h4>1.3 色彩使用原则</h4>
+<ul>
+<li>同一架构图中，主色调不超过 5 种</li>
+<li>相邻模块尽量使用不同主色，增强可区分性</li>
+<li>同类型模块使用同色系的不同深浅</li>
+<li>辅助色统一使用深灰系，避免喧宾夺主</li>
+</ul>
+
+<h3>二、PPT 形状规范</h3>
+<h4>2.1 模块矩形</h4>
+<table>
+<thead><tr><th>属性</th><th>规范</th></tr></thead>
+<tbody>
+<tr><td>形状</td><td>圆角矩形（Rounded Rectangle）</td></tr>
+<tr><td>圆角半径</td><td>0.15 ~ 0.2 cm</td></tr>
+<tr><td>填充</td><td>纯色填充，透明度 0%</td></tr>
+<tr><td>边框</td><td>实线，1 pt，颜色 <code>#BDC3C7</code></td></tr>
+<tr><td>阴影</td><td>无阴影 或 轻微外阴影（偏移 1pt，模糊 2pt，透明度 30%）</td></tr>
+<tr><td>文字对齐</td><td>居中对齐，垂直居中</td></tr>
+</tbody>
+</table>
+
+<h4>2.2 模块尺寸参考</h4>
+<table>
+<thead><tr><th>模块层级</th><th>宽度</th><th>高度</th><th>字号</th></tr></thead>
+<tbody>
+<tr><td>顶层模块（整体网络框）</td><td>8 ~ 12 cm</td><td>2 ~ 3 cm</td><td>14 ~ 16 pt</td></tr>
+<tr><td>中层模块（子网络/Stage）</td><td>4 ~ 6 cm</td><td>1.2 ~ 1.8 cm</td><td>11 ~ 13 pt</td></tr>
+<tr><td>底层模块（Conv/Pool/Attention）</td><td>2 ~ 3 cm</td><td>0.8 ~ 1.2 cm</td><td>9 ~ 10 pt</td></tr>
+<tr><td>最小标签（通道数、公式）</td><td>1 ~ 1.5 cm</td><td>0.5 cm</td><td>8 pt</td></tr>
+</tbody>
+</table>
+
+<h4>2.3 箭头规范</h4>
+<table>
+<thead><tr><th>箭头类型</th><th>线型</th><th>颜色</th><th>粗细</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td>主数据流</td><td>实线</td><td><code>#6C7A89</code></td><td>1.5 pt</td><td>主要数据流向</td></tr>
+<tr><td>残差/跳跃连接</td><td>虚线（3pt-2pt）</td><td><code>#95A5A6</code></td><td>1 pt</td><td>Skip Connection</td></tr>
+<tr><td>控制/门控信号</td><td>点划线</td><td><code>#B8956A</code></td><td>1 pt</td><td>注意力权重、门控</td></tr>
+<tr><td>反馈/循环</td><td>实线+弯曲</td><td><code>#A72A35</code></td><td>1 pt</td><td>循环连接</td></tr>
+</tbody>
+</table>
+
+<h3>三、字体规范</h3>
+<table>
+<thead><tr><th>文字类型</th><th>中文字体</th><th>英文字体</th><th>字号</th><th>字重</th></tr></thead>
+<tbody>
+<tr><td>图标题</td><td>微软雅黑 / 思源黑体</td><td>Times New Roman / Georgia</td><td>18 ~ 20 pt</td><td>Bold</td></tr>
+<tr><td>模块名称</td><td>微软雅黑</td><td>Calibri / Arial</td><td>10 ~ 12 pt</td><td>Regular / Bold</td></tr>
+<tr><td>公式/符号</td><td>—</td><td>Cambria Math</td><td>10 ~ 12 pt</td><td>Italic</td></tr>
+<tr><td>通道数/尺寸</td><td>微软雅黑</td><td>Consolas / Courier New</td><td>8 ~ 9 pt</td><td>Regular</td></tr>
+<tr><td>注释说明</td><td>微软雅黑</td><td>Calibri</td><td>8 pt</td><td>Regular，灰色</td></tr>
+</tbody>
+</table>
+
+<h3>四、分步绘制流程</h3>
+<div class="guide-step">
+<strong>Step 1: 建立画布</strong><br>
+宽屏 16:9（33.867 cm × 19.05 cm），背景纯白 <code>#FFFFFF</code> 或极浅灰 <code>#FAFAFA</code>。可添加 subtle grid（间距 0.5 cm，颜色 <code>#F0F0F0</code>）辅助对齐。
+</div>
+<div class="guide-step">
+<strong>Step 2: 划分面板（多面板布局）</strong><br>
+Panel 1（左上，50%×55%）：总体架构；Panel 2（右上，50%×55%）：核心模块 A；Panel 3（左下，50%×45%）：核心模块 B；Panel 4（右下，50%×45%）：损失/输出。用细虚线框（<code>#D5D8DC</code>，0.5 pt）划分。
+</div>
+<div class="guide-step">
+<strong>Step 3: 绘制总体架构</strong><br>
+输入图像 <span class="color-swatch" style="background:#F2CEB0"></span> → Conv <span class="color-swatch" style="background:#B0D194"></span> → Scale 1/2/3 <span class="color-swatch" style="background:#B0D194"></span> + SSA <span class="color-swatch" style="background:#EA9D9D"></span> → Decoder + Skip <span class="color-swatch" style="background:#385492"></span> → DDSFA <span class="color-swatch" style="background:#EA9D9D"></span> → Output <span class="color-swatch" style="background:#F2CEB0"></span>
+</div>
+<div class="guide-step">
+<strong>Step 4~6: 绘制模块内部 + 损失函数</strong><br>
+每个 Step 用圆角矩形，内部标注操作名称和公式。公式用 Cambria Math 斜体。复杂操作可用嵌套小矩形展开。损失函数用暗红色边框 + 浅红填充突出。
+</div>
+<div class="guide-step">
+<strong>Step 7: 添加图标题和图例</strong><br>
+图标题顶部居中，18pt Bold。图例放在右下角，用 1cm × 0.5cm 小色块 + 文字说明。
+</div>
+
+<h3>五、PPT 快捷键与技巧</h3>
+<table>
+<thead><tr><th>操作</th><th>快捷键/方法</th></tr></thead>
+<tbody>
+<tr><td>快速复制模块</td><td>Ctrl + D（带偏移复制）</td></tr>
+<tr><td>等间距排列</td><td>选中多个 → 格式 → 对齐 → 横向/纵向分布</td></tr>
+<tr><td>统一修改颜色</td><td>右键设置形状格式 → 填充 → 更多颜色 → 输入 HEX</td></tr>
+<tr><td>精确调整大小</td><td>右键 → 大小和位置 → 直接输入厘米数值</td></tr>
+<tr><td>组合复杂模块</td><td>Ctrl + G（组合），方便整体移动</td></tr>
+<tr><td>导出高清图</td><td>文件 → 另存为 → PNG/JPEG → 分辨率 300 dpi</td></tr>
+</tbody>
+</table>
+
+<h3>六、常见错误与避免方法</h3>
+<table>
+<thead><tr><th>错误</th><th>正确做法</th></tr></thead>
+<tbody>
+<tr><td>颜色饱和度过高</td><td>使用莫兰迪色系，避免纯红 <code>#FF0000</code>、纯蓝 <code>#0000FF</code></td></tr>
+<tr><td>模块大小参差不齐</td><td>先画一个标准模块，复制后只改文字和颜色</td></tr>
+<tr><td>箭头交叉混乱</td><td>使用正交箭头（先水平后垂直），或增加留白间距</td></tr>
+<tr><td>文字过小看不清</td><td>最小字号 8pt，重要模块至少 10pt</td></tr>
+<tr><td>缺少通道/尺寸标注</td><td>在数据流箭头旁标注 <code>C×H×W</code> 或 <code>N×L×C</code></td></tr>
+<tr><td>一个面板塞太多内容</td><td>超过 8 个模块就拆分为两个子面板</td></tr>
+<tr><td>边框太粗喧宾夺主</td><td>统一使用 1pt 细边框，只在需要强调的模块用 1.5pt</td></tr>
+</tbody>
+</table>
+
+<h3>七、颜色快速参考卡</h3>
+<pre>
+输入/输出      ████████  #F2CEB0  RGB(242,206,176)
+特征提取       ████████  #B0D194  RGB(176,209,148)
+注意力/核心    ████████  #EA9D9D  RGB(234,157,157)
+融合/解码      ████████  #385492  RGB(56,84,146)
+损失/残差      ████████  #A72A35  RGB(167,42,53)
+频域处理       ████████  #C5B9CD  RGB(197,185,205)
+空间/像素      ████████  #A8C5B5  RGB(168,197,181)
+中性通用       ████████  #F5F0EB  RGB(245,240,235)
+边框/线条      ████████  #BDC3C7  RGB(189,195,199)
+标题文字       ████████  #2D3436  RGB(45,52,54)
+</pre>
+<p style="margin-top:12px;color:var(--text-muted);font-size:12px;">💡 提示：建议将上述颜色保存为 PPT 自定义主题色（设计 → 变体 → 颜色 → 自定义颜色），方便后续所有架构图统一调用。</p>
+`;
+
+const guidePanel = document.getElementById('guidePanel');
+const guideBody = document.getElementById('guideBody');
+const mainContentNormal = document.getElementById('heroBanner');
+
+function openDrawingGuide() {
+  guideBody.innerHTML = DRAWING_GUIDE_HTML;
+  guidePanel.style.display = 'block';
+  document.getElementById('heroBanner').style.display = 'none';
+  document.getElementById('statsBar').style.display = 'none';
+  document.getElementById('progressSection').style.display = 'none';
+  document.getElementById('heatmapSection').style.display = 'none';
+  document.getElementById('paperGrid').style.display = 'none';
+  document.querySelector('.toolbar').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function closeDrawingGuide() {
+  guidePanel.style.display = 'none';
+  document.getElementById('heroBanner').style.display = '';
+  document.getElementById('statsBar').style.display = '';
+  document.getElementById('progressSection').style.display = '';
+  document.getElementById('heatmapSection').style.display = '';
+  document.getElementById('paperGrid').style.display = '';
+  document.querySelector('.toolbar').style.display = '';
+}
+
+document.getElementById('btnDrawingGuide').addEventListener('click', openDrawingGuide);
+document.getElementById('guideCloseBtn').addEventListener('click', closeDrawingGuide);
 
 initParticles();
 init();
