@@ -2459,6 +2459,18 @@ const DEFAULT_NEW_PAPERS = [
     arxiv: 'AAAI 2026', arxivUrl: 'https://arxiv.org/abs/2511.17993',
     code: 'https://github.com/Aster-1024/SD-PSFNet', notes: 'reading-notes/sd-psfnet.md', archImage: 'reading-notes/assets/arch-SD-PSFNet.jpg', date: '2026'
   },
+  {
+    title: 'Moving Infrared Small Target Detection via Motion-Aided Integrated Spatial-Temporal Network',
+    category: '🎯 红外小目标检测', categoryEmoji: '🎯',
+    tags: ['infrared-small-target-detection', 'motion-aided', 'spatial-temporal', 'motion-saliency', 'TGRS2026'],
+    status: '待读',
+    summary: '提出运动辅助的时空一体化网络(MAISTNet)用于运动红外小目标检测，通过Motion-Aided Module(帧差+运动显著性)显式建模运动信息，结合空间分支与时间分支的交互融合机制，在红外序列中精准检测高机动性弱小目标。与去雨任务中的运动信息利用理念相通。',
+    painPoints: '静态检测方法忽略帧间运动信息导致高机动目标丢失；单帧检测信噪比极低；时空特征融合不充分；现有方法对运动模糊和复杂背景适应性差。',
+    method: 'Motion-Aided Module(帧差法+运动显著性图) + Integrated Spatial-Temporal Network(空间分支+时间分支+交互融合) + Detection Head。',
+    scenarios: '红外小目标检测、卫星遥感、无人机侦察、运动目标跟踪。',
+    arxiv: 'IEEE TGRS 2026', arxivUrl: 'https://doi.org/10.1109/TGRS.2026.3673387',
+    notes: 'reading-notes/motion-aided-irstd.md', archImage: 'reading-notes/assets/arch-Motion-Aided-IRTD.jpg', date: '2026'
+  },
 ];
 
 // Venue detection from tags
