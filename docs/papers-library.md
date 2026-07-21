@@ -140,6 +140,7 @@
 - **arXiv/DOI**: IEEE TIM 2024
 - **代码链接**: [GitHub - taowenyin/MFFDNet](https://github.com/taowenyin/MFFDNet)
 - **笔记链接**: [MFFDNet 精读笔记](reading-notes/MFFDNet.md)
+- **架构图**: reading-notes/assets/arch-MFFDNet.png
 - **添加时间**: 2026-07-21
 
 ### TransMamb: A Hybrid Transformer-Mamba Network for Single Image Deraining
@@ -153,6 +154,7 @@
 - **arXiv/DOI**: [arXiv:2409.00410](https://arxiv.org/abs/2409.00410) (IEEE TIP)
 - **代码链接**: [GitHub - sunshangquan/TransMamb](https://github.com/sunshangquan/TransMamb)
 - **笔记链接**: [TransMamb 精读笔记](reading-notes/TransMamb.md)
+- **架构图**: reading-notes/assets/arch-TransMamb.png
 - **添加时间**: 2026-07-21
 
 ### CPRAformer: Cross Paradigm Representation and Alignment Transformer for Image Deraining
@@ -166,6 +168,7 @@
 - **arXiv/DOI**: [arXiv:2504.16455](https://arxiv.org/abs/2504.16455) (ACM MM 2025)
 - **代码链接**: [GitHub - zs1314/CPRAformer](https://github.com/zs1314/CPRAformer)
 - **笔记链接**: [CPRAformer 精读笔记](reading-notes/CPRAformer.md)
+- **架构图**: reading-notes/assets/arch-CPRAformer.png
 - **添加时间**: 2026-07-21
 
 ---
@@ -215,6 +218,7 @@
 - **arXiv/DOI**: IEEE TIP 2025
 - **代码链接**: [GitHub - Aitical/DPPD](https://github.com/Aitical/DPPD)
 - **笔记链接**: [DPPD 精读笔记](reading-notes/DPPD.md)
+- **架构图**: reading-notes/assets/arch-DPPD.png
 - **添加时间**: 2026-07-21
 
 ---
@@ -262,6 +266,7 @@
 - **arXiv/DOI**: [arXiv:2503.15931](https://arxiv.org/abs/2503.15931) (CVPR 2025)
 - **代码链接**: [GitHub - Stephen0808/DnLUT](https://github.com/Stephen0808/DnLUT)
 - **笔记链接**: [DnLUT 精读笔记](reading-notes/DnLUT.md)
+- **架构图**: reading-notes/assets/arch-DnLUT.png
 - **添加时间**: 2026-07-21
 
 ---
@@ -279,6 +284,7 @@
 - **arXiv/DOI**: [arXiv:2603.18834](https://arxiv.org/abs/2603.18834) (CVPR 2026)
 - **代码链接**: [GitHub - HeasonLee/SCGN](https://github.com/HeasonLee/SCGN)
 - **笔记链接**: [SCGN 精读笔记](reading-notes/SCGN.md)
+- **架构图**: reading-notes/assets/arch-SCGN.png
 - **添加时间**: 2026-07-21
 
 ---
