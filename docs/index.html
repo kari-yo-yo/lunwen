@@ -2075,6 +2075,9 @@ function parseLibrary(md) {
     { id: 'multimodal', emoji: '🔗', name: '多模态', desc: 'Multi-modal' },
     { id: 'compression', emoji: '⚡', name: '模型压缩/加速', desc: 'Model Compression' },
     { id: 'optimizer', emoji: '📊', name: '优化器/训练技巧', desc: 'Optimizers & Training' },
+    { id: 'multitask_restore', emoji: '🧩', name: '多任务恢复', desc: 'Multi-task Restoration' },
+    { id: 'lut_compression', emoji: '⚡', name: '模型压缩/加速', desc: 'LUT Compression' },
+    { id: 'scientific_imaging', emoji: '🔬', name: '科学成像', desc: 'Scientific Imaging' },
     { id: 'other', emoji: '🔄', name: '其他', desc: 'Others' },
   ];
 
@@ -2341,6 +2344,9 @@ const categories = [
   { emoji: '🔗', name: '多模态' },
   { emoji: '⚡', name: '模型压缩/加速' },
   { emoji: '📊', name: '优化器/训练技巧' },
+  { emoji: '🧩', name: '多任务恢复', value: 'multitask_restore' },
+  { emoji: '⚡', name: '模型压缩/加速', value: 'lut_compression' },
+  { emoji: '🔬', name: '科学成像', value: 'scientific_imaging' },
   { emoji: '🔄', name: '其他' },
 ];
 
@@ -2585,6 +2591,106 @@ const DEFAULT_NEW_PAPERS = [
     arxiv: 'IEEE TGRS 2026', arxivUrl: 'https://doi.org/10.1109/TGRS.2026.3673387',
     notes: 'reading-notes/motion-aided-irstd.md', archImage: 'reading-notes/assets/arch-Motion-Aided-IRTD.jpg', date: '2026'
   },
+    // DnLUT - CVPR 2025
+    {
+        id: 'dnlut',
+        title: 'DnLUT: Ultra-Efficient Color Image Denoising via Channel-Aware Lookup Tables',
+        category: '模型压缩/加速',
+        categoryEmoji: '⚡',
+        tags: ['image-denoising', 'lookup-table', 'channel-aware', 'CVPR2025'],
+        status: '待读',
+        summary: '通过PCM成对通道混合器捕获通道相关性和L形卷积消除旋转冗余，训练后转LUT实现仅500KB存储的超高效去噪。',
+        painPoints: 'DNN去噪计算和内存需求大，边缘设备部署困难',
+        coreMethod: 'PCM成对通道混合器 + L形卷积 + 训练后3D/4D LUT转换',
+        venue: 'CVPR 2025',
+        arxiv: 'https://arxiv.org/abs/2503.15931',
+        code: 'https://github.com/Stephen0808/DnLUT',
+        notes: 'reading-notes/DnLUT.md',
+        addDate: '2026-07-21'
+    },
+    // SCGN - CVPR 2026
+    {
+        id: 'scgn',
+        title: 'SCGN: Statistical Characteristic-Guided Denoising for Rapid HRTEM Imaging',
+        category: '科学成像',
+        categoryEmoji: '🔬',
+        tags: ['electron-microscopy', 'denoising', 'statistical-guidance', 'CVPR2026'],
+        status: '待读',
+        summary: '利用统计特性在空间域和频率域同时引导去噪，提出HRTEM专用噪声标定方法。',
+        painPoints: 'HRTEM快速成像需短曝光导致严重噪声；现有去噪方法噪声分布不匹配',
+        coreMethod: '空间偏差引导加权 + 频率带引导加权 + HRTEM噪声标定',
+        venue: 'CVPR 2026',
+        arxiv: 'https://arxiv.org/abs/2603.18834',
+        code: 'https://github.com/HeasonLee/SCGN',
+        notes: 'reading-notes/SCGN.md',
+        addDate: '2026-07-21'
+    },
+    // MFFDNet - IEEE TIM 2024
+    {
+        id: 'mffdnet',
+        title: 'MFFDNet: Single Image Deraining via Dual-Channel Mixed Feature Fusion',
+        category: '去雨',
+        categoryEmoji: '🌧️',
+        tags: ['image-deraining', 'CNN-Transformer', 'mixed-feature-fusion', 'TIM2024'],
+        status: '待读',
+        summary: 'CNN+Transformer双分支混合去雨网络，CSAB分离高低频建模雨线，MFFU融合局部与全局特征。',
+        painPoints: 'CNN感受野有限；Transformer局部特征提取不足；融合模块未充分整合',
+        coreMethod: 'CSAB + WTB + MFFU混合特征融合单元',
+        venue: 'IEEE TIM 2024',
+        code: 'https://github.com/taowenyin/MFFDNet',
+        notes: 'reading-notes/MFFDNet.md',
+        addDate: '2026-07-21'
+    },
+    // TransMamb - IEEE TIP
+    {
+        id: 'transmamb',
+        title: 'TransMamb: A Hybrid Transformer-Mamba Network for Single Image Deraining',
+        category: '去雨',
+        categoryEmoji: '🌧️',
+        tags: ['image-deraining', 'transformer', 'mamba', 'SSM', 'spectral-attention', 'TIP2024'],
+        status: '待读',
+        summary: 'Transformer-Mamba双分支混合去雨网络，频谱分组注意力捕获全局依赖，双向SSM捕获序列一致性。',
+        painPoints: 'Transformer固定窗口限制非局部感受野；单一范式难以全面建模雨纹',
+        coreMethod: 'SDTB频谱分组Transformer + CBSM双向SSM + 频谱一致性损失',
+        venue: 'IEEE TIP',
+        arxiv: 'https://arxiv.org/abs/2409.00410',
+        code: 'https://github.com/sunshangquan/TransMamb',
+        notes: 'reading-notes/TransMamb.md',
+        addDate: '2026-07-21'
+    },
+    // CPRAformer - ACM MM 2025
+    {
+        id: 'cpraformer',
+        title: 'CPRAformer: Cross Paradigm Representation and Alignment Transformer for Image Deraining',
+        category: '去雨',
+        categoryEmoji: '🌧️',
+        tags: ['image-deraining', 'cross-paradigm', 'sparse-attention', 'alignment', 'MM2025'],
+        status: '待读',
+        summary: '跨范式表征与对齐Transformer，稀疏提示通道注意力+空间像素细化注意力，AAFM两阶段渐进融合。',
+        painPoints: '不规则雨纹和复杂几何重叠对单范式架构构成挑战；特征不对齐',
+        coreMethod: 'SPC-SA + SPR-SA + AAFM自适应对齐频率模块 + MSGN',
+        venue: 'ACM MM 2025',
+        arxiv: 'https://arxiv.org/abs/2504.16455',
+        code: 'https://github.com/zs1314/CPRAformer',
+        notes: 'reading-notes/CPRAformer.md',
+        addDate: '2026-07-21'
+    },
+    // DPPD - IEEE TIP 2025
+    {
+        id: 'dppd',
+        title: 'DPPD: Learning Dynamic Prompts for All-in-One Image Restoration',
+        category: '多任务恢复',
+        categoryEmoji: '🧩',
+        tags: ['all-in-one', 'image-restoration', 'dynamic-prompts', 'TIP2025'],
+        status: '待读',
+        summary: '将退化先验解耦为退化原型分配(DPA)和提示分布学习(PDL)，动态提示生成实现all-in-one恢复。',
+        painPoints: '现有all-in-one方法静态提示判别性不足；推理时提示退化为固定参数',
+        coreMethod: 'DPA退化原型分配 + PDL提示分布学习 + CrossFusion提示引导交叉注意力',
+        venue: 'IEEE TIP 2025',
+        code: 'https://github.com/Aitical/DPPD',
+        notes: 'reading-notes/DPPD.md',
+        addDate: '2026-07-21'
+    },
 ];
 
 // Venue detection from tags

@@ -17,19 +17,21 @@
 
 | 分类 | 数量 | 已读 | 待读 | 精读中 | 已复现 |
 |------|------|------|------|--------|--------|
-| 🔥 注意力机制 | 2 | 0 | 2 | 0 | 0 |
+| 🔥 注意力机制 | 3 | 0 | 3 | 0 | 0 |
 | 🌊 通道增强/特征增强 | 2 | 0 | 2 | 0 | 0 |
-| 🌧️ 去雨 | 2 | 0 | 2 | 0 | 0 |
+| 🌧️ 去雨 | 5 | 0 | 5 | 0 | 0 |
 | 🌫️ 去雾 | 2 | 0 | 2 | 0 | 0 |
+| 🌧️+🌫️ 多任务恢复 | 1 | 0 | 1 | 0 | 0 |
+| ⚡ 模型压缩/加速 | 1 | 0 | 1 | 0 | 0 |
 | 🏗️ 骨干网络 | 0 | 0 | 0 | 0 | 0 |
 | 🎯 目标检测 | 0 | 0 | 0 | 0 | 0 |
 | 🖼️ 语义分割 | 0 | 0 | 0 | 0 | 0 |
 | 📝 生成模型 | 0 | 0 | 0 | 0 | 0 |
 | 🔗 多模态 | 0 | 0 | 0 | 0 | 0 |
-| ⚡ 模型压缩/加速 | 0 | 0 | 0 | 0 | 0 |
 | 📊 优化器/训练技巧 | 0 | 0 | 0 | 0 | 0 |
-| 🔄 其他 | 2 | 0 | 2 | 0 | 0 |
-| **总计** | **10** | **0** | **10** | **0** | **0** |
+| 🔬 科学成像 | 1 | 0 | 1 | 0 | 0 |
+| 🔄 其他 | 1 | 0 | 1 | 0 | 0 |
+| **总计** | **16** | **0** | **16** | **0** | **0** |
 
 ---
 
@@ -127,6 +129,45 @@
 - **架构图**: reading-notes/assets/arch-DRSformer.jpg
 - **添加时间**: 2026-07-01
 
+### MFFDNet: Single Image Deraining via Dual-Channel Mixed Feature Fusion
+- **分类**: 🌧️ 去雨
+- **标签**: image-deraining, CNN-Transformer, channel-spatial-attention, mixed-feature-fusion, TIM2024
+- **状态**: 待读
+- **一句话总结**: CNN+Transformer双分支混合去雨网络，CSAB通过通道注意力分离高低频并建模雨线特征，WTB用窗口Transformer捕获全局依赖，MFFU互补融合局部与全局特征。
+- **核心痛点**: CNN感受野有限无法捕获全局信息；Transformer局部特征提取不足；现有融合模块未充分整合局部与全局特征
+- **核心方法**: CSAB(通道-空间注意力模块) + WTB(窗口Transformer块) + MFFU(混合特征融合单元) + PixelShuffle上采样
+- **适用场景**: 图像去雨；CNN-Transformer混合架构参考；多尺度特征融合
+- **arXiv/DOI**: IEEE TIM 2024
+- **代码链接**: [GitHub - taowenyin/MFFDNet](https://github.com/taowenyin/MFFDNet)
+- **笔记链接**: [MFFDNet 精读笔记](reading-notes/MFFDNet.md)
+- **添加时间**: 2026-07-21
+
+### TransMamb: A Hybrid Transformer-Mamba Network for Single Image Deraining
+- **分类**: 🌧️ 去雨
+- **标签**: image-deraining, transformer, mamba, SSM, spectral-attention, hybrid, TIP2024
+- **状态**: 待读
+- **一句话总结**: Transformer-Mamba双分支混合去雨网络，频谱分组Transformer块在频域通道维度执行自注意力捕获全局雨相关依赖，Mamba分支用双向SSM捕获局部与全局序列一致性，频谱一致性损失约束重建信号关系。
+- **核心痛点**: Transformer固定窗口限制非局部感受野；纯Transformer计算量大；单一范式难以全面建模雨纹特征
+- **核心方法**: SDTB(频谱分组Transformer-SBSA+SEFF) + CBSM(级联双向SSM) + 通道级联融合 + 频谱一致性损失
+- **适用场景**: 单图像去雨；Transformer-SSM混合架构参考；频域去雨方法
+- **arXiv/DOI**: [arXiv:2409.00410](https://arxiv.org/abs/2409.00410) (IEEE TIP)
+- **代码链接**: [GitHub - sunshangquan/TransMamb](https://github.com/sunshangquan/TransMamb)
+- **笔记链接**: [TransMamb 精读笔记](reading-notes/TransMamb.md)
+- **添加时间**: 2026-07-21
+
+### CPRAformer: Cross Paradigm Representation and Alignment Transformer for Image Deraining
+- **分类**: 🌧️ 去雨
+- **标签**: image-deraining, cross-paradigm, sparse-attention, alignment, frequency-module, MM2025
+- **状态**: 待读
+- **一句话总结**: 跨范式表征与对齐Transformer，SPC-SA用稀疏提示过滤通道注意力增强全局依赖，SPR-SA用CNN近似空间注意力建模局部细节，AAFM两阶段渐进式对齐融合两种范式特征，在8个基准数据集达SOTA。
+- **核心痛点**: 不规则雨纹和复杂几何重叠对单范式架构构成挑战；通道注意力和空间注意力特征不对齐
+- **核心方法**: SPC-SA(稀疏提示通道自注意力) + SPR-SA(空间像素细化自注意力) + AAFM(自适应对齐频率模块) + MSGN(多尺度流门控网络)
+- **适用场景**: 图像去雨；跨范式特征融合参考；稀疏注意力机制
+- **arXiv/DOI**: [arXiv:2504.16455](https://arxiv.org/abs/2504.16455) (ACM MM 2025)
+- **代码链接**: [GitHub - zs1314/CPRAformer](https://github.com/zs1314/CPRAformer)
+- **笔记链接**: [CPRAformer 精读笔记](reading-notes/CPRAformer.md)
+- **添加时间**: 2026-07-21
+
 ---
 
 ## 🌫️ 去雾
@@ -158,6 +199,23 @@
 - **笔记链接**: [SSFA-Net 精读笔记](reading-notes/SSFA-Net.md)
 - **架构图**: reading-notes/assets/arch-SSFA-Net.jpg
 - **添加时间**: 2026-07-01
+
+---
+
+## 🌧️+🌫️ 多任务恢复
+
+### DPPD: Learning Dynamic Prompts for All-in-One Image Restoration
+- **分类**: 🌧️+🌫️ 多任务恢复
+- **标签**: all-in-one, image-restoration, dynamic-prompts, degradation-prototype, TIP2025
+- **状态**: 待读
+- **一句话总结**: 将退化先验提取解耦为退化原型分配(DPA)和提示分布学习(PDL)两个组件，为每种退化类型学习高斯分布提示并通过重参数化采样实现动态提示生成，在all-in-one恢复任务上平均提升2.94dB。
+- **核心痛点**: 现有all-in-one方法使用静态任务提示判别性不足；推理时提示退化为固定参数限制表达能力
+- **核心方法**: DPA(退化原型分配-K-means聚类+高斯分布) + PDL(提示分布学习-重参数化采样) + CrossFusion(提示引导交叉注意力) + 复合退化分布建模
+- **适用场景**: All-in-one图像恢复(去噪/去雨/去雾/去雪/低光等)；任务感知的提示学习参考
+- **arXiv/DOI**: IEEE TIP 2025
+- **代码链接**: [GitHub - Aitical/DPPD](https://github.com/Aitical/DPPD)
+- **笔记链接**: [DPPD 精读笔记](reading-notes/DPPD.md)
+- **添加时间**: 2026-07-21
 
 ---
 
@@ -193,7 +251,35 @@
 
 ## ⚡ 模型压缩/加速
 
-> 暂无论文
+### DnLUT: Ultra-Efficient Color Image Denoising via Channel-Aware Lookup Tables
+- **分类**: ⚡ 模型压缩/加速
+- **标签**: image-denoising, lookup-table, channel-aware, ultra-efficient, lightweight, CVPR2025
+- **状态**: 待读
+- **一句话总结**: 通过PCM成对通道混合器捕获通道相关性和L形卷积消除旋转冗余，训练后转LUT实现仅500KB存储、能耗为DnCNN 0.1%的超高效去噪，PSNR超越所有现有LUT方法超1dB。
+- **核心痛点**: DNN去噪计算和内存需求大，边缘设备部署困难；现有LUT方法忽略通道相关性或空间关系
+- **核心方法**: PCM成对通道混合器(RG/GB/BR三对并行) + L形卷积(无重叠感受野) + 训练后3D/4D LUT转换 + 级联查表推理
+- **适用场景**: 极端资源受限的边缘设备去噪；嵌入式/IoT设备图像处理；实时视频去噪
+- **arXiv/DOI**: [arXiv:2503.15931](https://arxiv.org/abs/2503.15931) (CVPR 2025)
+- **代码链接**: [GitHub - Stephen0808/DnLUT](https://github.com/Stephen0808/DnLUT)
+- **笔记链接**: [DnLUT 精读笔记](reading-notes/DnLUT.md)
+- **添加时间**: 2026-07-21
+
+---
+
+## 🔬 科学成像
+
+### SCGN: Statistical Characteristic-Guided Denoising for Rapid High-Resolution TEM Imaging
+- **分类**: 🔬 科学成像
+- **标签**: electron-microscopy, denoising, statistical-guidance, spatial-frequency, CVPR2026
+- **状态**: 待读
+- **一句话总结**: 利用统计特性在空间域(标准差偏差引导加权)和频率域(FFT频带引导加权)同时引导去噪，并提出HRTEM专用噪声标定方法，有效恢复快速成像中的原子级结构信息。
+- **核心痛点**: HRTEM快速成像需短曝光导致严重噪声；现有去噪方法缺乏无序结构数据且噪声分布不匹配
+- **核心方法**: 空间偏差引导加权(3x3窗口标准差) + 频率带引导加权(FFT) + HRTEM噪声标定(列噪声建模) + 空间-频率增强块级联
+- **适用场景**: HRTEM原子级成像去噪；材料科学成核动力学观测；电子显微镜快速成像
+- **arXiv/DOI**: [arXiv:2603.18834](https://arxiv.org/abs/2603.18834) (CVPR 2026)
+- **代码链接**: [GitHub - HeasonLee/SCGN](https://github.com/HeasonLee/SCGN)
+- **笔记链接**: [SCGN 精读笔记](reading-notes/SCGN.md)
+- **添加时间**: 2026-07-21
 
 ---
 
@@ -247,6 +333,12 @@
 - [ ] PHENet - Physics-Guided Height-Enhanced Change Detection (2026)
 - [ ] SSFA-Net - Sparse Strip and Dual-Domain Spatial-Frequency Attention for Efficient Image Dehazing (Neurocomputing 2026)
 - [ ] DAWN+ - Wavelet-Based Direction-Aware Deraining (TNNLS 2025)
+- [ ] DnLUT - Ultra-Efficient Color Image Denoising via Channel-Aware Lookup Tables (CVPR 2025)
+- [ ] SCGN - Statistical Characteristic-Guided Denoising for Rapid HRTEM Imaging (CVPR 2026)
+- [ ] MFFDNet - Single Image Deraining via Dual-Channel Mixed Feature Fusion (IEEE TIM 2024)
+- [ ] TransMamb - Hybrid Transformer-Mamba Network for Single Image Deraining (IEEE TIP)
+- [ ] CPRAformer - Cross Paradigm Representation and Alignment Transformer for Image Deraining (ACM MM 2025)
+- [ ] DPPD - Learning Dynamic Prompts for All-in-One Image Restoration (IEEE TIP 2025)
 
 ---
 
