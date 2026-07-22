@@ -1782,6 +1782,138 @@ body {
   margin: 2px 4px 2px 0;
 }
 
+/* ===== Knowledge Framework Animations ===== */
+/* Neural Network Animation */
+.kg-nn-demo {
+  background: rgba(0,0,0,0.15); border-radius: var(--radius-sm);
+  padding: 24px; margin: 16px 0; position: relative; overflow: hidden;
+  border: 1px solid var(--border);
+}
+[data-theme="light"] .kg-nn-demo { background: #f1f5f9; }
+.kg-nn-svg { width: 100%; max-width: 600px; margin: 0 auto; display: block; }
+.kg-nn-node { fill: var(--primary); transition: all 0.3s; }
+.kg-nn-node-input { fill: #10b981; }
+.kg-nn-node-hidden { fill: var(--primary); }
+.kg-nn-node-output { fill: #f59e0b; }
+.kg-nn-pulse { animation: kgPulse 2s ease-in-out infinite; }
+@keyframes kgPulse {
+  0%,100% { opacity: 0.6; r: 12; }
+  50% { opacity: 1; r: 16; }
+}
+.kg-nn-line { stroke: var(--text-muted); stroke-width: 1.5; opacity: 0.3; }
+.kg-nn-flow {
+  stroke-dasharray: 4 4;
+  animation: kgFlow 1.5s linear infinite;
+}
+@keyframes kgFlow {
+  0% { stroke-dashoffset: 8; }
+  100% { stroke-dashoffset: 0; }
+}
+.kg-nn-flow-forward { stroke: var(--primary); stroke-width: 2; opacity: 0.8; }
+.kg-nn-flow-backward { stroke: var(--accent-red); stroke-width: 2; opacity: 0.8; animation-direction: reverse; }
+
+/* Gradient Descent Ball Animation */
+.kg-gd-demo {
+  background: rgba(0,0,0,0.15); border-radius: var(--radius-sm);
+  padding: 20px; margin: 16px 0; border: 1px solid var(--border);
+}
+[data-theme="light"] .kg-gd-demo { background: #f1f5f9; }
+.kg-gd-container { position: relative; width: 100%; max-width: 500px; margin: 0 auto; }
+.kg-gd-hill {
+  width: 100%; height: 180px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(99,102,241,0.08) 100%);
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  position: relative; overflow: hidden;
+}
+.kg-gd-curve {
+  position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+}
+.kg-gd-ball {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fbbf24, #f59e0b);
+  box-shadow: 0 4px 12px rgba(245,158,11,0.4);
+  position: absolute; top: 20px; left: 30px;
+  animation: kgBallRoll 4s ease-in-out infinite;
+}
+@keyframes kgBallRoll {
+  0% { left: 30px; top: 20px; }
+  25% { left: 120px; top: 60px; }
+  50% { left: 200px; top: 100px; }
+  75% { left: 280px; top: 130px; }
+  90% { left: 340px; top: 145px; transform: scale(0.9); }
+  100% { left: 30px; top: 20px; transform: scale(1); }
+}
+
+/* Activation Function Animated Curves */
+.kg-act-demo {
+  background: rgba(0,0,0,0.15); border-radius: var(--radius-sm);
+  padding: 20px; margin: 16px 0; border: 1px solid var(--border);
+}
+[data-theme="light"] .kg-act-demo { background: #f1f5f9; }
+.kg-act-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px; margin: 12px 0;
+}
+.kg-act-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px; text-align: center;
+  transition: transform 0.2s;
+}
+.kg-act-card:hover { transform: translateY(-2px); }
+.kg-act-card svg { width: 100%; height: 80px; }
+.kg-act-card h5 { margin: 6px 0 2px; font-size: 13px; color: var(--primary-light); }
+.kg-act-card p { margin: 0; font-size: 11px; color: var(--text-muted); }
+.kg-act-curve {
+  fill: none; stroke-width: 2.5;
+  stroke-dasharray: 300; stroke-dashoffset: 300;
+  animation: kgDraw 2s ease-out forwards;
+}
+@keyframes kgDraw { to { stroke-dashoffset: 0; } }
+
+/* Loss Function Animated Bar */
+.kg-loss-demo {
+  background: rgba(0,0,0,0.15); border-radius: var(--radius-sm);
+  padding: 20px; margin: 16px 0; border: 1px solid var(--border);
+}
+[data-theme="light"] .kg-loss-demo { background: #f1f5f9; }
+.kg-loss-bars {
+  display: flex; align-items: flex-end; gap: 8px;
+  height: 120px; padding: 0 20px; margin: 12px 0;
+}
+.kg-loss-bar {
+  flex: 1; border-radius: 6px 6px 0 0;
+  animation: kgBarGrow 1.5s ease-out forwards;
+  transform-origin: bottom; transform: scaleY(0);
+  position: relative; min-width: 40px;
+}
+@keyframes kgBarGrow { to { transform: scaleY(1); } }
+.kg-loss-bar-label {
+  position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
+  font-size: 10px; color: var(--text-muted); white-space: nowrap;
+}
+.kg-loss-bar-value {
+  position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+  font-size: 11px; font-weight: 600; color: var(--text);
+}
+
+/* Tab Switcher */
+.kg-tabs {
+  display: flex; gap: 4px; margin: 16px 0 0;
+  flex-wrap: wrap;
+}
+.kg-tab {
+  padding: 8px 16px; border-radius: 8px 8px 0 0;
+  background: rgba(99,102,241,0.08); border: 1px solid var(--border);
+  cursor: pointer; font-size: 13px; color: var(--text-muted);
+  transition: all 0.2s; user-select: none;
+}
+.kg-tab:hover { background: rgba(99,102,241,0.15); }
+.kg-tab.active {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+.kg-tab-content { display: none; padding: 16px; border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+.kg-tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
 /* AI Tools Section in Sidebar */
 .ai-tools-section {
   margin-top: auto;
@@ -2149,7 +2281,7 @@ body {
   <div class="guide-panel" id="knowledgePanel" style="display:none;">
     <div class="guide-header">
       <h2>🧠 频域 · 小波 · 混合域 知识框架</h2>
-      <p class="guide-subtitle">用大白话讲清楚图像恢复中那些"听起来很高深"的频域概念</p>
+      <p class="guide-subtitle">用大白话讲清楚频域/小波/混合域 + 深度学习基础（MLP·反向传播·激活函数·梯度下降·损失函数）</p>
       <button class="guide-close-btn" id="knowledgeCloseBtn">✕ 关闭</button>
     </div>
     <div class="guide-body" id="knowledgeBody">
@@ -4940,6 +5072,395 @@ const KNOWLEDGE_HTML = `
 <div class="kg-step">
   <strong>💡 总结一句话</strong>：频域方法提供了"频率视角"但缺乏空间定位能力 → 小波解决了定位问题但方向性不足 → Contourlet/Shearlet增强方向性 → 混合域网络把它们全部组合，实现"局部+全局+频率+方向"的全面建模。这就是去雨领域从传统方法到深度学习方法的进化脉络。
 </div>
+
+<h3>八、从感知机到深度神经网络——神经网络是怎么"进化"的？</h3>
+
+<p>要理解深度学习，得先回到1958年——那时候AI的"老祖宗"感知机（Perceptron）诞生了。</p>
+
+<h4>8.1 感知机：最简单的"人工神经元"</h4>
+
+<p>感知机就是在模仿大脑神经元的工作方式：</p>
+
+<div class="kg-step">
+  <strong>一个神经元做什么？</strong>接收多个输入信号 → 给每个信号乘一个权重（有的重要有的不重要） → 全部加起来 → 如果总和超过某个阈值就"激活"（输出1），否则"沉默"（输出0）。
+</div>
+
+<p><b>公式</b>：<code>y = σ(w₁x₁ + w₂x₂ + ... + wₙxₙ + b)</code></p>
+
+<p>但是感知机有个致命缺陷——它只能解决<b>线性可分</b>的问题（能用一条直线分开的），遇到"异或"这种非线性问题就彻底傻眼了。这就是著名的"AI寒冬"导火索。</p>
+
+<h4>8.2 MLP（多层感知机）：从"一个神经元"到"一个团队"</h4>
+
+<p>解决感知机局限的方法很简单——<b>多堆几层</b>。这就是MLP（Multi-Layer Perceptron）：</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-mlp-evolution.jpg" alt="从感知机到MLP到深度神经网络" class="kg-img">
+  <div class="kg-caption">图：从单个感知机 → 多层感知机(MLP) → 深度神经网络(DNN)的进化之路</div>
+</div>
+
+<div class="kg-nn-demo">
+  <div style="text-align:center;margin-bottom:12px;font-size:13px;color:var(--text-muted);">👇 动画：神经网络前向传播（信号从左流向右）+ 反向传播（梯度从右流回左）</div>
+  <svg class="kg-nn-svg" viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- Layer labels -->
+    <text x="80" y="20" text-anchor="middle" font-size="12" fill="var(--text-muted)">输入层</text>
+    <text x="240" y="20" text-anchor="middle" font-size="12" fill="var(--text-muted)">隐藏层1</text>
+    <text x="380" y="20" text-anchor="middle" font-size="12" fill="var(--text-muted)">隐藏层2</text>
+    <text x="520" y="20" text-anchor="middle" font-size="12" fill="var(--text-muted)">输出层</text>
+    <!-- Connections (background) -->
+    <g class="kg-nn-lines" stroke="var(--text-muted)" stroke-width="1" opacity="0.15">
+      <line x1="80" y1="60" x2="240" y2="50"/><line x1="80" y1="60" x2="240" y2="110"/><line x1="80" y1="60" x2="240" y2="170"/><line x1="80" y1="60" x2="240" y2="230"/>
+      <line x1="80" y1="140" x2="240" y2="50"/><line x1="80" y1="140" x2="240" y2="110"/><line x1="80" y1="140" x2="240" y2="170"/><line x1="80" y1="140" x2="240" y2="230"/>
+      <line x1="80" y1="220" x2="240" y2="50"/><line x1="80" y1="220" x2="240" y2="110"/><line x1="80" y1="220" x2="240" y2="170"/><line x1="80" y1="220" x2="240" y2="230"/>
+      <line x1="240" y1="50" x2="380" y2="70"/><line x1="240" y1="50" x2="380" y2="140"/><line x1="240" y1="50" x2="380" y2="210"/>
+      <line x1="240" y1="110" x2="380" y2="70"/><line x1="240" y1="110" x2="380" y2="140"/><line x1="240" y1="110" x2="380" y2="210"/>
+      <line x1="240" y1="170" x2="380" y2="70"/><line x1="240" y1="170" x2="380" y2="140"/><line x1="240" y1="170" x2="380" y2="210"/>
+      <line x1="240" y1="230" x2="380" y2="70"/><line x1="240" y1="230" x2="380" y2="140"/><line x1="240" y1="230" x2="380" y2="210"/>
+      <line x1="380" y1="70" x2="520" y2="110"/><line x1="380" y1="70" x2="520" y2="180"/>
+      <line x1="380" y1="140" x2="520" y2="110"/><line x1="380" y1="140" x2="520" y2="180"/>
+      <line x1="380" y1="210" x2="520" y2="110"/><line x1="380" y1="210" x2="520" y2="180"/>
+    </g>
+    <!-- Animated forward flow (selected paths) -->
+    <g class="kg-nn-flow kg-nn-flow-forward" fill="none">
+      <line x1="80" y1="60" x2="240" y2="110"/>
+      <line x1="80" y1="140" x2="240" y2="170"/>
+      <line x1="240" y1="110" x2="380" y2="140"/>
+      <line x1="240" y1="170" x2="380" y2="210"/>
+      <line x1="380" y1="140" x2="520" y2="110"/>
+      <line x1="380" y1="210" x2="520" y2="180"/>
+    </g>
+    <!-- Animated backward flow -->
+    <g class="kg-nn-flow kg-nn-flow-backward" fill="none">
+      <line x1="520" y1="110" x2="380" y2="70"/>
+      <line x1="380" y1="70" x2="240" y2="50"/>
+      <line x1="240" y1="50" x2="80" y2="140"/>
+    </g>
+    <!-- Nodes -->
+    <g>
+      <circle cx="80" cy="60" r="14" class="kg-nn-node kg-nn-node-input kg-nn-pulse" style="animation-delay:0s"/>
+      <circle cx="80" cy="140" r="14" class="kg-nn-node kg-nn-node-input kg-nn-pulse" style="animation-delay:0.3s"/>
+      <circle cx="80" cy="220" r="14" class="kg-nn-node kg-nn-node-input kg-nn-pulse" style="animation-delay:0.6s"/>
+      <circle cx="240" cy="50" r="14" class="kg-nn-node kg-nn-node-hidden kg-nn-pulse" style="animation-delay:0.5s"/>
+      <circle cx="240" cy="110" r="14" class="kg-nn-node kg-nn-node-hidden kg-nn-pulse" style="animation-delay:0.7s"/>
+      <circle cx="240" cy="170" r="14" class="kg-nn-node kg-nn-node-hidden kg-nn-pulse" style="animation-delay:0.9s"/>
+      <circle cx="240" cy="230" r="14" class="kg-nn-node kg-nn-node-hidden kg-nn-pulse" style="animation-delay:1.1s"/>
+      <circle cx="380" cy="70" r="14" class="kg-nn-node kg-nn-node-hidden kg-nn-pulse" style="animation-delay:1.0s"/>
+      <circle cx="380" cy="140" r="14" class="kg-nn-node kg-nn-node-hidden kg-nn-pulse" style="animation-delay:1.2s"/>
+      <circle cx="380" cy="210" r="14" class="kg-nn-node kg-nn-node-hidden kg-nn-pulse" style="animation-delay:1.4s"/>
+      <circle cx="520" cy="110" r="14" class="kg-nn-node kg-nn-node-output kg-nn-pulse" style="animation-delay:1.5s"/>
+      <circle cx="520" cy="180" r="14" class="kg-nn-node kg-nn-node-output kg-nn-pulse" style="animation-delay:1.7s"/>
+    </g>
+    <!-- Flow direction labels -->
+    <text x="160" y="265" text-anchor="middle" font-size="11" fill="var(--primary)">→ 前向传播</text>
+    <text x="460" y="265" text-anchor="middle" font-size="11" fill="var(--accent-red)">← 反向传播</text>
+  </svg>
+</div>
+
+<p>MLP的三个关键组成：</p>
+<table>
+<thead><tr><th>层</th><th>作用</th><th>比喻</th></tr></thead>
+<tbody>
+<tr><td><b>输入层</b></td><td>接收原始数据（像素值、特征等）</td><td>快递分拣中心的<b>收件口</b></td></tr>
+<tr><td><b>隐藏层</b></td><td>做特征提取和变换——这是"黑魔法"发生的地方</td><td>分拣中心的<b>处理车间</b>，把包裹分类、贴标</td></tr>
+<tr><td><b>输出层</b></td><td>给出最终预测结果</td><td>分拣中心的<b>出件口</b>，贴上目的地标签</td></tr>
+</tbody>
+</table>
+
+<p><b>为什么多层能解决非线性问题？</b>因为每一层都在做一次非线性变换（通过激活函数），多次叠加后就能"弯折"空间，把非线性问题变成线性可分的。就像折纸——一次对折看不出什么，但反复对折后就能折出复杂的形状。</p>
+
+<h4>8.3 从MLP到"深度"神经网络</h4>
+
+<p>当隐藏层超过2-3层时，就叫"深度"神经网络了。层数越多，网络能学习的特征就越抽象：</p>
+<div class="kg-flow">
+  <span class="kg-node" style="background:#10b981;color:#fff;">像素</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#6366f1;color:#fff;">边缘</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#0ea5e9;color:#fff;">纹理</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#a855f7;color:#fff;">部件</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#f59e0b;color:#fff;">物体</span>
+</div>
+<p style="text-align:center;font-size:12px;color:var(--text-muted);">每一层都在从上一层的特征中提取更高级的抽象</p>
+
+<h3>九、反向传播——神经网络是怎么"学习"的？</h3>
+
+<p>如果说前向传播是"考试做题"，那反向传播就是"老师批改后告诉你哪里错了"。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-backprop.jpg" alt="反向传播原理" class="kg-img">
+  <div class="kg-caption">图：前向传播（蓝箭头→）信号从输入流向输出；反向传播（红箭头←）梯度从输出流回输入</div>
+</div>
+
+<h4>9.1 前向传播：做题</h4>
+
+<p>数据从输入层进入，逐层计算：</p>
+<div class="kg-step">
+  <strong>每一层做两件事</strong>：<br>
+  1️⃣ <b>加权求和</b>：<code>z = w₁x₁ + w₂x₂ + ... + b</code>（把输入乘以权重再加偏置）<br>
+  2️⃣ <b>激活</b>：<code>a = σ(z)</code>（通过激活函数做非线性变换）<br>
+  然后把 <code>a</code> 传给下一层，一层层传到输出层，得到预测值 <code>ŷ</code>。
+</div>
+
+<h4>9.2 计算损失：打分</h4>
+
+<p>预测值 <code>ŷ</code> 和真实值 <code>y</code> 之间有差距，用<b>损失函数</b> L 来衡量这个差距有多大。差距越大，损失越高。</p>
+
+<h4>9.3 反向传播：纠错</h4>
+
+<p>这是最精妙的一步。反向传播的核心是<b>链式法则</b>（Chain Rule）——高数里的求导法则。</p>
+
+<div class="kg-step">
+  <strong>链式法则一句话版</strong>：如果 A 影响 B，B 影响 C，那 A 对 C 的影响 = (A对B的影响) × (B对C的影响)。<br><br>
+  在神经网络里就是：<b>损失L对某个权重w的影响 = 逐层把偏导数乘起来</b>。<br>
+  <code>∂L/∂w = ∂L/∂a × ∂a/∂z × ∂z/∂w</code>
+</div>
+
+<p><b>打个比方</b>：你是一个工厂老板（损失函数），发现产品不合格（损失大）。你要追溯责任——先问质检员（输出层）"你哪里出了问题？"，质检员说"是上游零件不好"，于是你去问上游车间（隐藏层）"你们哪里有问题？"，一层层追回去，最后找到是某个工人（某个权重）的操作不对，告诉他"下次要调多少"。</p>
+
+<div class="kg-flow">
+  <span class="kg-node" style="background:#10b981;color:#fff;">输入x</span>
+  <span class="kg-arrow">→ z=wx+b →</span>
+  <span class="kg-node" style="background:#6366f1;color:#fff;">a=σ(z)</span>
+  <span class="kg-arrow">→ ... →</span>
+  <span class="kg-node" style="background:#f59e0b;color:#fff;">预测ŷ</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#ef4444;color:#fff;">损失L</span>
+  <span class="kg-arrow" style="color:#ef4444;">← ∂L/∂a ← ∂a/∂z ← ∂L/∂w ←</span>
+</div>
+
+<p>反向传播完成后，每个权重都收到了一个"梯度"（gradient），告诉它"你应该往哪个方向调、调多少"。</p>
+
+<h3>十、激活函数——神经网络的"灵魂开关"</h3>
+
+<p>没有激活函数，再深的神经网络也等价于一个线性回归——不管堆多少层，数学上都可以合并成一层。激活函数引入了<b>非线性</b>，让网络能学习复杂的模式。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-activation-functions.jpg" alt="激活函数对比" class="kg-img">
+  <div class="kg-caption">图：六种经典激活函数的曲线对比</div>
+</div>
+
+<p>下面是动态绘制的激活函数曲线，鼠标悬停查看详情：</p>
+
+<div class="kg-act-demo">
+  <div class="kg-act-grid">
+    <div class="kg-act-card">
+      <svg viewBox="0 0 100 80"><defs><style>.c1{fill:none;stroke:#6366f1;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c1" d="M 15 65 Q 30 65 40 55 T 55 35 T 85 15"/></svg>
+      <h5>Sigmoid</h5>
+      <p>σ(x)=1/(1+e⁻ˣ)<br>输出0~1，有饱和区</p>
+    </div>
+    <div class="kg-act-card">
+      <svg viewBox="0 0 100 80"><defs><style>.c2{fill:none;stroke:#10b981;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.2s forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="40" x2="90" y2="40" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c2" d="M 15 65 Q 30 62 40 50 T 55 30 T 85 15"/></svg>
+      <h5>Tanh</h5>
+      <p>tanh(x)<br>输出-1~1，零中心</p>
+    </div>
+    <div class="kg-act-card">
+      <svg viewBox="0 0 100 80"><defs><style>.c3{fill:none;stroke:#f59e0b;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.4s forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c3" d="M 15 65 L 50 65 L 85 15"/></svg>
+      <h5>ReLU</h5>
+      <p>max(0,x)<br>最简单，计算最快</p>
+    </div>
+    <div class="kg-act-card">
+      <svg viewBox="0 0 100 80"><defs><style>.c4{fill:none;stroke:#ef4444;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.6s forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c4" d="M 15 67 L 50 65 L 85 15"/><path class="c4" d="M 15 67 L 50 65" stroke="#ef4444" stroke-width="2.5" opacity="0.5"/></svg>
+      <h5>Leaky ReLU</h5>
+      <p>x&lt;0时有微小斜率<br>解决ReLU"死亡"问题</p>
+    </div>
+    <div class="kg-act-card">
+      <svg viewBox="0 0 100 80"><defs><style>.c5{fill:none;stroke:#a855f7;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.8s forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c5" d="M 15 68 Q 30 66 40 60 Q 50 53 55 40 T 85 15"/></svg>
+      <h5>ELU</h5>
+      <p>平滑负值区域<br>减少噪声</p>
+    </div>
+    <div class="kg-act-card">
+      <svg viewBox="0 0 100 80"><defs><style>.c6{fill:none;stroke:#0ea5e9;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 1.0s forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c6" d="M 15 67 Q 35 65 45 55 Q 52 45 58 35 T 85 15"/></svg>
+      <h5>GELU</h5>
+      <p>高斯误差线性单元<br>BERT/GPT标配</p>
+    </div>
+  </div>
+</div>
+
+<table>
+<thead><tr><th>激活函数</th><th>优点</th><th>缺点</th><th>在哪用</th></tr></thead>
+<tbody>
+<tr><td><b>Sigmoid</b></td><td>输出0~1，适合概率输出</td><td><b style="color:var(--accent-red)">梯度消失</b>（x很大/很小时梯度≈0）；非零中心</td><td>二分类输出层</td></tr>
+<tr><td><b>Tanh</b></td><td>零中心，比Sigmoid梯度更大</td><td>依然有梯度消失问题</td><td>RNN/早期隐藏层</td></tr>
+<tr><td><b>ReLU</b></td><td>计算极快；正区间梯度恒为1，<b>解决梯度消失</b></td><td>"死亡ReLU"——负输入梯度永远为0，神经元永久失活</td><td>CNN隐藏层（最常用）</td></tr>
+<tr><td><b>Leaky ReLU</b></td><td>负区间有小梯度（如0.01x），避免神经元死亡</td><td>需要调斜率超参数</td><td>深网络隐藏层</td></tr>
+<tr><td><b>ELU</b></td><td>负区间平滑，接近零均值输出</td><td>含exp计算，比ReLU慢</td><td>对噪声敏感的任务</td></tr>
+<tr><td><b>GELU</b></td><td>平滑+随机正则化效果，理论上最优</td><td>计算最复杂</td><td>Transformer（BERT、GPT、ViT）</td></tr>
+</tbody>
+</table>
+
+<p><b>选择建议</b>：隐藏层首选 <code>ReLU</code>（简单高效），遇到神经元死亡换 <code>Leaky ReLU</code>；Transformer类网络用 <code>GELU</code>；二分类输出层用 <code>Sigmoid</code>。</p>
+
+<h3>十一、梯度下降——"下山找最低谷"的智慧</h3>
+
+<p>反向传播告诉我们"每个权重该往哪调"，而梯度下降就是真正执行这个调整的算法。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-gradient-descent.jpg" alt="梯度下降方法对比" class="kg-img">
+  <div class="kg-caption">图：不同优化器的路径对比——SGD最曲折，Adam最直接</div>
+</div>
+
+<h4>11.1 基本原理：蒙眼下山</h4>
+
+<p>想象你被蒙上眼睛站在山上，目标是到达最低的谷底。你能感受脚下的坡度（梯度），于是每次往<b>最陡的下坡方向</b>走一步。这就是梯度下降。</p>
+
+<div class="kg-gd-demo">
+  <div class="kg-gd-container">
+    <svg viewBox="0 0 500 180" style="width:100%;max-width:500px;display:block;">
+      <defs>
+        <linearGradient id="kgHillGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(99,102,241,0.02)"/>
+          <stop offset="100%" stop-color="rgba(99,102,241,0.15)"/>
+        </linearGradient>
+      </defs>
+      <path d="M 0 30 Q 80 20 140 50 T 260 100 T 380 145 T 500 160 L 500 180 L 0 180 Z" fill="url(#kgHillGrad)" stroke="var(--primary)" stroke-width="2"/>
+      <circle cx="30" cy="32" r="12" fill="#f59e0b" stroke="#fbbf24" stroke-width="2">
+        <animate attributeName="cx" values="30;120;200;280;340;340;30" dur="5s" repeatCount="indefinite"/>
+        <animate attributeName="cy" values="32;50;75;100;125;125;32" dur="5s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="12;12;12;11;10;10;12" dur="5s" repeatCount="indefinite"/>
+      </circle>
+      <text x="30" y="20" font-size="10" fill="var(--text-muted)">起点</text>
+      <text x="340" y="160" font-size="10" fill="#10b981">最低点(最优解)</text>
+    </svg>
+  </div>
+  <p style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:8px;">👆 动画：小球从山顶滚向谷底——这就是梯度下降的可视化</p>
+</div>
+
+<p><b>公式</b>：<code>w_new = w_old - η × ∂L/∂w</code></p>
+<p>其中 <code>η</code>（eta）是<b>学习率</b>——决定每步走多大。走太大可能跳过谷底，走太小可能走到天荒地老。</p>
+
+<h4>11.2 梯度下降的三个"版本"</h4>
+
+<table>
+<thead><tr><th>方法</th><th>每次用什么数据</th><th>速度</th><th>稳定性</th><th>比喻</th></tr></thead>
+<tbody>
+<tr><td><b>批量梯度下降 (BGD)</b></td><td>全部训练数据</td><td>慢</td><td>最稳定</td><td>每次下山前把整座山的地形都勘测一遍</td></tr>
+<tr><td><b>随机梯度下降 (SGD)</b></td><td>1个样本</td><td>最快</td><td>最不稳定（抖动大）</td><td>蒙着眼只摸脚下一小块就迈步</td></tr>
+<tr><td><b>小批量梯度下降 (Mini-batch GD)</b></td><td>一小批样本（如32/64/128）</td><td>较快</td><td>较稳定</td><td>每次看一小片区域再决定方向</td></tr>
+</tbody>
+</table>
+
+<h4>11.3 优化器进化史：从SGD到Adam</h4>
+
+<div class="kg-tabs" id="kgOptimizerTabs">
+  <div class="kg-tab active" onclick="kgSwitchTab('sgd')">SGD</div>
+  <div class="kg-tab" onclick="kgSwitchTab('momentum')">Momentum</div>
+  <div class="kg-tab" onclick="kgSwitchTab('adagrad')">AdaGrad</div>
+  <div class="kg-tab" onclick="kgSwitchTab('rmsprop')">RMSprop</div>
+  <div class="kg-tab" onclick="kgSwitchTab('adam')">Adam ⭐</div>
+</div>
+
+<div class="kg-tab-content active" id="kg-tab-sgd">
+  <h4>SGD（随机梯度下降）— 最基础版</h4>
+  <p><code>w = w - η × ∇L</code></p>
+  <p>每次只用一个（或一小批）样本的梯度来更新。简单直接，但路径曲折震荡，容易在峡谷地形里来回弹跳。</p>
+  <p><b>适合</b>：大规模数据集、简单模型。<b>缺点</b>：收敛慢，容易卡在局部最优。</p>
+</div>
+
+<div class="kg-tab-content" id="kg-tab-momentum">
+  <h4>Momentum（动量法）— "惯性滑行"</h4>
+  <p><code>v = γ×v + η×∇L &nbsp;→&nbsp; w = w - v</code></p>
+  <p>引入"动量"概念——像滚球有惯性一样，积累之前的梯度方向。即使当前梯度方向变了，之前积累的动量还会带着球继续往前冲一段，帮助越过平坦区域和小坑。</p>
+  <p><b>比喻</b>：SGD是"走一步看一步"，Momentum是"骑自行车有惯性，即使不蹬也会滑一段"。</p>
+</div>
+
+<div class="kg-tab-content" id="kg-tab-adagrad">
+  <h4>AdaGrad — "自适应学习率（每个参数不同）"</h4>
+  <p><code>w = w - η/(√(G+ε)) × ∇L</code></p>
+  <p>给每个参数分配不同的学习率——频繁更新的参数学习率自动减小，不常更新的参数保持较大学习率。像因材施教——学得快的学生给少点作业，学得慢的多给点。</p>
+  <p><b>缺点</b>：学习率只减不增，训练后期学习率会变得太小，几乎停止学习。</p>
+</div>
+
+<div class="kg-tab-content" id="kg-tab-rmsprop">
+  <h4>RMSprop — "解决AdaGrad的衰减问题"</h4>
+  <p><code>v = β×v + (1-β)×∇L² &nbsp;→&nbsp; w = w - η/(√(v+ε)) × ∇L</code></p>
+  <p>用指数移动平均代替累加和——只关注"最近"的梯度平方，不让历史累积把学习率压死。Hinton提出，至今仍是RNN训练的常用选择。</p>
+  <p><b>一句话</b>：AdaGrad的"遗忘版"——记住近期，忘记远古。</p>
+</div>
+
+<div class="kg-tab-content" id="kg-tab-adam">
+  <h4>Adam — "Momentum + RMSprop 的合体"（最常用 ⭐）</h4>
+  <p><code>m = β₁×m + (1-β₁)×∇L &nbsp;（动量）<br>v = β₂×v + (1-β₂)×∇L² &nbsp;（自适应学习率）<br>w = w - η×m̂/(√(v̂)+ε)</code></p>
+  <p>同时具备Momentum的"惯性滑行"和RMSprop的"自适应学习率"，还有偏差校正让初期训练更稳定。是目前深度学习中最常用的优化器。</p>
+  <p><b>默认参数</b>：β₁=0.9, β₂=0.999, η=0.001。<b>适合</b>：几乎所有深度学习任务（CNN、Transformer、GAN）。</p>
+</div>
+
+<h3>十二、损失函数——"裁判"如何打分？</h3>
+
+<p>损失函数（Loss Function）就是神经网络的"裁判"——它衡量预测值和真实值之间的差距。训练的目标就是<b>让损失尽可能小</b>。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-loss-functions.jpg" alt="损失函数对比" class="kg-img">
+  <div class="kg-caption">图：不同损失函数对误差的惩罚方式不同——MSE惩罚大误差，MAE线性惩罚，Huber取平衡</div>
+</div>
+
+<h4>12.1 回归任务用的损失函数</h4>
+
+<div class="kg-loss-demo">
+  <div style="text-align:center;margin-bottom:8px;font-size:13px;color:var(--text-muted);">👇 动画：当预测误差为5时，不同损失函数的"惩罚力度"</div>
+  <div class="kg-loss-bars">
+    <div class="kg-loss-bar" style="background:#6366f1;height:25%;animation-delay:0s;">
+      <span class="kg-loss-bar-value">1.0</span>
+      <span class="kg-loss-bar-label">MAE</span>
+    </div>
+    <div class="kg-loss-bar" style="background:#0ea5e9;height:55%;animation-delay:0.2s;">
+      <span class="kg-loss-bar-value">6.0</span>
+      <span class="kg-loss-bar-label">MSE</span>
+    </div>
+    <div class="kg-loss-bar" style="background:#f59e0b;height:30%;animation-delay:0.4s;">
+      <span class="kg-loss-bar-value">1.8</span>
+      <span class="kg-loss-bar-label">Huber</span>
+    </div>
+    <div class="kg-loss-bar" style="background:#a855f7;height:40%;animation-delay:0.6s;">
+      <span class="kg-loss-bar-value">3.0</span>
+      <span class="kg-loss-bar-label">Log-Cosh</span>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:30px;">误差=5时的损失值对比：MSE(25)被平方放大，MAE(5)线性增长，Huber取平衡</p>
+</div>
+
+<table>
+<thead><tr><th>损失函数</th><th>公式</th><th>特点</th><th>适用场景</th></tr></thead>
+<tbody>
+<tr><td><b>MAE (L1 Loss)</b></td><td>L = |y - ŷ|</td><td>对异常值<b>鲁棒</b>（不放大误差）；但在零点不可导</td><td>数据中有较多异常值</td></tr>
+<tr><td><b>MSE (L2 Loss)</b></td><td>L = (y - ŷ)²</td><td>大误差被<b>平方放大</b>，网络更关注大误差样本；但对异常值敏感</td><td>大部分回归任务（默认选择）</td></tr>
+<tr><td><b>Huber Loss</b></td><td>小误差用MSE，大误差用MAE</td><td><b>两者优点兼得</b>——小误差平滑可导，大误差不爆炸</td><td>有异常值但不想完全忽略</td></tr>
+<tr><td><b>Log-Cosh</b></td><td>L = log(cosh(y - ŷ))</td><td>比Huber更平滑，二阶可导</td><td>XGBoost、需要二阶导数的优化</td></tr>
+</tbody>
+</table>
+
+<h4>12.2 分类任务用的损失函数</h4>
+
+<table>
+<thead><tr><th>损失函数</th><th>公式</th><th>特点</th><th>适用场景</th></tr></thead>
+<tbody>
+<tr><td><b>交叉熵 (Cross-Entropy)</b></td><td>L = -Σ yᵢ·log(ŷᵢ)</td><td>预测越错且越自信，惩罚越大（对数级惩罚）</td><td><b>分类任务标配</b>（配合Softmax）</td></tr>
+<tr><td><b>二元交叉熵 (BCE)</b></td><td>L = -[y·log(ŷ) + (1-y)·log(1-ŷ)]</td><td>交叉熵的二分类特例</td><td>二分类（配合Sigmoid）</td></tr>
+<tr><td><b>Focal Loss</b></td><td>L = -α(1-ŷ)^γ · y·log(ŷ)</td><td>降低"容易分类"样本的权重，聚焦"难分"样本</td><td>类别不平衡（如目标检测）</td></tr>
+<tr><td><b>KL散度</b></td><td>L = Σ yᵢ·log(yᵢ/ŷᵢ)</td><td>衡量两个分布的差异</td><td>知识蒸馏、VAE</td></tr>
+</tbody>
+</table>
+
+<h4>12.3 图像恢复任务用的损失函数</h4>
+
+<table>
+<thead><tr><th>损失函数</th><th>作用</th><th>论文中常见于</th></tr></thead>
+<tbody>
+<tr><td><b>L1 / L2 Loss</b></td><td>像素级重建误差</td><td>几乎所有去雨/去雾/超分论文</td></tr>
+<tr><td><b>感知损失 (Perceptual Loss)</b></td><td>用VGG特征衡量"看起来像不像"，而非像素级差异</td><td>MFFDNet、超分辨率</td></tr>
+<tr><td><b>SSIM Loss</b></td><td>结构相似性——衡量亮度、对比度、结构三维度</td><td>去雾、图像质量增强</td></tr>
+<tr><td><b>对抗损失 (Adversarial Loss)</b></td><td>判别器打分——"看起来真不真"</td><td>GAN-based去雨/超分</td></tr>
+<tr><td><b>频谱一致性损失</b></td><td>在频域约束重建信号的关系</td><td>TransMamb</td></tr>
+</tbody>
+</table>
+
+<div class="kg-step">
+  <strong>💡 为什么图像恢复要用多种损失组合？</strong>因为单一L1/L2只看像素级差异——可能像素差不多但看起来很模糊。加入感知损失关注"视觉感知质量"，加入SSIM关注"结构保持"，加入对抗损失关注"真实感"。多种损失组合才能全面提升恢复质量。比如MFFDNet就用 <code>L1 + 0.04×Perceptual</code>。
+</div>
+
+<div class="kg-step">
+  <strong>🎯 全章总结</strong>：感知机太简单 → MLP加层加激活函数引入非线性 → 反向传播用链式法则算梯度 → 梯度下降（SGD→Momentum→Adam）沿着梯度下山调参 → 损失函数当裁判给预测打分 → 网络不断"做题→纠错→改进"直到损失最小。这就是深度学习的完整闭环！
+</div>
 `;
 
 const knowledgePanel = document.getElementById('knowledgePanel');
@@ -4973,6 +5494,18 @@ function closeKnowledge() {
 
 document.getElementById('btnKnowledge').addEventListener('click', openKnowledge);
 document.getElementById('knowledgeCloseBtn').addEventListener('click', closeKnowledge);
+
+// Tab switcher for optimizer comparison
+function kgSwitchTab(tabId) {
+  var tabs = document.querySelectorAll('#kgOptimizerTabs .kg-tab');
+  var contents = document.querySelectorAll('.kg-tab-content');
+  tabs.forEach(function(t) { t.classList.remove('active'); });
+  contents.forEach(function(c) { c.classList.remove('active'); });
+  var btn = document.querySelector('#kgOptimizerTabs .kg-tab[onclick*="' + tabId + '"]');
+  if (btn) btn.classList.add('active');
+  var content = document.getElementById('kg-tab-' + tabId);
+  if (content) content.classList.add('active');
+}
 
 // ============================================================
 //  Drawing Guide Toggle
