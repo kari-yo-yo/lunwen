@@ -1730,6 +1730,57 @@ body {
 .guide-step strong {
   color: var(--primary-light); font-size: 14px;
 }
+/* Knowledge Framework Images */
+.guide-body .kg-img-wrap {
+  text-align: center; margin: 20px 0;
+}
+.guide-body .kg-img {
+  max-width: 100%; border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.guide-body .kg-caption {
+  font-size: 12px; color: var(--text-muted); margin-top: 8px;
+  font-style: italic;
+}
+.guide-body .kg-compare {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin: 16px 0;
+}
+.guide-body .kg-card {
+  background: rgba(99,102,241,0.05);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+.guide-body .kg-card h4 {
+  margin-top: 0; color: var(--primary-light);
+  font-size: 14px; margin-bottom: 8px;
+}
+.guide-body .kg-card p {
+  margin: 0; font-size: 13px; line-height: 1.7;
+}
+.guide-body .kg-flow {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin: 14px 0;
+  padding: 12px 16px;
+  background: rgba(99,102,241,0.04);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.guide-body .kg-flow .kg-node {
+  padding: 6px 14px; border-radius: 6px;
+  font-size: 13px; font-weight: 600;
+  white-space: nowrap;
+}
+.guide-body .kg-flow .kg-arrow {
+  color: var(--text-muted); font-size: 18px;
+}
+.guide-body .kg-tag {
+  display: inline-block; padding: 2px 10px;
+  border-radius: 12px; font-size: 12px; font-weight: 600;
+  margin: 2px 4px 2px 0;
+}
 
 /* AI Tools Section in Sidebar */
 .ai-tools-section {
@@ -1994,6 +2045,9 @@ body {
     <button class="ai-tool-btn" id="btnDrawingGuide" title="查看论文架构图 PPT 绘制指南">
       <span class="icon">🎨</span> 绘图指南
     </button>
+    <button class="ai-tool-btn" id="btnKnowledge" title="频域/小波/混合域知识讲解" style="margin-top:6px;">
+      <span class="icon">🧠</span> 知识框架
+    </button>
   </div>
 </aside>
 
@@ -2087,6 +2141,18 @@ body {
       <button class="guide-close-btn" id="guideCloseBtn">✕ 关闭</button>
     </div>
     <div class="guide-body" id="guideBody">
+      <!-- Content injected by JS -->
+    </div>
+  </div>
+
+  <!-- Knowledge Framework Panel -->
+  <div class="guide-panel" id="knowledgePanel" style="display:none;">
+    <div class="guide-header">
+      <h2>🧠 频域 · 小波 · 混合域 知识框架</h2>
+      <p class="guide-subtitle">用大白话讲清楚图像恢复中那些"听起来很高深"的频域概念</p>
+      <button class="guide-close-btn" id="knowledgeCloseBtn">✕ 关闭</button>
+    </div>
+    <div class="guide-body" id="knowledgeBody">
       <!-- Content injected by JS -->
     </div>
   </div>
@@ -4603,6 +4669,312 @@ document.getElementById('btnAiBatch').addEventListener('click', () => {
 });
 
 // ============================================================
+//  Knowledge Framework
+// ============================================================
+const KNOWLEDGE_HTML = `
+<h3>一、什么是"频域"？为什么我们要去频率世界里看图像？</h3>
+
+<p>想象你在听一首交响乐。这首曲子里有低沉的大提琴（低频）、悠扬的小提琴（中频）、清脆的三角铁（高频）。</p>
+
+<p>如果我只给你一个选项：<b>一次性把所有乐器的声音都抹掉</b>——你做不到"只去掉三角铁的高音，保留大提琴的低音"，对吧？</p>
+
+<p>图像也一样。一张照片可以被分解成不同频率的成分：</p>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>🌊 低频分量 (Low Frequency)</h4>
+    <p>图像中<b>缓慢变化</b>的部分——大面积的天空、墙壁的颜色、人物皮肤的色调。可以理解为"背景色"和"大色块"。</p>
+  </div>
+  <div class="kg-card">
+    <h4>⚡ 高频分量 (High Frequency)</h4>
+    <p>图像中<b>剧烈变化</b>的部分——物体的边缘、纹理细节、雨丝的线条。可以理解为"轮廓线"和"精细纹理"。</p>
+  </div>
+</div>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-freq-domain.jpg" alt="频域分解示意图" class="kg-img">
+  <div class="kg-caption">图：图像的频域分解——把一张照片拆成"低频大色块"和"高频细节线"</div>
+</div>
+
+<p>频域处理的核心思想就是：<b>把图像变换到频率世界，在频率世界里做手术，再变回图像</b>。就像给音乐做EQ均衡器调节——想去除刺耳的高音？调低高频增益就行。</p>
+
+<div class="kg-flow">
+  <span class="kg-node" style="background:#6366f1;color:#fff;">原图（空间域）</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#0ea5e9;color:#fff;">傅里叶变换(FFT)</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#f59e0b;color:#fff;">频域（处理）</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#0ea5e9;color:#fff;">逆傅里叶变换(IFFT)</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#6366f1;color:#fff;">结果图像</span>
+</div>
+
+<h3>二、陷波滤波器 & 带阻滤波器——频域里的"精准手术刀"</h3>
+
+<p>这两种滤波器是频域处理中最常用的两个工具，它们的区别用一句话概括：</p>
+
+<div class="kg-step">
+  <strong>陷波滤波器 (Notch Filter)</strong>：像用<b>牙签精准地挑掉</b>频谱中某一个极窄的频率点。适合去除<b>周期性噪声</b>（如扫描仪产生的固定频率条纹）。
+</div>
+
+<div class="kg-step">
+  <strong>带阻滤波器 (Band-Stop Filter)</strong>：像用<b>宽胶带贴掉</b>频谱中一段连续的频率范围。适合去除<b>一个频段的噪声</b>（如某个频率范围的干扰信号）。
+</div>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-filter-types.jpg" alt="陷波滤波器与带阻滤波器对比" class="kg-img">
+  <div class="kg-caption">图：陷波滤波器（左）只挖掉一个极窄的频率点；带阻滤波器（右）挡掉一整段频率范围</div>
+</div>
+
+<p>它们的原理很简单：在频谱图上，把你不想要的频率对应的亮度直接设为0（或接近0），然后做逆变换回图像。被"挖掉"的那些频率所对应的图像信息就消失了。</p>
+
+<p><b>打个比方</b>：陷波滤波器像"消音一个特定音高的噪音"，带阻滤波器像"关闭一个频段的均衡器"。前者精准但窄，后者粗糙但覆盖面大。</p>
+
+<h3>三、为什么纯频域方法容易模糊边缘？为什么对复杂场景不鲁棒？</h3>
+
+<p>这是频域方法最大的痛点，也是为什么单纯用FFT去雨/去雾效果不好的根本原因。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-edge-blur.jpg" alt="频域处理导致边缘模糊原理" class="kg-img">
+  <div class="kg-caption">图：高频分量中同时包含"边缘"和"雨纹"——想去掉雨纹就必然伤到边缘</div>
+</div>
+
+<h4>3.1 根本原因：雨纹和边缘"住"在同一个频段</h4>
+
+<p>问题出在这里——雨丝的条纹和图像中物体的边缘，<b>它们都是高频信息</b>。</p>
+
+<p>当你在频域里用低通滤波器压制高频噪声时，<b>边缘也一起被压了</b>，就像你想扔掉垃圾，但垃圾和钱包混在同一个抽屉里——一扔就全扔了。</p>
+
+<h4>3.2 为什么对复杂场景不鲁棒？</h4>
+
+<p>频域滤波器通常是<b>全局统一的</b>——它对整张图用同一个规则。但复杂场景中：</p>
+<ul>
+  <li>天空区域可能几乎没有高频信息（纯净），但建筑区域布满高频细节</li>
+  <li>同一种雨纹在不同背景上产生的频率特征会不同</li>
+  <li>全局统一的阈值要么"去不干净"，要么"去了不该去的"</li>
+</ul>
+
+<p><b>一句话总结</b>：频域方法的盲点在于——<b>它不知道"这段高频是雨还是边缘"，而且它对全图一视同仁</b>。这正是后来小波变换和混合域方法要解决的问题。</p>
+
+<h3>四、小波变换——"既能看全貌，又能抠细节"的瑞士军刀</h3>
+
+<p>小波变换（Wavelet Transform）是傅里叶变换的"升级版"。傅里叶只能告诉你"这个频率存不存在"，而小波还能告诉你"这个频率<b>在图像的哪个位置</b>"。</p>
+
+<p><b>打个比方</b>：傅里叶像一个人拿着放大镜扫过整幅画说"画里有红色"；小波像一个人指着画说"<b>左上角那棵树的树叶是红色的</b>"。</p>
+
+<h4>4.1 小波子带——小波分解的"四块拼图"</h4>
+
+<p>一次小波分解会把图像拆成<b>4个子带</b>（Subband）：</p>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>LL (Low-Low) 低频近似</h4>
+    <p>原图的<b>缩小版</b>，保留了大部分亮度和颜色信息，但尺寸减半。是"大局观"，是背景和大色块。</p>
+  </div>
+  <div class="kg-card">
+    <h4>LH (Low-High) 水平细节</h4>
+    <p>捕捉<b>水平方向的边缘和纹理</b>。比如建筑物的水平线条、地平线。</p>
+  </div>
+</div>
+<div class="kg-compare" style="margin-top:12px;">
+  <div class="kg-card">
+    <h4>HL (High-Low) 垂直细节</h4>
+    <p>捕捉<b>垂直方向的边缘和纹理</b>。比如树干、电线杆、垂直雨丝。</p>
+  </div>
+  <div class="kg-card">
+    <h4>HH (High-High) 对角细节</h4>
+    <p>捕捉<b>对角方向的纹理</b>。比如斜向雨纹、斜边缘、交叉纹理。</p>
+  </div>
+</div>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-wavelet-decomp.jpg" alt="小波分解树" class="kg-img">
+  <div class="kg-caption">图：小波分解树——每次分解把图像拆成 LL/LH/HL/HH 四块，LL还可以继续分解</div>
+</div>
+
+<p>关键点来了——<b>LL子带可以继续分解</b>，形成多层金字塔结构（这就是多分辨率分析）。就像不断用放大镜看更小的区域，每一层能看到更精细的细节。</p>
+
+<h4>4.2 为什么小波比FFT更适合图像恢复？</h4>
+
+<table>
+<thead><tr><th>特性</th><th>傅里叶变换(FFT)</th><th>小波变换(DWT)</th></tr></thead>
+<tbody>
+<tr><td>频率定位</td><td>能告诉你"有没有某频率"</td><td>能告诉你"某频率在<b>哪个位置</b>"</td></tr>
+<tr><td>空间信息</td><td><b style="color:var(--accent-red)">完全丢失</b>——知道有高频，但不知道在哪</td><td><b style="color:#10b981">保留</b>——每个子带保留空间位置</td></tr>
+<tr><td>雨纹 vs 边缘</td><td>无法区分（都是高频）</td><td>可以通过子带方向<b>部分区分</b>（垂直雨纹主要在HL）</td></tr>
+<tr><td>多尺度</td><td>不支持</td><td><b style="color:#10b981">天然支持</b>——多层分解=多个尺度</td></tr>
+</tbody>
+</table>
+
+<p>所以你看到论文里很多去雨方法（如DAWN+、MFFDNet、SCGN）都用了小波——因为小波既能"看到雨纹在哪个频段"，又能"看到雨纹在图像的哪个位置"。</p>
+
+<h3>五、小波家族——不同的"眼睛"看不同的世界</h3>
+
+<p>小波变换需要选择一个"母小波"（Mother Wavelet）作为基础函数，就像选择一副眼镜——不同的眼镜看世界的效果不同。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-wavelet-family.jpg" alt="小波家族对比" class="kg-img">
+  <div class="kg-caption">图：四种经典小波的波形对比——从最简单的Haar到最精细的Morlet</div>
+</div>
+
+<table>
+<thead><tr><th>小波名称</th><th>特点</th><th>长相描述</th><th>适合什么场景</th></tr></thead>
+<tbody>
+<tr><td><b>Haar 小波</b></td><td>最简单、计算最快</td><td>像一个<b>方波台阶</b>：上半+1，下半-1</td><td>快速原型验证、边缘检测教学演示</td></tr>
+<tr><td><b>Daubechies 小波 (dbN)</b></td><td>正交、紧支撑、<b>不对称</b></td><td>像<b>不规则的波浪</b>，越高的阶数(N越大)越平滑</td><td>图像去噪/压缩（db2~db8最常用），去雨论文中常见</td></tr>
+<tr><td><b>Symlet 小波 (symN)</b></td><td>Daubechies的<b>近对称改进版</b></td><td>像<b>更均匀对称的波浪</b>，视觉上比db更"好看"</td><td>需要对称性时使用（减少相位畸变），信号处理</td></tr>
+<tr><td><b>Coiflet 小波</b></td><td>具有<b>更高阶消失矩</b></td><td>像<b>更圆滑的波浪</b>，对称性介于db和sym之间</td><td>需要精确重建的数值分析</td></tr>
+<tr><td><b>Morlet 小波</b></td><td><b>连续小波</b>、非正交</td><td>像一个<b>被正弦波调制的高斯钟形曲线</b></td><td>时频分析、特征提取、非压缩应用</td></tr>
+<tr><td><b>Biorthogonal 小波</b></td><td><b>双正交</b>——分解和重建用不同小波</td><td>一对配合使用的波浪</td><td>图像压缩（JPEG2000用bior3.5/3.5）</td></tr>
+</tbody>
+</table>
+
+<p><b>选择建议</b>：去雨/去噪论文中最常用的是 <code>db2</code>、<code>db4</code>（Daubechies）和 <code>sym4</code>（Symlet），因为它们在平滑性和计算效率之间取得了很好的平衡。</p>
+
+<h3>六、Contourlet & Shearlet——"看得见方向的"高级变换</h3>
+
+<p>小波虽然比FFT强，但有个局限：<b>小波主要只擅长捕捉水平和垂直方向</b>。自然界中大量纹理是斜的、弯曲的（比如斜向雨纹、河流的曲线、道路的弧线），小波对它们的捕捉能力有限。</p>
+
+<p>于是就有了<b>方向性多尺度变换</b>——Contourlet和Shearlet。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-contourlet-shearlet.jpg" alt="Contourlet与Shearlet对比" class="kg-img">
+  <div class="kg-caption">图：Contourlet变换（左）通过方向滤波器组捕获楔形方向子带；Shearlet变换（右）通过剪切操作实现更灵活的方向分析</div>
+</div>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>📐 Contourlet 变换</h4>
+    <p><b>两步走</b>：先用<b>拉普拉斯金字塔(LP)</b>做多尺度分解（把图像分成不同分辨率），再用<b>方向滤波器组(DFB)</b>在每个尺度上做方向分解。</p>
+    <p style="margin-top:8px;"><b>优势</b>：能捕获<b>任意方向</b>的纹理，不像小波只有水平/垂直/对角三个方向。</p>
+    <p style="margin-top:8px;"><b>劣势</b>：没有平移不变性（图像稍微平移，结果会变），基函数不规则。</p>
+  </div>
+  <div class="kg-card">
+    <h4>📐 Shearlet 变换</h4>
+    <p><b>数学上更优雅</b>：通过<b>剪切矩阵</b>（Shearing Matrix）对母函数做旋转和缩放，生成不同方向和尺度的基函数。</p>
+    <p style="margin-top:8px;"><b>优势</b>：理论最优稀疏性，有<b>平移不变性</b>，数学基础更完善（满足抛物线缩放定律）。</p>
+    <p style="margin-top:8px;"><b>劣势</b>：计算复杂度较高，实现相对复杂。</p>
+  </div>
+</div>
+
+<p><b>一句话总结</b>：Contourlet像用<b>棱镜分光</b>的方式分解方向，Shearlet像用<b>数学剪刀剪纸</b>的方式切割方向。Shearlet是Contourlet的"理论升级版"。</p>
+
+<h3>七、前沿方法大盘点——频域、小波、CNN如何"组队打怪"？</h3>
+
+<h4>7.1 小波 + TV正则化结合</h4>
+
+<p><b>TV（Total Variation，全变分）正则化</b>的核心思想是：假设"好的图像"应该是<b>分段平坦</b>的（一大片天空是均匀的，突然跳到建筑物的边缘有一个急剧变化，但不会在平坦区域里有杂乱的抖动）。</p>
+
+<div class="kg-flow">
+  <span class="kg-node" style="background:#6366f1;color:#fff;">含噪图像</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#0ea5e9;color:#fff;">小波分解</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#f59e0b;color:#fff;">TV正则化去噪（保留边缘）</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#0ea5e9;color:#fff;">小波重建</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#10b981;color:#fff;">干净图像</span>
+</div>
+
+<p><b>为什么组合？</b>小波擅长频率定位但可能在平坦区域产生伪影；TV擅长保持平坦和锐利边缘但可能丢失纹理。两者互补：小波先分频，TV在小波域里做正则化，既保留了边缘又减少了伪影。</p>
+
+<h4>7.2 频域注意力融合</h4>
+
+<p>把<b>注意力机制</b>搬到了频域里。传统注意力在空间域计算（这个像素和那个像素的关系），频域注意力在<b>频率维度</b>计算（这个频率通道和那个频率通道的关系）。</p>
+
+<div class="kg-step">
+  <strong>典型做法</strong>：把图像做FFT变换到频域 → 在频域的不同频率通道上做自注意力/交叉注意力 → 学习"哪些频率通道对当前任务更重要" → 加权后再IFFT回空间域。
+</div>
+
+<p><b>优势</b>：能自适应地选择频率通道——不用人工设阈值，网络自己学"雨纹在哪些频率、背景在哪些频率"。SCGN、TransMamb等论文都用了这个思路。</p>
+
+<h4>7.3 小波变换 + CNN结合</h4>
+
+<p>CNN在<b>空间域</b>提取局部特征，小波在<b>频率域</b>做多尺度分解。两者结合的典型方式：</p>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>方式A：小波做预处理</h4>
+    <p>先用小波分解出LL/LH/HL/HH四个子带 → 把每个子带当作不同的"输入通道"喂给CNN → CNN在不同子带上分别学习特征。</p>
+    <p style="margin-top:6px;font-size:12px;color:var(--text-muted);">代表：DAWN+（小波域向量分解 + 方向注意力）</p>
+  </div>
+  <div class="kg-card">
+    <h4>方式B：小波嵌入网络</h4>
+    <p>把小波变换作为网络中的一个<b>可学习层</b>嵌入CNN → 网络自动学习如何做小波分解和重建 → 端到端训练。</p>
+    <p style="margin-top:6px;font-size:12px;color:var(--text-muted);">代表：MFFDNet（CSAB通道注意力分离高低频）</p>
+  </div>
+</div>
+
+<h4>7.4 混合域去雨网络——"空间+频域+小波"三剑合璧</h4>
+
+<p>最新的去雨网络已经不再局限于单一域，而是<b>在多个域之间切换和融合</b>：</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-hybrid-domain.jpg" alt="混合域去雨流水线" class="kg-img">
+  <div class="kg-caption">图：混合域去雨网络——空间域CNN提取局部特征 + 频域注意力捕获全局依赖 + 小波域多尺度分析</div>
+</div>
+
+<table>
+<thead><tr><th>论文</th><th>使用的域</th><th>核心思路</th></tr></thead>
+<tbody>
+<tr><td><b>DAWN+</b></td><td>小波域</td><td>小波分解 → 方向感知注意力 → 互表示学习 → 小波重建</td></tr>
+<tr><td><b>MFFDNet</b></td><td>空间域 + 频域(CSAB)</td><td>CSAB通道注意力分离高低频 + WTB窗口Transformer捕获全局</td></tr>
+<tr><td><b>TransMamb</b></td><td>空间域 + 频域</td><td>频谱分组Transformer(频域通道注意力) + 双向SSM(空间序列)</td></tr>
+<tr><td><b>SCGN</b></td><td>空间域 + 频域(FFT)</td><td>空间标准差引导加权 + FFT频带引导加权 → 双域融合</td></tr>
+<tr><td><b>CPRAformer</b></td><td>空间域 + 频域模块</td><td>稀疏提示通道注意力 + CNN近似空间注意力 + 自适应频率对齐</td></tr>
+<tr><td><b>SSFA-Net</b></td><td>空间域 + 频域</td><td>稀疏条带注意力 + 空间-频率双域注意力(DDSFA)</td></tr>
+</tbody>
+</table>
+
+<p><b>混合域为什么强？</b>因为每个域都有自己擅长的部分：</p>
+<ul>
+  <li><span class="kg-tag" style="background:#6366f1;color:#fff;">空间域</span> 擅长提取<b>局部纹理和边缘</b>（CNN的卷积核天然做这个）</li>
+  <li><span class="kg-tag" style="background:#0ea5e9;color:#fff;">频域</span> 擅长分析<b>全局频率分布</b>和<b>通道间依赖</b>（FFT自注意力计算量小）</li>
+  <li><span class="kg-tag" style="background:#f59e0b;color:#fff;">小波域</span> 擅长<b>多尺度+方向性</b>分析（LL/LH/HL/HH金字塔）</li>
+</ul>
+
+<p>把它们组合起来，就像让一个团队里有人负责看细节、有人负责看全局、有人负责看方向——<b>各司其职，互补短板</b>，效果自然比任何单打独斗都好。</p>
+
+<div class="kg-step">
+  <strong>💡 总结一句话</strong>：频域方法提供了"频率视角"但缺乏空间定位能力 → 小波解决了定位问题但方向性不足 → Contourlet/Shearlet增强方向性 → 混合域网络把它们全部组合，实现"局部+全局+频率+方向"的全面建模。这就是去雨领域从传统方法到深度学习方法的进化脉络。
+</div>
+`;
+
+const knowledgePanel = document.getElementById('knowledgePanel');
+const knowledgeBody = document.getElementById('knowledgeBody');
+
+function openKnowledge() {
+  knowledgeBody.innerHTML = KNOWLEDGE_HTML;
+  knowledgePanel.style.display = 'block';
+  document.getElementById('heroBanner').style.display = 'none';
+  document.getElementById('statsBar').style.display = 'none';
+  document.getElementById('progressSection').style.display = 'none';
+  document.getElementById('heatmapSection').style.display = 'none';
+  document.getElementById('paperGrid').style.display = 'none';
+  document.querySelector('.toolbar').style.display = 'none';
+  // also hide guide panel if open
+  if (document.getElementById('guidePanel')) {
+    document.getElementById('guidePanel').style.display = 'none';
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function closeKnowledge() {
+  knowledgePanel.style.display = 'none';
+  document.getElementById('heroBanner').style.display = '';
+  document.getElementById('statsBar').style.display = '';
+  document.getElementById('progressSection').style.display = '';
+  document.getElementById('heatmapSection').style.display = '';
+  document.getElementById('paperGrid').style.display = '';
+  document.querySelector('.toolbar').style.display = '';
+}
+
+document.getElementById('btnKnowledge').addEventListener('click', openKnowledge);
+document.getElementById('knowledgeCloseBtn').addEventListener('click', closeKnowledge);
+
+// ============================================================
 //  Drawing Guide Toggle
 // ============================================================
 const DRAWING_GUIDE_HTML = `
@@ -4762,6 +5134,10 @@ const mainContentNormal = document.getElementById('heroBanner');
 function openDrawingGuide() {
   guideBody.innerHTML = DRAWING_GUIDE_HTML;
   guidePanel.style.display = 'block';
+  // also hide knowledge panel if open
+  if (document.getElementById('knowledgePanel')) {
+    document.getElementById('knowledgePanel').style.display = 'none';
+  }
   document.getElementById('heroBanner').style.display = 'none';
   document.getElementById('statsBar').style.display = 'none';
   document.getElementById('progressSection').style.display = 'none';
