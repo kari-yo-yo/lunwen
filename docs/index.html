@@ -1914,6 +1914,140 @@ body {
 .kg-tab-content { display: none; padding: 16px; border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
 .kg-tab-content.active { display: block; animation: fadeIn 0.3s ease; }
 
+/* ===== Knowledge Framework: Reading Progress Bar ===== */
+.kg-progress-bar {
+  position: sticky; top: 0; z-index: 20;
+  width: 100%; height: 3px; margin-bottom: 20px;
+  background: var(--border); border-radius: 0;
+}
+.kg-progress-fill {
+  height: 100%; width: 0%; border-radius: 0;
+  background: linear-gradient(90deg, var(--primary), #a855f7);
+  transition: width 0.15s ease-out;
+}
+.kg-progress-label {
+  position: absolute; right: 8px; top: 6px;
+  font-size: 11px; color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ===== Knowledge Framework: TOC Sidebar ===== */
+.kg-layout {
+  display: flex; gap: 20px; margin-top: 0;
+}
+.kg-toc {
+  width: 200px; min-width: 200px; position: sticky;
+  top: 20px; height: fit-content; max-height: calc(100vh - 80px);
+  overflow-y: auto; padding: 16px;
+  background: rgba(99,102,241,0.04);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 12px; line-height: 1.6;
+}
+.kg-toc-title {
+  font-size: 13px; font-weight: 700; color: var(--primary-light);
+  margin-bottom: 10px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.kg-toc a {
+  display: block; color: var(--text-muted);
+  text-decoration: none; padding: 4px 8px;
+  border-radius: 4px; margin: 2px 0;
+  transition: all 0.2s; border-left: 2px solid transparent;
+}
+.kg-toc a:hover {
+  color: var(--primary); background: rgba(99,102,241,0.08);
+}
+.kg-toc a.kg-toc-active {
+  color: var(--primary-light); border-left-color: var(--primary);
+  background: rgba(99,102,241,0.1); font-weight: 600;
+}
+.kg-main { flex: 1; min-width: 0; }
+
+/* ===== Knowledge Framework: Accordion ===== */
+.kg-accordion-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; padding: 4px 0;
+  margin: 24px 0 14px; border-bottom: 1px solid var(--border);
+  transition: color 0.2s;
+}
+.kg-accordion-header:hover { color: var(--primary-light); }
+.kg-accordion-header .kg-acc-icon {
+  font-size: 14px; transition: transform 0.3s ease;
+  flex-shrink: 0; margin-left: 8px; color: var(--text-muted);
+}
+.kg-accordion-header.collapsed .kg-acc-icon { transform: rotate(-90deg); }
+.kg-accordion-body {
+  overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease;
+  max-height: 99999px; opacity: 1;
+}
+.kg-accordion-body.collapsed {
+  max-height: 0; opacity: 0; margin: 0; padding: 0;
+}
+
+/* ===== Knowledge Framework: Concept Quick Cards ===== */
+.kg-concepts {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin: 16px 0 20px; padding: 14px;
+  background: rgba(99,102,241,0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.kg-concepts-title {
+  width: 100%; font-size: 13px; font-weight: 600;
+  color: var(--text-muted); margin-bottom: 4px;
+}
+.kg-concept-chip {
+  padding: 5px 12px; border-radius: 16px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text);
+  transition: all 0.2s; user-select: none;
+  position: relative;
+}
+.kg-concept-chip:hover {
+  border-color: var(--primary); color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(99,102,241,0.15);
+}
+.kg-concept-chip.active {
+  background: var(--primary); color: #fff;
+  border-color: var(--primary);
+}
+.kg-concept-popup {
+  position: absolute; top: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%); z-index: 50;
+  width: 260px; padding: 12px 14px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  font-size: 13px; line-height: 1.7; color: var(--text);
+  animation: fadeIn 0.2s ease;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.2s;
+}
+.kg-concept-chip:hover .kg-concept-popup,
+.kg-concept-chip.active .kg-concept-popup {
+  opacity: 1; pointer-events: auto;
+}
+.kg-concept-popup strong { color: var(--primary-light); }
+.kg-concept-popup code {
+  font-size: 11px; padding: 1px 5px;
+  background: rgba(99,102,241,0.08); border-radius: 3px;
+}
+
+/* ===== Responsive: hide TOC on small screens ===== */
+@media (max-width: 900px) {
+  .kg-layout { flex-direction: column; }
+  .kg-toc { width: 100%; min-width: 0; position: static; max-height: none;
+    display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .kg-toc-title { width: auto; margin-bottom: 0; margin-right: 8px;
+    padding-bottom: 0; border-bottom: none; }
+  .kg-toc a { display: inline-block; padding: 3px 10px; margin: 0;
+    border-left: none; border-radius: 12px; font-size: 11px; }
+  .kg-toc a.kg-toc-active { border-left-color: transparent;
+    background: var(--primary); color: #fff; }
+}
+
 /* AI Tools Section in Sidebar */
 .ai-tools-section {
   margin-top: auto;
@@ -4804,7 +4938,51 @@ document.getElementById('btnAiBatch').addEventListener('click', () => {
 //  Knowledge Framework
 // ============================================================
 const KNOWLEDGE_HTML = `
-<h3>一、什么是"频域"？为什么我们要去频率世界里看图像？</h3>
+<!-- Reading Progress Bar -->
+<div class="kg-progress-bar" id="kgProgressBar">
+  <div class="kg-progress-fill" id="kgProgressFill"></div>
+</div>
+
+<!-- Concept Quick Cards -->
+<div class="kg-concepts" id="kgConcepts">
+  <div class="kg-concepts-title">🔍 概念速查（悬停查看）</div>
+  <span class="kg-concept-chip">频率分量<div class="kg-concept-popup">图像中<b>缓慢变化</b>（低频=大色块）和<b>剧烈变化</b>（高频=边缘/纹理）的部分</div></span>
+  <span class="kg-concept-chip">FFT<div class="kg-concept-popup"><b>快速傅里叶变换</b>，把图像从空间域变换到频域，揭示频率分布</div></span>
+  <span class="kg-concept-chip">陷波滤波器<div class="kg-concept-popup">精准挖掉频谱中<b>一个极窄频率点</b>，适合去除周期性噪声</div></span>
+  <span class="kg-concept-chip">小波子带<div class="kg-concept-popup">小波分解的<b>4块拼图</b>：LL(低频近似)、LH(水平细节)、HL(垂直细节)、HH(对角细节)</div></span>
+  <span class="kg-concept-chip">DWT<div class="kg-concept-popup"><b>离散小波变换</b>，比FFT多了<b>空间定位</b>能力，能知道频率在图像哪个位置</div></span>
+  <span class="kg-concept-chip">Contourlet<div class="kg-concept-popup">用<b>拉普拉斯金字塔+方向滤波器</b>捕获任意方向的纹理，小波的升级版</div></span>
+  <span class="kg-concept-chip">Shearlet<div class="kg-concept-popup">用<b>剪切矩阵</b>做方向分析，Contourlet的理论升级版，数学更优雅</div></span>
+  <span class="kg-concept-chip">MLP<div class="kg-concept-popup"><b>多层感知机</b>，输入层→隐藏层→输出层，通过多层非线性变换学习复杂模式</div></span>
+  <span class="kg-concept-chip">反向传播<div class="kg-concept-popup">用<b>链式法则</b>逐层计算<code>∂L/∂w</code>，告诉每个权重该往哪调、调多少</div></span>
+  <span class="kg-concept-chip">ReLU<div class="kg-concept-popup"><code>max(0,x)</code>，最简单的激活函数，正区间梯度恒为1，解决梯度消失</div></span>
+  <span class="kg-concept-chip">Adam<div class="kg-concept-popup"><b>Momentum+自适应学习率</b>的合体，深度学习最常用优化器(β₁=0.9, β₂=0.999)</div></span>
+  <span class="kg-concept-chip">交叉熵<div class="kg-concept-popup"><code>L=-Σy·log(ŷ)</code>，分类任务标配损失，预测越错越自信惩罚越大</div></span>
+  <span class="kg-concept-chip">感知损失<div class="kg-concept-popup">用<b>VGG特征</b>衡量"看起来像不像"，关注视觉质量而非像素差异</div></span>
+</div>
+
+<!-- Layout: TOC + Main Content -->
+<div class="kg-layout">
+  <nav class="kg-toc" id="kgToc">
+    <div class="kg-toc-title">📖 目录导航</div>
+    <a href="#kg-s1" class="kg-toc-active">一、频域基础</a>
+    <a href="#kg-s2">二、滤波器</a>
+    <a href="#kg-s3">三、频域的局限</a>
+    <a href="#kg-s4">四、小波变换</a>
+    <a href="#kg-s5">五、小波家族</a>
+    <a href="#kg-s6">六、Contourlet & Shearlet</a>
+    <a href="#kg-s7">七、混合域方法</a>
+    <a href="#kg-s8">八、神经网络进化</a>
+    <a href="#kg-s9">九、反向传播</a>
+    <a href="#kg-s10">十、激活函数</a>
+    <a href="#kg-s11">十一、梯度下降</a>
+    <a href="#kg-s12">十二、损失函数</a>
+  </nav>
+  <div class="kg-main" id="kgMain">
+
+<div class="kg-section" id="kg-s1">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>一、什么是"频域"？为什么我们要去频率世界里看图像？</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <p>想象你在听一首交响乐。这首曲子里有低沉的大提琴（低频）、悠扬的小提琴（中频）、清脆的三角铁（高频）。</p>
 
@@ -4840,9 +5018,10 @@ const KNOWLEDGE_HTML = `
   <span class="kg-node" style="background:#0ea5e9;color:#fff;">逆傅里叶变换(IFFT)</span>
   <span class="kg-arrow">→</span>
   <span class="kg-node" style="background:#6366f1;color:#fff;">结果图像</span>
-</div>
-
-<h3>二、陷波滤波器 & 带阻滤波器——频域里的"精准手术刀"</h3>
+</div></div>
+<div class="kg-section" id="kg-s2">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>二、陷波滤波器 & 带阻滤波器——频域里的"精准手术刀"</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <p>这两种滤波器是频域处理中最常用的两个工具，它们的区别用一句话概括：</p>
 
@@ -4862,8 +5041,10 @@ const KNOWLEDGE_HTML = `
 <p>它们的原理很简单：在频谱图上，把你不想要的频率对应的亮度直接设为0（或接近0），然后做逆变换回图像。被"挖掉"的那些频率所对应的图像信息就消失了。</p>
 
 <p><b>打个比方</b>：陷波滤波器像"消音一个特定音高的噪音"，带阻滤波器像"关闭一个频段的均衡器"。前者精准但窄，后者粗糙但覆盖面大。</p>
-
-<h3>三、为什么纯频域方法容易模糊边缘？为什么对复杂场景不鲁棒？</h3>
+</div></div>
+<div class="kg-section" id="kg-s3">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>三、为什么纯频域方法容易模糊边缘？为什么对复杂场景不鲁棒？</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <p>这是频域方法最大的痛点，也是为什么单纯用FFT去雨/去雾效果不好的根本原因。</p>
 
@@ -4888,8 +5069,10 @@ const KNOWLEDGE_HTML = `
 </ul>
 
 <p><b>一句话总结</b>：频域方法的盲点在于——<b>它不知道"这段高频是雨还是边缘"，而且它对全图一视同仁</b>。这正是后来小波变换和混合域方法要解决的问题。</p>
-
-<h3>四、小波变换——"既能看全貌，又能抠细节"的瑞士军刀</h3>
+</div></div>
+<div class="kg-section" id="kg-s4">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>四、小波变换——"既能看全貌，又能抠细节"的瑞士军刀</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <p>小波变换（Wavelet Transform）是傅里叶变换的"升级版"。傅里叶只能告诉你"这个频率存不存在"，而小波还能告诉你"这个频率<b>在图像的哪个位置</b>"。</p>
 
@@ -4940,8 +5123,10 @@ const KNOWLEDGE_HTML = `
 </table>
 
 <p>所以你看到论文里很多去雨方法（如DAWN+、MFFDNet、SCGN）都用了小波——因为小波既能"看到雨纹在哪个频段"，又能"看到雨纹在图像的哪个位置"。</p>
-
-<h3>五、小波家族——不同的"眼睛"看不同的世界</h3>
+</div></div>
+<div class="kg-section" id="kg-s5">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>五、小波家族——不同的"眼睛"看不同的世界</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <p>小波变换需要选择一个"母小波"（Mother Wavelet）作为基础函数，就像选择一副眼镜——不同的眼镜看世界的效果不同。</p>
 
@@ -4963,8 +5148,10 @@ const KNOWLEDGE_HTML = `
 </table>
 
 <p><b>选择建议</b>：去雨/去噪论文中最常用的是 <code>db2</code>、<code>db4</code>（Daubechies）和 <code>sym4</code>（Symlet），因为它们在平滑性和计算效率之间取得了很好的平衡。</p>
-
-<h3>六、Contourlet & Shearlet——"看得见方向的"高级变换</h3>
+</div></div>
+<div class="kg-section" id="kg-s6">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>六、Contourlet & Shearlet——"看得见方向的"高级变换</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <p>小波虽然比FFT强，但有个局限：<b>小波主要只擅长捕捉水平和垂直方向</b>。自然界中大量纹理是斜的、弯曲的（比如斜向雨纹、河流的曲线、道路的弧线），小波对它们的捕捉能力有限。</p>
 
@@ -4991,8 +5178,10 @@ const KNOWLEDGE_HTML = `
 </div>
 
 <p><b>一句话总结</b>：Contourlet像用<b>棱镜分光</b>的方式分解方向，Shearlet像用<b>数学剪刀剪纸</b>的方式切割方向。Shearlet是Contourlet的"理论升级版"。</p>
-
-<h3>七、前沿方法大盘点——频域、小波、CNN如何"组队打怪"？</h3>
+</div></div>
+<div class="kg-section" id="kg-s7">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>七、前沿方法大盘点——频域、小波、CNN如何"组队打怪"？</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <h4>7.1 小波 + TV正则化结合</h4>
 
@@ -5072,8 +5261,10 @@ const KNOWLEDGE_HTML = `
 <div class="kg-step">
   <strong>💡 总结一句话</strong>：频域方法提供了"频率视角"但缺乏空间定位能力 → 小波解决了定位问题但方向性不足 → Contourlet/Shearlet增强方向性 → 混合域网络把它们全部组合，实现"局部+全局+频率+方向"的全面建模。这就是去雨领域从传统方法到深度学习方法的进化脉络。
 </div>
-
-<h3>八、从感知机到深度神经网络——神经网络是怎么"进化"的？</h3>
+</div></div>
+<div class="kg-section" id="kg-s8">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>八、从感知机到深度神经网络——神经网络是怎么"进化"的？</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <p>要理解深度学习，得先回到1958年——那时候AI的"老祖宗"感知机（Perceptron）诞生了。</p>
 
@@ -5182,8 +5373,10 @@ const KNOWLEDGE_HTML = `
   <span class="kg-node" style="background:#f59e0b;color:#fff;">物体</span>
 </div>
 <p style="text-align:center;font-size:12px;color:var(--text-muted);">每一层都在从上一层的特征中提取更高级的抽象</p>
-
-<h3>九、反向传播——神经网络是怎么"学习"的？</h3>
+</div></div>
+<div class="kg-section" id="kg-s9">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>九、反向传播——神经网络是怎么"学习"的？</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <p>如果说前向传播是"考试做题"，那反向传播就是"老师批改后告诉你哪里错了"。</p>
 
@@ -5230,8 +5423,10 @@ const KNOWLEDGE_HTML = `
 </div>
 
 <p>反向传播完成后，每个权重都收到了一个"梯度"（gradient），告诉它"你应该往哪个方向调、调多少"。</p>
-
-<h3>十、激活函数——神经网络的"灵魂开关"</h3>
+</div></div>
+<div class="kg-section" id="kg-s10">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>十、激活函数——神经网络的"灵魂开关"</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <p>没有激活函数，再深的神经网络也等价于一个线性回归——不管堆多少层，数学上都可以合并成一层。激活函数引入了<b>非线性</b>，让网络能学习复杂的模式。</p>
 
@@ -5290,8 +5485,10 @@ const KNOWLEDGE_HTML = `
 </table>
 
 <p><b>选择建议</b>：隐藏层首选 <code>ReLU</code>（简单高效），遇到神经元死亡换 <code>Leaky ReLU</code>；Transformer类网络用 <code>GELU</code>；二分类输出层用 <code>Sigmoid</code>。</p>
-
-<h3>十一、梯度下降——"下山找最低谷"的智慧</h3>
+</div></div>
+<div class="kg-section" id="kg-s11">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>十一、梯度下降——"下山找最低谷"的智慧</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <p>反向传播告诉我们"每个权重该往哪调"，而梯度下降就是真正执行这个调整的算法。</p>
 
@@ -5384,8 +5581,10 @@ const KNOWLEDGE_HTML = `
   <p>同时具备Momentum的"惯性滑行"和RMSprop的"自适应学习率"，还有偏差校正让初期训练更稳定。是目前深度学习中最常用的优化器。</p>
   <p><b>默认参数</b>：β₁=0.9, β₂=0.999, η=0.001。<b>适合</b>：几乎所有深度学习任务（CNN、Transformer、GAN）。</p>
 </div>
-
-<h3>十二、损失函数——"裁判"如何打分？</h3>
+</div></div>
+<div class="kg-section" id="kg-s12">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>十二、损失函数——"裁判"如何打分？</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
 
 <p>损失函数（Loss Function）就是神经网络的"裁判"——它衡量预测值和真实值之间的差距。训练的目标就是<b>让损失尽可能小</b>。</p>
 
@@ -5461,6 +5660,8 @@ const KNOWLEDGE_HTML = `
 <div class="kg-step">
   <strong>🎯 全章总结</strong>：感知机太简单 → MLP加层加激活函数引入非线性 → 反向传播用链式法则算梯度 → 梯度下降（SGD→Momentum→Adam）沿着梯度下山调参 → 损失函数当裁判给预测打分 → 网络不断"做题→纠错→改进"直到损失最小。这就是深度学习的完整闭环！
 </div>
+</div></div>
+</div></div>
 `;
 
 const knowledgePanel = document.getElementById('knowledgePanel');
@@ -5480,10 +5681,43 @@ function openKnowledge() {
     document.getElementById('guidePanel').style.display = 'none';
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Init progress bar & TOC scroll tracking
+  kgInitTracking();
+}
+
+var kgScrollCleanup = null;
+function kgInitTracking() {
+  if (kgScrollCleanup) { kgScrollCleanup(); kgScrollCleanup = null; }
+  var panel = document.getElementById('knowledgePanel');
+  var fill = document.getElementById('kgProgressFill');
+  var main = document.getElementById('kgMain');
+  var tocLinks = document.querySelectorAll('#kgToc a');
+  var sections = document.querySelectorAll('.kg-section');
+  if (!fill || !main || !panel) return;
+  function onScroll() {
+    if (panel.style.display === 'none') return;
+    // Progress
+    var rect = main.getBoundingClientRect();
+    var scrolled = Math.max(0, -rect.top);
+    var total = Math.max(1, rect.height - window.innerHeight);
+    var pct = Math.min(100, (scrolled / total) * 100);
+    fill.style.width = pct + '%';
+    // TOC active
+    sections.forEach(function(sec, i) {
+      var r = sec.getBoundingClientRect();
+      if (r.top <= 120) {
+        tocLinks.forEach(function(l) { l.classList.remove('kg-toc-active'); });
+        if (tocLinks[i]) tocLinks[i].classList.add('kg-toc-active');
+      }
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  kgScrollCleanup = function() { window.removeEventListener('scroll', onScroll); };
 }
 
 function closeKnowledge() {
   knowledgePanel.style.display = 'none';
+  if (kgScrollCleanup) { kgScrollCleanup(); kgScrollCleanup = null; }
   document.getElementById('heroBanner').style.display = '';
   document.getElementById('statsBar').style.display = '';
   document.getElementById('progressSection').style.display = '';
@@ -5494,6 +5728,13 @@ function closeKnowledge() {
 
 document.getElementById('btnKnowledge').addEventListener('click', openKnowledge);
 document.getElementById('knowledgeCloseBtn').addEventListener('click', closeKnowledge);
+
+// Accordion toggle
+function kgToggleAcc(header) {
+  header.classList.toggle('collapsed');
+  var body = header.nextElementSibling;
+  body.classList.toggle('collapsed');
+}
 
 // Tab switcher for optimizer comparison
 function kgSwitchTab(tabId) {
