@@ -5000,6 +5000,11 @@ const KNOWLEDGE_HTML = `
     <a href="#kg-s15">十五、超复数 vs 实值网络</a>
     <a href="#kg-s16">十六、RQ-D2UNet架构</a>
     <a href="#kg-s17">十七、去雨评价体系</a>
+    <a href="#kg-s18">十八、稀疏表示与字典学习</a>
+    <a href="#kg-s19">十九、自注意力机制进化</a>
+    <a href="#kg-s20">二十、SE注意力与特征聚合</a>
+    <a href="#kg-s21">二十一、低频基+高频细节构造CNN</a>
+    <a href="#kg-s22">二十二、多阶段多尺度去噪网络</a>
   </nav>
   <div class="kg-main" id="kgMain">
 
@@ -6077,6 +6082,294 @@ const KNOWLEDGE_HTML = `
 <div class="kg-step">
   <strong>RQ-D2UNet的评估优势</strong>：得益于RQ的参数效率（4倍减少）和双分支架构的精准去雨能力，RQ-D2UNet在五维评估中表现出色——<b>同时提升PSNR和SSIM</b>（去雨质量好），<b>降低Params</b>（模型轻量化），同时保持合理的TIME（推理速度可接受）。这正是"超复数+双分支"架构的价值所在：不是在单一指标上刷分，而是在质量-速度-大小的三角中实现帕累托最优。
 </div>
+
+</div></div>
+
+<div class="kg-section" id="kg-s18">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>十八、稀疏表示与字典学习——用"最少的关键词"描述图像</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-sparse-dict-lowrank.jpg" alt="稀疏表示、字典学习与低秩表示" class="kg-img">
+  <div class="kg-caption">图：稀疏表示与字典学习——用最少的关键词概括图像信号</div>
+</div>
+
+<p>写文章时，一个精炼的关键词就能概括一整段内容——稀疏表示的哲学就是这样：<b>用尽可能少的"基元"来表示图像信号</b>。本章介绍字典学习、稀疏编码、低秩表示和GMM建模等核心方法，揭示图像信号背后的"经济法则"。</p>
+
+<div class="kg-step">
+  <strong>核心概念：字典学习 (Dictionary Learning)</strong>——学习一组<b>过完备字典</b>D（字典原子数远大于信号维度），用少量字典原子的线性组合来表示图像patch：<b>y = D x a</b>，其中a是稀疏的（大部分系数为0）。就像用少量"关键词"组合出一段完整的文字——大部分词都不用，只用最重要的几个。
+</div>
+
+<div class="kg-step">
+  <strong>稀疏编码 (Sparse Coding)</strong>——给定字典D，求最优稀疏表示a。<b>L0范数</b>（非零元素个数）是最直观的稀疏度量，但求解是NP-hard的。实际中用<b>L1范数</b>（LASSO）做松弛——就像从"恰好只用5个关键词"（L0，太难了）退而求其次到"关键词的总权重尽量小"（L1，可以高效求解）。
+</div>
+
+<div class="kg-step">
+  <strong>低秩表示 (Low-rank Representations)</strong>——自然图像中，非局部相似的patch构成的矩阵具有<b>低秩特性</b>。就像很多相似的照片排成一排，真正"独立"的信息其实很少。<b>SVD分解</b>保留前r个奇异值就能抓住主要信息。<b>RPCA</b>（鲁棒主成分分析）将矩阵分解为<b>低秩矩阵L + 稀疏矩阵S</b>——L是干净的信号，S是噪声/异常值。
+</div>
+
+<div class="kg-step">
+  <strong>GMM高斯混合模型</strong>——用多个高斯分布的加权组合来建模图像patch的像素级统计分布。就像用几个"高斯泡泡"的叠加来近似描述复杂的形状。<b>EM算法</b>求解：E步（期望）计算每个数据点属于每个高斯分量的后验概率，M步（最大化）更新每个分量的均值、方差和权重。两步交替直到收敛。
+</div>
+
+<div class="kg-step">
+  <strong>K-SVD算法</strong>——字典学习的经典交替优化方法。两步循环：<b>第一步</b>固定字典D，对每个patch做稀疏编码（用OMP算法，正交匹配追踪，贪心地选择最优原子）；<b>第二步</b>固定编码a，逐列更新字典D（对相关patch子矩阵做SVD分解，用左奇异向量更新字典原子）。就像一个"词典编纂者"先查用法（编码），再修词条（更新字典），反复打磨。
+</div>
+
+<div class="kg-step">
+  <strong>与DnLUT的关系</strong>——字典学习定义了一个从输入到输出的<b>非线性映射</b>（通过稀疏表示间接实现），而LUT（查找表）将这个映射<b>离散化</b>为有限的表格条目。字典学习告诉我们"该用什么基元组合"，LUT则把这些组合结果"预制好存起来"。两者在"非线性近似"这一目标上殊途同归。
+</div>
+
+<h4>稀疏编码 vs 低秩表示 vs GMM</h4>
+
+<table>
+<thead><tr><th>方法</th><th>核心思想</th><th>稀疏性体现</th><th>典型应用</th><th>类比</th></tr></thead>
+<tbody>
+<tr><td><b>稀疏编码</b></td><td>过完备字典 + 稀疏线性组合</td><td>系数向量a大部分为0</td><td>图像去噪、压缩感知</td><td>用少量关键词写文章</td></tr>
+<tr><td><b>低秩表示</b></td><td>相似patch矩阵的秩很低</td><td>奇异值只有前几个非零</td><td>背景建模、RPCA去噪</td><td>很多相似照片只需几张代表</td></tr>
+<tr><td><b>GMM</b></td><td>多高斯分布加权建模统计特性</td><td>数据集中分布在少数分量</td><td>图像先验建模、分割</td><td>用几个泡泡近似复杂形状</td></tr>
+</tbody>
+</table>
+
+</div></div>
+
+<div class="kg-section" id="kg-s19">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>十九、自注意力机制进化——从NLP到CV的"注意力革命"</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-self-attention-arch.jpg" alt="自注意力机制架构演进" class="kg-img">
+  <div class="kg-caption">图：自注意力机制——从NLP的Transformer到CV的视觉注意力</div>
+</div>
+
+<p>人在看一幅画时，不会平均地给每个像素分配精力——注意力会集中在重要区域（人脸、文字、异常物体）。<b>自注意力机制让神经网络学会了"看哪里"</b>。本章追踪自注意力从NLP（语言）到CV（视觉）的进化历程。</p>
+
+<div class="kg-step">
+  <strong>核心公式：Scaled Dot-Product Attention</strong>。Attention(Q,K,V) = softmax(QK^T / sqrt(d_k)) x V。其中Q（Query，查询）、K（Key，键）、V（Value，值）分别代表"我想找什么"、"每个位置有什么特征"、"提取什么信息"。除以sqrt(d_k)是为了防止点积过大导致softmax梯度消失。就像一个人问"这幅画里哪里有人脸？"（Q），每个像素回答"我这里像不像人脸"（K），然后把像人脸的像素信息提取出来（V）。
+</div>
+
+<div class="kg-step">
+  <strong>多头注意力 (Multi-Head Attention)</strong>——h个头并行计算不同子空间的注意力，然后将结果拼接后做线性变换。每个头关注不同类型的依赖关系（有的关注水平边缘，有的关注颜色对比，有的关注纹理模式）。就像一个专家组——每个专家只负责看一种特征，最后综合所有专家的意见。
+</div>
+
+<div class="kg-step">
+  <strong>从NLP到CV的三个关键适配</strong>：
+  <br>· <b>窗口注意力 (Window Self-Attention, Swin)</b>：将图像划分为MxM不重叠窗口，只在窗口内计算注意力。复杂度从O(N^2)降到O(M^2 x HW)。就像把教室里的学生分成小组，每组内部讨论，而不是全班两两讨论。
+  <br>· <b>转置注意力 (Transposed Attention, Restormer/MDTA)</b>：在通道维度而非空间维度计算注意力，复杂度O(C^2 x HW)。当通道数C远小于像素数HW时，效率大幅提升。就像不看"每个像素之间的关系"，而是看"每个通道之间的关系"。
+  <br>· <b>稀疏注意力 (Sparse Top-K, DRSformer)</b>：对注意力矩阵做mask，每行只保留最大的K个值，其余置零，复杂度O(NK)。就像每个人只和最相关的K个"邻居"交流，而不是和所有人都交流。
+</div>
+
+<div class="kg-step">
+  <strong>RQ-SCformer在RQ域中的自注意力实现</strong>——跨特征维自关注，在RQ（还原四元数）的四个分量维度（实部、i、j、k）上建立依赖。RQ的乘法可交换性使得注意力计算更加灵活。就像让四个"色彩通道专家"互相交流，共同决定哪些信息最重要。
+</div>
+
+<div class="kg-step">
+  <strong>架构演进路线</strong>：简单编解码器（基础起点） -&gt; U-Net（加入跳跃连接，浅层细节直达深层） -&gt; 多阶段（MPRNet，渐进式恢复） -&gt; Transformer混合（Uformer，注意力+卷积融合）。每一步演进都在解决上一代的核心痛点：信息丢失 -&gt; 细节模糊 -&gt; 语义不足 -&gt; 长距离依赖弱。
+</div>
+
+<div class="kg-step">
+  <strong>跨窗口依赖：Swin的移位窗口策略</strong>——相邻层的窗口偏移半个窗口大小（比如从0偏移到M/2），使得原本不在同一窗口的像素在下一层变成"邻居"。就像国际象棋中棋子的移动——上一轮不相邻的两个格子，下一轮可能就挨在一起了。这样既保持了窗口注意力的效率，又跨越了窗口边界的信息隔离。
+</div>
+
+<h4>自注意力复杂度对比</h4>
+
+<table>
+<thead><tr><th>注意力类型</th><th>复杂度</th><th>代表架构</th><th>核心策略</th><th>类比</th></tr></thead>
+<tbody>
+<tr><td><b>全局注意力</b></td><td>O(N^2)</td><td>ViT/原始Transformer</td><td>所有token两两计算</td><td>全班两两讨论，N个人要N^2次</td></tr>
+<tr><td><b>窗口注意力</b></td><td>O(M^2 x HW)</td><td>Swin Transformer</td><td>窗口内计算+移位窗口</td><td>分组讨论+下一轮换座位</td></tr>
+<tr><td><b>转置注意力</b></td><td>O(C^2 x HW)</td><td>Restormer</td><td>通道维度计算注意力</td><td>不问"谁和谁是邻居"，问"哪些通道相关"</td></tr>
+<tr><td><b>稀疏Top-K</b></td><td>O(NK)</td><td>DRSformer</td><td>每行只保留K个最大值</td><td>每个人只和最相关的K个朋友交流</td></tr>
+</tbody>
+</table>
+
+</div></div>
+
+<div class="kg-section" id="kg-s20">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>二十、SE注意力与特征聚合——让网络学会"筛选"和"融合"</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-se-attention-fusion.jpg" alt="SE注意力机制与特征聚合策略" class="kg-img">
+  <div class="kg-caption">图：SE注意力与特征聚合——让网络学会筛选重要通道、融合多尺度信息</div>
+</div>
+
+<p>听交响乐时，你会在某些乐段不自觉地"放大音量"（注意力集中），在其他乐段"降低音量"——<b>SE模块就是让CNN学会"调节每个通道的音量"</b>。本章从通道注意力出发，延伸到特征聚合策略和多尺度金字塔结构。</p>
+
+<div class="kg-step">
+  <strong>SE-Net三步走</strong>：
+  <br>· <b>Squeeze（压缩）</b>：全局平均池化（GAP），将每个通道的CxHxW特征图压缩为Cx1x1的一个数——就像把一整首歌的每个音轨压缩成一个"响度值"。
+  <br>· <b>Excitation（激励）</b>：两层全连接网络（降维 -&gt; ReLU -&gt; 升维 -&gt; Sigmoid），生成每个通道的权重（0到1之间）——就像一个"音量调节器"，决定每个通道该放大还是缩小。
+  <br>· <b>Scale（缩放）</b>：通道权重与原特征图逐通道相乘——重要通道被放大，不重要通道被抑制。
+</div>
+
+<div class="kg-step">
+  <strong>SE变体</strong>：
+  <br>· <b>CBAM</b>（Convolutional Block Attention Module）：通道注意力 + 空间注意力串联。先回答"哪些通道重要"，再回答"哪些空间位置重要"。
+  <br>· <b>ECA</b>（Efficient Channel Attention）：用1D卷积替代全连接层，参数更少，速度更快。就像用更简单的"滑杆"替代复杂的"调音台"。
+  <br>· <b>SKNet</b>（Selective Kernel Network）：多尺度卷积核选择——网络自己决定该用3x3还是5x5的卷积核。就像一个摄影师根据场景自动选择广角还是长焦镜头。
+</div>
+
+<h4>特征聚合三种策略对比</h4>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>求和 (Sum)</h4>
+    <p>F_out = F1 + F2<br>简单高效，ResNet残差连接的标准做法。两路特征逐像素相加。像两杯水倒进同一个杯子——混合后分不出你我。</p>
+  </div>
+  <div class="kg-card">
+    <h4>拼接 (Concat)</h4>
+    <p>[F1; F2] -&gt; Conv降维<br>保留完整信息，DenseNet和U-Net跳跃连接的做法。两路特征在通道维度拼接，再用卷积降维。像两叠文件并排放在一起——信息更全，但需要整理。</p>
+  </div>
+  <div class="kg-card">
+    <h4>注意力融合</h4>
+    <p>a(g)*F1 + (1-a(g))*F2<br>门控求和，自适应学习权重。网络自己决定两路各占多少比例。像一个混音师——根据歌曲需要实时调节两个音轨的比例。</p>
+  </div>
+</div>
+
+<div class="kg-step">
+  <strong>多尺度金字塔结构</strong>：
+  <br>· <b>FPN</b>（特征金字塔网络）：自顶向下（深层语义）+ 横向连接（浅层细节），构建多尺度特征金字塔。深层特征分辨率低但语义强（"知道是什么"），浅层特征分辨率高但语义弱（"知道在哪里"），FPN让两者互补。
+  <br>· <b>SPP</b>（空间金字塔池化）：对同一特征图做不同尺度的池化（1x1, 2x2, 4x4），然后拼接。就像从近、中、远三个距离同时观察同一个物体。
+</div>
+
+<div class="kg-step">
+  <strong>递归扩张卷积 (Recursive Dilation)</strong>——在卷积核的元素之间插入"空洞"，扩大感受野但不增加参数量。扩张率指数递增（1, 2, 4, 8），每层看到的范围翻倍。就像在放大镜上加了一圈圈的外框——不用更大的镜片，也能看到更大的范围。经典案例：DeepLab中的空洞空间金字塔池化（ASPP）。
+</div>
+
+<div class="kg-step">
+  <strong>多任务学习</strong>——共享底层特征提取器 + 任务特化头。总损失 = 各任务损失的加权和：L_total = sum(w_i x L_task_i)。就像一个人先学通用的"基础知识"，然后分专业方向深入——数学好的同学学统计和金融都更容易。共享底层减少参数，任务特化头保证每个任务都能被很好地解决。
+</div>
+
+<div class="kg-step">
+  <strong>稀疏性在Transformer中的应用</strong>——除了通道注意力中的Top-K mask，还有结构化稀疏（固定模式的稀疏，如每隔一个位置计算一次）、随机稀疏（随机采样位置）和可学习稀疏（网络自己学习哪些位置该保留）。稀疏性是控制注意力计算成本的关键手段。
+</div>
+
+</div></div>
+
+<div class="kg-section" id="kg-s21">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>二十一、低频基与高频细节——用"双层视角"构造CNN去雨网络</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-lowhigh-freq-cnn.jpg" alt="低频基与高频细节双层CNN构造" class="kg-img">
+  <div class="kg-caption">图：低频基+高频细节——双层视角构造CNN去雨网络</div>
+</div>
+
+<p>看一幅画时，你先看到"大致场景"——山在哪里、天什么颜色（<b>低频信息</b>），然后才注意到"细节纹理"——树叶的脉络、水面的波纹（<b>高频信息</b>）。<b>双层优化就是让CNN分工协作：一支队伍管"大局"，另一支队伍管"细节"</b>。</p>
+
+<div class="kg-step">
+  <strong>数学基础：图像分解 I = I_base + I_detail</strong>：
+  <br>· <b>低频基 I_base</b>：大面积平滑区域、整体结构、颜色一致性。就像一幅画的"底稿"——大致轮廓和色块。
+  <br>· <b>高频细节 I_detail</b>：边缘、纹理、锐利变化。就像一幅画的"精修"——轮廓线、细节描绘、高光点缀。
+</div>
+
+<div class="kg-step">
+  <strong>三种分解方法</strong>：
+  <br>· <b>高斯/拉普拉斯金字塔</b>：对图像做低通滤波+下采样得到低频层，原图减去低频层上采样的结果得到高频层。就像不断把照片缩小（模糊）得到"越来越粗的轮廓"，每层的差值就是细节。
+  <br>· <b>小波变换</b>：一次变换产生四个子带——LL（低频近似，即低频基）+ LH/HL/HH（水平/垂直/对角方向的高频细节）。就像用四把不同的"筛子"同时过滤图像，每个筛子只保留特定方向的细节。
+  <br>· <b>FFT频域滤波</b>：傅里叶变换到频域，用低通/高通滤波器分离低频和高频，再逆变换回空间域。就像在"频率世界"里用一把剪刀，把低音和高音分开。
+</div>
+
+<div class="kg-step">
+  <strong>如何通过双层构造CNN</strong>：
+  <br>· <b>低频分支</b>：深层网络、大感受野、允许下采样操作，捕获全局结构和上下文语义（对应U-Net的深层特征）。像用"望远镜"看大局。
+  <br>· <b>高频分支</b>：保持原始分辨率、小卷积核3x3，恢复局部细节和锐利边缘（对应U-Net的浅层特征）。像用"放大镜"看细节。
+  <br>· <b>融合策略</b>：两分支输出相加（简单直接）或注意力加权融合（自适应权重）。
+</div>
+
+<div class="kg-step">
+  <strong>联合双层优化 (Joint Bi-layer Optimization)</strong>：同时优化低频和高频两层的重建：
+  <br>min L(I_base + I_detail, I_gt) + lambda_base x R_base + lambda_detail x R_detail
+  <br>两层通过 <b>I = I_base + I_detail</b> 的等式约束耦合——低频管结构、高频管细节，两者加起来必须还原出完整的干净图像。联合优化确保两层相互补充而非互相干扰。
+</div>
+
+<div class="kg-step">
+  <strong>GMM在建模中的应用</strong>——用高斯混合模型（GMM）建模图像patch的像素级统计分布。结合贝叶斯框架，在已知观测（退化图像）的情况下，对干净图像做最优估计。GMM的多个分量分别对应不同的图像结构（平滑区域、边缘区域、纹理区域等），每种结构用不同的高斯分布描述。
+</div>
+
+<div class="kg-step">
+  <strong>MPRNet的本质就是这一思想</strong>——前两个阶段允许下采样，学习上下文语义特征（<b>低频基</b>，管大局）；第三个阶段在原始分辨率操作，恢复空间细节（<b>高频细节</b>，管精修）。三个阶段渐进式地从"粗到细"恢复图像，正是双层视角的深度学习实现。
+</div>
+
+<h4>双分支对比</h4>
+
+<table>
+<thead><tr><th>特性</th><th>低频分支（管大局）</th><th>高频分支（管细节）</th></tr></thead>
+<tbody>
+<tr><td><b>网络深度</b></td><td>深层网络</td><td>浅层或中等深度</td></tr>
+<tr><td><b>分辨率</b></td><td>允许下采样（降低分辨率）</td><td>保持原始分辨率</td></tr>
+<tr><td><b>感受野</b></td><td>大（全局上下文）</td><td>小（局部细节）</td></tr>
+<tr><td><b>卷积核</b></td><td>大卷积核或空洞卷积</td><td>小卷积核3x3</td></tr>
+<tr><td><b>捕获信息</b></td><td>结构、布局、颜色一致性</td><td>边缘、纹理、锐利变化</td></tr>
+<tr><td><b>对应U-Net</b></td><td>深层特征（bottleneck附近）</td><td>浅层特征（输入附近）</td></tr>
+<tr><td><b>类比</b></td><td>望远镜——看大局</td><td>放大镜——看细节</td></tr>
+</tbody>
+</table>
+
+</div></div>
+
+<div class="kg-section" id="kg-s22">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>二十二、多阶段多尺度去噪网络——MPRNet的"渐进式恢复"智慧</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-mprnet-multiscale.jpg" alt="MPRNet多阶段多尺度去噪网络" class="kg-img">
+  <div class="kg-caption">图：MPRNet——三阶段渐进式恢复，从粗到细修复退化图像</div>
+</div>
+
+<p>修复一幅古画，修复师不会一蹴而就——先整体规划（确定画面布局），再中层细化（恢复色彩和主要线条），最后精细打磨（修复微小裂痕）。<b>MPRNet就是用三个阶段"渐进式恢复"</b>，每一步都在上一步的基础上更精细地修复。</p>
+
+<div class="kg-step">
+  <strong>MPRNet三阶段架构 (CVPR 2021)</strong>：
+  <br>· <b>Stage 1 &amp; 2</b>：编码器-解码器学习上下文语义特征，允许下采样降低分辨率，专注于恢复整体结构和大面积退化。像画作的"打底"和"上色"阶段。
+  <br>· <b>Stage 3</b>：在原始分辨率操作，不进行下采样，专注于恢复空间细节和微妙纹理。像画作的"精修"阶段。
+  <br>· <b>关键设计</b>：每个阶段都接收原始退化图像作为输入（而不只是上一阶段的输出），确保原始信息不会在传递中丢失。
+</div>
+
+<div class="kg-step">
+  <strong>关键创新模块</strong>：
+  <br>· <b>CFP（互补特征处理）</b>：每阶段内部有两个并行分支——编码器-解码器分支（捕获上下文语义）和单尺度高分辨率分支（保留空间细节）。两分支互补：一个看大局，一个看细节。
+  <br>· <b>SAM（监督注意力模块）</b>：将当前阶段恢复结果与GT对比，产生监督差异图 -&gt; 生成attention map -&gt; 抑制无用/冗余特征 -&gt; 仅传播有用特征到下一阶段。就像老师批改作业后标注"这些地方还没修好"，下一阶段优先处理。
+  <br>· <b>CSFF（跨阶段特征融合）</b>：横向连接在不同阶段之间传递信息，让浅层（细节）和深层（语义）特征在各阶段都能被利用。
+</div>
+
+<div class="kg-step">
+  <strong>特征聚合在MPRNet中的体现</strong>——CFP模块内的编码器-解码器分支（上下文特征）与单尺度分支（空间细节）互补融合，通过求和或拼接实现。阶段间的SAM则通过注意力机制选择性地传播信息——有用的传下去，没用的就丢弃。两层聚合确保信息在空间维度（分辨率）和语义维度（深度）上都被充分利用。
+</div>
+
+<div class="kg-step">
+  <strong>多尺度金字塔结构 (FPN)</strong>——自顶向下上采样 + 横向连接，构建特征金字塔。深层特征（低分辨率但语义强）通过上采样与浅层特征（高分辨率但语义弱）融合。各层级的语义强弱不同，融合后每层都能同时拥有"大局观"和"细节感"。
+</div>
+
+<div class="kg-step">
+  <strong>跨尺度跨窗口依赖</strong>：
+  <br>· <b>移位窗口 (Swin)</b>：相邻层窗口偏移半个窗口大小，打破窗口边界，实现跨窗口信息交互。
+  <br>· <b>可变形注意力 (Deformable Attention)</b>：网络自己学习"该关注哪些位置"——采样点不再固定为规则网格，而是根据内容自适应调整。就像一个灵活的观察者——哪里有重要信息就往哪里看，而不是机械地按固定顺序扫描。
+</div>
+
+<div class="kg-step">
+  <strong>训练策略</strong>：每阶段都有中间监督（intermediate supervision），用Charbonnier损失函数（比MSE更平滑的变体，对异常值更鲁棒）。总损失 = 各阶段损失之和。中间监督确保每个阶段都能独立学到有意义的特征，而不是完全依赖下一阶段来"纠错"。
+</div>
+
+<div class="kg-step">
+  <strong>其他代表性架构</strong>：
+  <br>· <b>Restormer</b>：用MDTA（多维度转置注意力）在通道维度计算注意力，高效且有效。
+  <br>· <b>DRSformer</b>：用DRSA（密集冗余稀疏注意力）做Top-K稀疏mask，进一步降低计算量。
+  <br>· <b>RQ-D2UNet</b>：超复数双分支架构，用RQ表示增强特征表达，双分支分别处理雨纹和背景。
+</div>
+
+<h4>去噪/去雨架构对比</h4>
+
+<table>
+<thead><tr><th>架构</th><th>核心创新</th><th>注意力策略</th><th>多阶段</th><th>特点</th></tr></thead>
+<tbody>
+<tr><td><b>MPRNet</b></td><td>三阶段渐进式 + CFP + SAM</td><td>通道注意力</td><td>是（3阶段）</td><td>渐进恢复，监督注意力选择传播</td></tr>
+<tr><td><b>Restormer</b></td><td>MDTA转置注意力 + GDFN</td><td>通道维转置注意力</td><td>是（4阶段）</td><td>通道注意力高效，避免空间O(N^2)</td></tr>
+<tr><td><b>DRSformer</b></td><td>DRSA稀疏Top-K注意力</td><td>稀疏注意力（Top-K mask）</td><td>是（4阶段）</td><td>最省计算量，只保留K个最强连接</td></tr>
+<tr><td><b>RQ-D2UNet</b></td><td>超复数RQ表示 + 双分支</td><td>RQ域自注意力</td><td>否</td><td>4倍参数减少，双分支分工协作</td></tr>
+</tbody>
+</table>
 
 </div></div>
 </div></div>
