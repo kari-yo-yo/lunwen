@@ -2376,7 +2376,7 @@ body {
   <div class="toolbar">
     <div class="search-box">
       <span class="icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="搜索论文标题、标签、方法…" />
+      <input type="text" id="searchInput" placeholder="搜索论文标题、标签、方法或首字母缩写（如 MPR、DRS、DAWN）…" />
     </div>
     <div class="status-filter" id="statusFilter">
       <button class="status-btn active" data-status="all">全部</button>
@@ -2913,7 +2913,7 @@ const DEFAULT_NEW_PAPERS = [
     code: '', notes: '', archImage: 'reading-notes/assets/arch-KSFA.jpg', date: '2025'
   },
   {
-    title: 'DAWN+: Wavelet-based Image Deraining Meets Direction-Aware Attention and Mutual Representation',
+    title: 'DAWN+: Wavelet-Based Image Deraining with Direction-Aware Attention and Mutual Representation',
     category: '去雨', categoryEmoji: '🌧️',
     tags: ['小波变换','方向感知注意力','TNNLS 2025'],
     status: '待读',
@@ -2922,10 +2922,10 @@ const DEFAULT_NEW_PAPERS = [
     method: '小波变换分解 + 方向感知注意力(建模雨纹方向) + 互表示学习(雨层/背景层分离)。',
     scenarios: '单图像去雨、恶劣天气下的视觉增强、自动驾驶等 outdoor 场景。',
     arxiv: 'DOI:10.1109/TNNLS.2025.3587248', arxivUrl: 'https://doi.org/10.1109/TNNLS.2025.3587248',
-    code: 'https://github.com/kuijiang94/DAWN-plus', notes: 'reading-notes/dawn+.md', archImage: 'reading-notes/assets/arch-DAWN-plus(1).jpg', date: '2025'
+    code: 'https://github.com/kuijiang94/DAWN-plus', notes: 'reading-notes/dawn+.md', archImage: 'reading-notes/assets/arch-dawn-plus.jpg', date: '2025'
   },
   {
-    title: 'Learning A Sparse Transformer Network for Effective Image Deraining',
+    title: 'Learning A Sparse Transformer Network for Effective Image Deraining (DRSformer)',
     category: '去雨', categoryEmoji: '🌧️',
     tags: ['稀疏Transformer','CVPR 2023'],
     status: '待读',
@@ -2937,7 +2937,7 @@ const DEFAULT_NEW_PAPERS = [
     code: 'https://github.com/cschenxiang/DRSformer', notes: 'reading-notes/drsformer.md', archImage: 'reading-notes/assets/arch-DRSformer-new.jpg', date: '2023'
   },
   {
-    title: 'Single Image Dehazing Based on Detail-Enhanced Convolution and Content-Guided Attention',
+    title: 'DEA-Net: Single Image Dehazing Based on Detail-Enhanced Convolution and Content-Guided Attention',
     category: '去雾', categoryEmoji: '🌫️',
     tags: ['细节增强卷积','内容引导注意力','TIP 2024'],
     status: '待读',
@@ -3022,7 +3022,7 @@ const DEFAULT_NEW_PAPERS = [
   },
   {
     title: 'SD-PSFNet: Sequential and Dynamic Point Spread Function Network for Image Deraining',
-    category: '🌧️ 去雨', categoryEmoji: '🌧️',
+    category: '去雨', categoryEmoji: '🌧️',
     tags: ['image-deraining', 'point-spread-function', 'physics-aware', 'multi-stage', 'dynamic-PSF', 'AAAI2026'],
     status: '待读',
     summary: '首次将光学成像中的点扩散函数(PSF)引入深度学习去雨网络，提出数据驱动的动态可学习PSF机制，通过Multi-Scale PSF Head(3×3/5×5/7×7)捕获多尺度雨纹退化，结合三阶段序列化渐进恢复和自适应门控融合，在保持CNN高效性的同时大幅超越纯数据驱动方法，在RealRain-1k-L上比MPRNet提升5.04dB。',
@@ -3034,7 +3034,7 @@ const DEFAULT_NEW_PAPERS = [
   },
   {
     title: 'Moving Infrared Small Target Detection via Motion-Aided Integrated Spatial-Temporal Network',
-    category: '🎯 红外小目标检测', categoryEmoji: '🎯',
+    category: '红外小目标检测', categoryEmoji: '🎯',
     tags: ['infrared-small-target-detection', 'motion-aided', 'spatial-temporal', 'motion-saliency', 'TGRS2026'],
     status: '待读',
     summary: '提出MIST-Net，用Taylor级数展开+统计动态加权将多帧运动信息(位移/速度/加速度)编码为单帧"运动帧"，仅需2帧输入即可实现高效检测；结合MCM互校正模块和基于熵理论的MSCM耦合状态空间模块深度融合运动与空间特征，在SIRSTD上AP₅₀=67.32、ITSDT-15K上AP₅₀=82.41均达SOTA。',
@@ -3048,101 +3048,85 @@ const DEFAULT_NEW_PAPERS = [
     {
         id: 'dnlut',
         title: 'DnLUT: Ultra-Efficient Color Image Denoising via Channel-Aware Lookup Tables',
-        category: '模型压缩/加速',
-        categoryEmoji: '⚡',
+        category: '模型压缩/加速', categoryEmoji: '⚡',
         tags: ['image-denoising', 'lookup-table', 'channel-aware', 'CVPR2025'],
         status: '待读',
         summary: '通过PCM成对通道混合器捕获通道相关性和L形卷积消除旋转冗余，训练后转LUT实现仅500KB存储的超高效去噪。',
         painPoints: 'DNN去噪计算和内存需求大，边缘设备部署困难',
-        coreMethod: 'PCM成对通道混合器 + L形卷积 + 训练后3D/4D LUT转换',
-        venue: 'CVPR 2025',
-        arxiv: 'https://arxiv.org/abs/2503.15931',
-        code: 'https://github.com/Stephen0808/DnLUT',
-        notes: 'reading-notes/DnLUT.md',
-        addDate: '2026-07-21'
+        method: 'PCM成对通道混合器 + L形卷积 + 训练后3D/4D LUT转换',
+        scenarios: '极端资源受限的边缘设备去噪；嵌入式/IoT设备图像处理；实时视频去噪。',
+        arxiv: 'arXiv:2503.15931', arxivUrl: 'https://arxiv.org/abs/2503.15931',
+        code: 'https://github.com/Stephen0808/DnLUT', notes: 'reading-notes/DnLUT.md', archImage: 'reading-notes/assets/arch-DnLUT.png', date: '2025'
     },
     // SCGN - CVPR 2026
     {
         id: 'scgn',
-        title: 'SCGN: Statistical Characteristic-Guided Denoising for Rapid HRTEM Imaging',
-        category: '科学成像',
-        categoryEmoji: '🔬',
+        title: 'SCGN: Statistical Characteristic-Guided Denoising for Rapid High-Resolution TEM Imaging',
+        category: '科学成像', categoryEmoji: '🔬',
         tags: ['electron-microscopy', 'denoising', 'statistical-guidance', 'CVPR2026'],
         status: '待读',
         summary: '利用统计特性在空间域和频率域同时引导去噪，提出HRTEM专用噪声标定方法。',
         painPoints: 'HRTEM快速成像需短曝光导致严重噪声；现有去噪方法噪声分布不匹配',
-        coreMethod: '空间偏差引导加权 + 频率带引导加权 + HRTEM噪声标定',
-        venue: 'CVPR 2026',
-        arxiv: 'https://arxiv.org/abs/2603.18834',
-        code: 'https://github.com/HeasonLee/SCGN',
-        notes: 'reading-notes/SCGN.md',
-        addDate: '2026-07-21'
+        method: '空间偏差引导加权 + 频率带引导加权 + HRTEM噪声标定',
+        scenarios: 'HRTEM原子级成像去噪；材料科学成核动力学观测；电子显微镜快速成像。',
+        arxiv: 'arXiv:2603.18834', arxivUrl: 'https://arxiv.org/abs/2603.18834',
+        code: 'https://github.com/HeasonLee/SCGN', notes: 'reading-notes/SCGN.md', archImage: 'reading-notes/assets/arch-SCGN.png', date: '2026'
     },
     // MFFDNet - IEEE TIM 2024
     {
         id: 'mffdnet',
         title: 'MFFDNet: Single Image Deraining via Dual-Channel Mixed Feature Fusion',
-        category: '去雨',
-        categoryEmoji: '🌧️',
+        category: '去雨', categoryEmoji: '🌧️',
         tags: ['image-deraining', 'CNN-Transformer', 'mixed-feature-fusion', 'TIM2024'],
         status: '待读',
         summary: 'CNN+Transformer双分支混合去雨网络，CSAB分离高低频建模雨线，MFFU融合局部与全局特征。',
         painPoints: 'CNN感受野有限；Transformer局部特征提取不足；融合模块未充分整合',
-        coreMethod: 'CSAB + WTB + MFFU混合特征融合单元',
-        venue: 'IEEE TIM 2024',
-        code: 'https://github.com/taowenyin/MFFDNet',
-        notes: 'reading-notes/MFFDNet.md',
-        addDate: '2026-07-21'
+        method: 'CSAB + WTB + MFFU混合特征融合单元',
+        scenarios: '图像去雨；CNN-Transformer混合架构参考；多尺度特征融合。',
+        arxiv: 'IEEE TIM 2024', arxivUrl: 'https://github.com/taowenyin/MFFDNet',
+        code: 'https://github.com/taowenyin/MFFDNet', notes: 'reading-notes/MFFDNet.md', archImage: 'reading-notes/assets/arch-MFFDNet.png', date: '2024'
     },
     // TransMamb - IEEE TIP
     {
         id: 'transmamb',
         title: 'TransMamb: A Hybrid Transformer-Mamba Network for Single Image Deraining',
-        category: '去雨',
-        categoryEmoji: '🌧️',
+        category: '去雨', categoryEmoji: '🌧️',
         tags: ['image-deraining', 'transformer', 'mamba', 'SSM', 'spectral-attention', 'TIP2024'],
         status: '待读',
         summary: 'Transformer-Mamba双分支混合去雨网络，频谱分组注意力捕获全局依赖，双向SSM捕获序列一致性。',
         painPoints: 'Transformer固定窗口限制非局部感受野；单一范式难以全面建模雨纹',
-        coreMethod: 'SDTB频谱分组Transformer + CBSM双向SSM + 频谱一致性损失',
-        venue: 'IEEE TIP',
-        arxiv: 'https://arxiv.org/abs/2409.00410',
-        code: 'https://github.com/sunshangquan/TransMamb',
-        notes: 'reading-notes/TransMamb.md',
-        addDate: '2026-07-21'
+        method: 'SDTB频谱分组Transformer + CBSM双向SSM + 频谱一致性损失',
+        scenarios: '单图像去雨；Transformer-SSM混合架构参考；频域去雨方法。',
+        arxiv: 'arXiv:2409.00410', arxivUrl: 'https://arxiv.org/abs/2409.00410',
+        code: 'https://github.com/sunshangquan/TransMamb', notes: 'reading-notes/TransMamb.md', archImage: 'reading-notes/assets/arch-TransMamb.png', date: '2024'
     },
     // CPRAformer - ACM MM 2025
     {
         id: 'cpraformer',
         title: 'CPRAformer: Cross Paradigm Representation and Alignment Transformer for Image Deraining',
-        category: '去雨',
-        categoryEmoji: '🌧️',
+        category: '去雨', categoryEmoji: '🌧️',
         tags: ['image-deraining', 'cross-paradigm', 'sparse-attention', 'alignment', 'MM2025'],
         status: '待读',
         summary: '跨范式表征与对齐Transformer，稀疏提示通道注意力+空间像素细化注意力，AAFM两阶段渐进融合。',
         painPoints: '不规则雨纹和复杂几何重叠对单范式架构构成挑战；特征不对齐',
-        coreMethod: 'SPC-SA + SPR-SA + AAFM自适应对齐频率模块 + MSGN',
-        venue: 'ACM MM 2025',
-        arxiv: 'https://arxiv.org/abs/2504.16455',
-        code: 'https://github.com/zs1314/CPRAformer',
-        notes: 'reading-notes/CPRAformer.md',
-        addDate: '2026-07-21'
+        method: 'SPC-SA + SPR-SA + AAFM自适应对齐频率模块 + MSGN',
+        scenarios: '图像去雨；跨范式特征融合参考；稀疏注意力机制。',
+        arxiv: 'arXiv:2504.16455', arxivUrl: 'https://arxiv.org/abs/2504.16455',
+        code: 'https://github.com/zs1314/CPRAformer', notes: 'reading-notes/CPRAformer.md', archImage: 'reading-notes/assets/arch-CPRAformer.png', date: '2025'
     },
     // DPPD - IEEE TIP 2025
     {
         id: 'dppd',
         title: 'DPPD: Learning Dynamic Prompts for All-in-One Image Restoration',
-        category: '多任务恢复',
-        categoryEmoji: '🧩',
+        category: '多任务恢复', categoryEmoji: '🧩',
         tags: ['all-in-one', 'image-restoration', 'dynamic-prompts', 'TIP2025'],
         status: '待读',
         summary: '将退化先验解耦为退化原型分配(DPA)和提示分布学习(PDL)，动态提示生成实现all-in-one恢复。',
         painPoints: '现有all-in-one方法静态提示判别性不足；推理时提示退化为固定参数',
-        coreMethod: 'DPA退化原型分配 + PDL提示分布学习 + CrossFusion提示引导交叉注意力',
-        venue: 'IEEE TIP 2025',
-        code: 'https://github.com/Aitical/DPPD',
-        notes: 'reading-notes/DPPD.md',
-        addDate: '2026-07-21'
+        method: 'DPA退化原型分配 + PDL提示分布学习 + CrossFusion提示引导交叉注意力',
+        scenarios: 'All-in-one图像恢复(去噪/去雨/去雾/去雪/低光等)；任务感知的提示学习参考。',
+        arxiv: 'IEEE TIP 2025', arxivUrl: 'https://github.com/Aitical/DPPD',
+        code: 'https://github.com/Aitical/DPPD', notes: 'reading-notes/DPPD.md', archImage: 'reading-notes/assets/arch-DPPD.png', date: '2025'
     },
 ];
 
@@ -3282,14 +3266,48 @@ function renderPapers() {
   }
 
   if (searchQuery.trim()) {
-    const q = searchQuery.toLowerCase();
-    filtered = filtered.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      p.summary.toLowerCase().includes(q) ||
-      p.method.toLowerCase().includes(q) ||
-      p.painPoints.toLowerCase().includes(q) ||
-      p.tags.some(t => t.toLowerCase().includes(q))
-    );
+    const q = searchQuery.toLowerCase().trim();
+    filtered = filtered.filter(p => {
+      // 1. 基础子串匹配（含空值安全）
+      if (p.title && p.title.toLowerCase().includes(q)) return true;
+      if (p.summary && p.summary.toLowerCase().includes(q)) return true;
+      if (p.method && p.method.toLowerCase().includes(q)) return true;
+      if (p.painPoints && p.painPoints.toLowerCase().includes(q)) return true;
+      if (p.tags && p.tags.some(t => t.toLowerCase().includes(q))) return true;
+
+      // 2. 论文名称首字母/缩写匹配
+      const title = p.title || '';
+
+      // 2a. 冒号前的论文名前缀匹配 (如 "MPR" → "MPRNet: ...")
+      const colonIdx = title.indexOf(':');
+      if (colonIdx > 0) {
+        const paperName = title.substring(0, colonIdx).trim().toLowerCase();
+        if (paperName.startsWith(q) || paperName.includes(q)) return true;
+      }
+
+      // 2b. 括号内缩写匹配 (如 "MPRNet" from "...(MPRNet)")
+      const parenMatch = title.match(/\(([^)]+)\)/);
+      if (parenMatch) {
+        const abbr = parenMatch[1].toLowerCase().trim();
+        if (abbr.startsWith(q) || abbr.includes(q)) return true;
+      }
+
+      // 2c. 标题中连续大写字母序列匹配 (如 "MPR" from "MPRNet", "DAWN" from "DAWN+")
+      const upperSeqs = title.match(/[A-Z][A-Za-z0-9+]*/g);
+      if (upperSeqs) {
+        for (const seq of upperSeqs) {
+          const seqLower = seq.toLowerCase();
+          if (seqLower.startsWith(q) || seqLower.includes(q)) return true;
+        }
+      }
+
+      // 2d. 首字母缩写匹配 (如 "mpir" → Multi-Stage Progressive Image Restoration)
+      const words = title.split(/[\s\-:,()\/]+/).filter(w => w.length > 0);
+      const acronym = words.map(w => w[0]).join('').toLowerCase();
+      if (acronym.length >= 2 && (acronym.startsWith(q) || acronym.includes(q))) return true;
+
+      return false;
+    });
   }
 
   EL.resultInfo.textContent = `共 ${filtered.length} 篇`;
