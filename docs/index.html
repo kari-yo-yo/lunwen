@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="preconnect" href="//cdnjs.cloudflare.com" crossorigin>
 <title>📚 深度学习论文库</title>
 <!-- KaTeX for math rendering -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -4708,20 +4711,38 @@ function initFallback2D() {
 
 // Knowledge Framework Image Lazy Load with Fade-in
 function initKgImageLazyLoad() {
-  var images = document.querySelectorAll('.kg-img:not(.loaded)');
+  var images = document.querySelectorAll('.kg-img-lazy:not(.loaded)');
   if ('IntersectionObserver' in window) {
     var observer = new IntersectionObserver(function(entries) {
       entries.forEach(function(entry) {
         if (entry.isIntersecting) {
           var img = entry.target;
+          // 触发缩略图显示
           img.classList.add('loaded');
+          // 如果有 data-full 且还没加载高清版，预加载
+          if (img.dataset.full && !img.dataset.hdLoaded) {
+            img.dataset.hdLoaded = '1';
+            var hd = new Image();
+            hd.onload = function() {
+              img.src = img.dataset.full;
+              img.classList.add('kg-img-hd');
+            };
+            hd.src = img.dataset.full;
+          }
           observer.unobserve(img);
         }
       });
-    }, { rootMargin: '50px' });
+    }, { rootMargin: '100px' });
     images.forEach(function(img) { observer.observe(img); });
   } else {
-    images.forEach(function(img) { img.classList.add('loaded'); });
+    // 不支持 IntersectionObserver，直接加载所有
+    images.forEach(function(img) {
+      img.classList.add('loaded');
+      if (img.dataset.full) {
+        img.src = img.dataset.full;
+        img.classList.add('kg-img-hd');
+      }
+    });
   }
 }
 
@@ -5297,7 +5318,7 @@ const KNOWLEDGE_HTML = `
 </div>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-freq-domain.jpg" alt="频域分解示意图" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-freq-domain.webp" type="image/webp"><img src="reading-notes/assets/knowledge-freq-domain-thumb.webp" data-full="reading-notes/assets/knowledge-freq-domain.webp" alt="频域分解示意图" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：图像的频域分解——把一张照片拆成"低频大色块"和"高频细节线"</div>
 </div>
 
@@ -5329,7 +5350,7 @@ const KNOWLEDGE_HTML = `
 </div>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-filter-types.jpg" alt="陷波滤波器与带阻滤波器对比" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-filter-types.webp" type="image/webp"><img src="reading-notes/assets/knowledge-filter-types-thumb.webp" data-full="reading-notes/assets/knowledge-filter-types.webp" alt="陷波滤波器与带阻滤波器对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：陷波滤波器（左）只挖掉一个极窄的频率点；带阻滤波器（右）挡掉一整段频率范围</div>
 </div>
 
@@ -5344,7 +5365,7 @@ const KNOWLEDGE_HTML = `
 <p>这是频域方法最大的痛点，也是为什么单纯用FFT去雨/去雾效果不好的根本原因。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-edge-blur.jpg" alt="频域处理导致边缘模糊原理" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-edge-blur.webp" type="image/webp"><img src="reading-notes/assets/knowledge-edge-blur-thumb.webp" data-full="reading-notes/assets/knowledge-edge-blur.webp" alt="频域处理导致边缘模糊原理" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：高频分量中同时包含"边缘"和"雨纹"——想去掉雨纹就必然伤到边缘</div>
 </div>
 
@@ -5399,7 +5420,7 @@ const KNOWLEDGE_HTML = `
 </div>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-wavelet-decomp.jpg" alt="小波分解树" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-wavelet-decomp.webp" type="image/webp"><img src="reading-notes/assets/knowledge-wavelet-decomp-thumb.webp" data-full="reading-notes/assets/knowledge-wavelet-decomp.webp" alt="小波分解树" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：小波分解树——每次分解把图像拆成 LL/LH/HL/HH 四块，LL还可以继续分解</div>
 </div>
 
@@ -5426,7 +5447,7 @@ const KNOWLEDGE_HTML = `
 <p>小波变换需要选择一个"母小波"（Mother Wavelet）作为基础函数，就像选择一副眼镜——不同的眼镜看世界的效果不同。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-wavelet-family.jpg" alt="小波家族对比" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-wavelet-family.webp" type="image/webp"><img src="reading-notes/assets/knowledge-wavelet-family-thumb.webp" data-full="reading-notes/assets/knowledge-wavelet-family.webp" alt="小波家族对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：四种经典小波的波形对比——从最简单的Haar到最精细的Morlet</div>
 </div>
 
@@ -5453,7 +5474,7 @@ const KNOWLEDGE_HTML = `
 <p>于是就有了<b>方向性多尺度变换</b>——Contourlet和Shearlet。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-contourlet-shearlet.jpg" alt="Contourlet与Shearlet对比" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-contourlet-shearlet.webp" type="image/webp"><img src="reading-notes/assets/knowledge-contourlet-shearlet-thumb.webp" data-full="reading-notes/assets/knowledge-contourlet-shearlet.webp" alt="Contourlet与Shearlet对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：Contourlet变换（左）通过方向滤波器组捕获楔形方向子带；Shearlet变换（右）通过剪切操作实现更灵活的方向分析</div>
 </div>
 
@@ -5528,7 +5549,7 @@ const KNOWLEDGE_HTML = `
 <p>最新的去雨网络已经不再局限于单一域，而是<b>在多个域之间切换和融合</b>：</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-hybrid-domain.jpg" alt="混合域去雨流水线" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-hybrid-domain.webp" type="image/webp"><img src="reading-notes/assets/knowledge-hybrid-domain-thumb.webp" data-full="reading-notes/assets/knowledge-hybrid-domain.webp" alt="混合域去雨流水线" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：混合域去雨网络——空间域CNN提取局部特征 + 频域注意力捕获全局依赖 + 小波域多尺度分析</div>
 </div>
 
@@ -5580,7 +5601,7 @@ const KNOWLEDGE_HTML = `
 <p>解决感知机局限的方法很简单——<b>多堆几层</b>。这就是MLP（Multi-Layer Perceptron）：</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-mlp-evolution.jpg" alt="从感知机到MLP到深度神经网络" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-mlp-evolution.webp" type="image/webp"><img src="reading-notes/assets/knowledge-mlp-evolution-thumb.webp" data-full="reading-notes/assets/knowledge-mlp-evolution.webp" alt="从感知机到MLP到深度神经网络" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：从单个感知机 → 多层感知机(MLP) → 深度神经网络(DNN)的进化之路</div>
 </div>
 
@@ -5676,7 +5697,7 @@ const KNOWLEDGE_HTML = `
 <p>如果说前向传播是"考试做题"，那反向传播就是"老师批改后告诉你哪里错了"。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-backprop.jpg" alt="反向传播原理" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-backprop.webp" type="image/webp"><img src="reading-notes/assets/knowledge-backprop-thumb.webp" data-full="reading-notes/assets/knowledge-backprop.webp" alt="反向传播原理" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：前向传播（蓝箭头→）信号从输入流向输出；反向传播（红箭头←）梯度从输出流回输入</div>
 </div>
 
@@ -5726,7 +5747,7 @@ const KNOWLEDGE_HTML = `
 <p>没有激活函数，再深的神经网络也等价于一个线性回归——不管堆多少层，数学上都可以合并成一层。激活函数引入了<b>非线性</b>，让网络能学习复杂的模式。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-activation-functions.jpg" alt="激活函数对比" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-activation-functions.webp" type="image/webp"><img src="reading-notes/assets/knowledge-activation-functions-thumb.webp" data-full="reading-notes/assets/knowledge-activation-functions.webp" alt="激活函数对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：六种经典激活函数的曲线对比</div>
 </div>
 
@@ -5788,7 +5809,7 @@ const KNOWLEDGE_HTML = `
 <p>反向传播告诉我们"每个权重该往哪调"，而梯度下降就是真正执行这个调整的算法。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-gradient-descent.jpg" alt="梯度下降方法对比" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-gradient-descent.webp" type="image/webp"><img src="reading-notes/assets/knowledge-gradient-descent-thumb.webp" data-full="reading-notes/assets/knowledge-gradient-descent.webp" alt="梯度下降方法对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：不同优化器的路径对比——SGD最曲折，Adam最直接</div>
 </div>
 
@@ -5884,7 +5905,7 @@ const KNOWLEDGE_HTML = `
 <p>损失函数（Loss Function）就是神经网络的"裁判"——它衡量预测值和真实值之间的差距。训练的目标就是<b>让损失尽可能小</b>。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-loss-functions.jpg" alt="损失函数对比" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-loss-functions.webp" type="image/webp"><img src="reading-notes/assets/knowledge-loss-functions-thumb.webp" data-full="reading-notes/assets/knowledge-loss-functions.webp" alt="损失函数对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：不同损失函数对误差的惩罚方式不同——MSE惩罚大误差，MAE线性惩罚，Huber取平衡</div>
 </div>
 
@@ -5963,7 +5984,7 @@ const KNOWLEDGE_HTML = `
 <p>要理解约化双四元数（Reduced Quaternion, 简称RQ），我们先来一场"数系进化之旅"。数学家们就像在搭建积木——每发现一个新数系，就多一个维度的"自由度"，能描述的几何空间也越丰富。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-hypercomplex-evolution.jpg" alt="数系进化：实数到约化双四元数" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-hypercomplex-evolution.webp" type="image/webp"><img src="reading-notes/assets/knowledge-hypercomplex-evolution-thumb.webp" data-full="reading-notes/assets/knowledge-hypercomplex-evolution.webp" alt="数系进化：实数到约化双四元数" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：数系进化树——从1维实数到4维约化双四元数，每一步都扩展了几何表达能力</div>
 </div>
 
@@ -6028,7 +6049,7 @@ const KNOWLEDGE_HTML = `
 <p>上一章我们知道了RQ"是什么"，这一章我们来拆解它的"内部构造"——乘法规则、共轭、模长，以及它所对应的几何空间。理解了这些，才能真正明白RQ为什么能同时处理"振荡信号"和"指数增长信号"。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-rq-math.png" alt="RQ数学本质：乘法规则与几何空间" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-rq-math.webp" type="image/webp"><img src="reading-notes/assets/knowledge-rq-math-thumb.webp" data-full="reading-notes/assets/knowledge-rq-math.webp" alt="RQ数学本质：乘法规则与几何空间" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：RQ的四个分量对应不同的几何空间——i和k对应欧几里得振荡，j对应双曲增长</div>
 </div>
 
@@ -6107,7 +6128,7 @@ const KNOWLEDGE_HTML = `
 <p>现在我们来回答一个关键问题：既然实值神经网络已经这么强大了，为什么还要用超复数（RQ）神经网络？答案在于一个词——<b>耦合</b>。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-rq-vs-real.jpg" alt="实值网络 vs RQ网络处理RGB对比" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-rq-vs-real.webp" type="image/webp"><img src="reading-notes/assets/knowledge-rq-vs-real-thumb.webp" data-full="reading-notes/assets/knowledge-rq-vs-real.webp" alt="实值网络 vs RQ网络处理RGB对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：实值网络把RGB三通道拆开独立处理（左），RQ网络把RGB编码为一个整体同时处理（右）</div>
 </div>
 
@@ -6188,7 +6209,7 @@ const KNOWLEDGE_HTML = `
 <p>RQ-D2UNet（Reduced Quaternion Dual-branch Dual U-Net）是本文提出的去雨网络。它的核心思想是"分而治之"——用两个分支分别处理雨纹和背景，再用注意力机制让它们协同工作。下面我们一层层拆解这个架构。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-rq-d2unet-arch.jpg" alt="RQ-D2UNet整体架构图" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-rq-d2unet-arch.webp" type="image/webp"><img src="reading-notes/assets/knowledge-rq-d2unet-arch-thumb.webp" data-full="reading-notes/assets/knowledge-rq-d2unet-arch.webp" alt="RQ-D2UNet整体架构图" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：RQ-D2UNet三阶段架构——通道填充头 到 双分支U-Net主干 到 三阶段重建尾</div>
 </div>
 
@@ -6242,7 +6263,7 @@ const KNOWLEDGE_HTML = `
 <h4>16.4 RQ-SCformer：空间补偿Transformer</h4>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-rq-attention.jpg" alt="RQ域三种注意力机制" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-rq-attention.webp" type="image/webp"><img src="reading-notes/assets/knowledge-rq-attention-thumb.webp" data-full="reading-notes/assets/knowledge-rq-attention.webp" alt="RQ域三种注意力机制" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：RQ域三种注意力——SAU定位雨纹区域、CAU增强敏感通道、EGAU平衡去雨与保背景</div>
 </div>
 
@@ -6290,7 +6311,7 @@ const KNOWLEDGE_HTML = `
 <p>一个去雨算法好不好，不能只靠"看着舒服"来判断——我们需要量化的评价指标。本章介绍去雨领域最常用的五个评价指标，以及为什么需要多指标综合评估。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-eval-metrics.jpg" alt="去雨评价指标五维雷达图" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-eval-metrics.webp" type="image/webp"><img src="reading-notes/assets/knowledge-eval-metrics-thumb.webp" data-full="reading-notes/assets/knowledge-eval-metrics.webp" alt="去雨评价指标五维雷达图" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：五维评估雷达图——PSNR、SSIM、LPIPS、TIME、Params综合衡量去雨效果</div>
 </div>
 
@@ -6357,7 +6378,7 @@ const KNOWLEDGE_HTML = `
 <div class="kg-accordion-body">
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-sparse-dict-lowrank.png" alt="稀疏表示、字典学习与低秩表示" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-sparse-dict-lowrank.webp" type="image/webp"><img src="reading-notes/assets/knowledge-sparse-dict-lowrank-thumb.webp" data-full="reading-notes/assets/knowledge-sparse-dict-lowrank.webp" alt="稀疏表示、字典学习与低秩表示" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：稀疏表示与字典学习——用最少的关键词概括图像信号</div>
 </div>
 
@@ -6405,7 +6426,7 @@ const KNOWLEDGE_HTML = `
 <div class="kg-accordion-body">
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-self-attention-arch.png" alt="自注意力机制架构演进" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-self-attention-arch.webp" type="image/webp"><img src="reading-notes/assets/knowledge-self-attention-arch-thumb.webp" data-full="reading-notes/assets/knowledge-self-attention-arch.webp" alt="自注意力机制架构演进" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：自注意力机制——从NLP的Transformer到CV的视觉注意力</div>
 </div>
 
@@ -6457,7 +6478,7 @@ const KNOWLEDGE_HTML = `
 <div class="kg-accordion-body">
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-se-attention-fusion.jpg" alt="SE注意力机制与特征聚合策略" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-se-attention-fusion.webp" type="image/webp"><img src="reading-notes/assets/knowledge-se-attention-fusion-thumb.webp" data-full="reading-notes/assets/knowledge-se-attention-fusion.webp" alt="SE注意力机制与特征聚合策略" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：SE注意力与特征聚合——让网络学会筛选重要通道、融合多尺度信息</div>
 </div>
 
@@ -6519,7 +6540,7 @@ const KNOWLEDGE_HTML = `
 <div class="kg-accordion-body">
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-lowhigh-freq-cnn.jpg" alt="低频基与高频细节双层CNN构造" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-lowhigh-freq-cnn.webp" type="image/webp"><img src="reading-notes/assets/knowledge-lowhigh-freq-cnn-thumb.webp" data-full="reading-notes/assets/knowledge-lowhigh-freq-cnn.webp" alt="低频基与高频细节双层CNN构造" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：低频基+高频细节——双层视角构造CNN去雨网络</div>
 </div>
 
@@ -6581,7 +6602,7 @@ const KNOWLEDGE_HTML = `
 <div class="kg-accordion-body">
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-mprnet-multiscale.png" alt="MPRNet多阶段多尺度去噪网络" class="kg-img">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-mprnet-multiscale.webp" type="image/webp"><img src="reading-notes/assets/knowledge-mprnet-multiscale-thumb.webp" data-full="reading-notes/assets/knowledge-mprnet-multiscale.webp" alt="MPRNet多阶段多尺度去噪网络" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：MPRNet——三阶段渐进式恢复，从粗到细修复退化图像</div>
 </div>
 
