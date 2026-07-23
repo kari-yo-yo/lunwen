@@ -4995,6 +4995,11 @@ const KNOWLEDGE_HTML = `
     <a href="#kg-s10">十、激活函数</a>
     <a href="#kg-s11">十一、梯度下降</a>
     <a href="#kg-s12">十二、损失函数</a>
+    <a href="#kg-s13">十三、超复数进化</a>
+    <a href="#kg-s14">十四、RQ数学本质</a>
+    <a href="#kg-s15">十五、超复数 vs 实值网络</a>
+    <a href="#kg-s16">十六、RQ-D2UNet架构</a>
+    <a href="#kg-s17">十七、去雨评价体系</a>
   </nav>
   <div class="kg-main" id="kgMain">
 
@@ -5678,6 +5683,401 @@ const KNOWLEDGE_HTML = `
 <div class="kg-step">
   <strong>🎯 全章总结</strong>：感知机太简单 → MLP加层加激活函数引入非线性 → 反向传播用链式法则算梯度 → 梯度下降（SGD→Momentum→Adam）沿着梯度下山调参 → 损失函数当裁判给预测打分 → 网络不断"做题→纠错→改进"直到损失最小。这就是深度学习的完整闭环！
 </div>
+</div></div>
+<div class="kg-section" id="kg-s13">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>十三、超复数进化之路——从实数到约化双四元数</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<p>要理解约化双四元数（Reduced Quaternion, 简称RQ），我们先来一场"数系进化之旅"。数学家们就像在搭建积木——每发现一个新数系，就多一个维度的"自由度"，能描述的几何空间也越丰富。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-hypercomplex-evolution.jpg" alt="数系进化：实数到约化双四元数" class="kg-img">
+  <div class="kg-caption">图：数系进化树——从1维实数到4维约化双四元数，每一步都扩展了几何表达能力</div>
+</div>
+
+<div class="kg-step">
+  <strong>1维：实数 (Real Numbers)</strong>——一条直线上的点。只能表示大小，比如温度是25度、长度是3米。实数是所有数系的基石，但它无法描述"旋转"。
+</div>
+
+<div class="kg-step">
+  <strong>2维：复数 (Complex Numbers)</strong>——一个平面上的点。引入了虚数单位 i，满足 i的平方等于-1。复数天然描述欧几里得平面上的旋转：乘以 i 就是逆时针旋转90度。就像钟表指针在表盘上转动——完美、优雅，但只能在一个平面里转。
+</div>
+
+<div class="kg-step">
+  <strong>4维：四元数 (Quaternions)</strong>——3D空间中的旋转利器。哈密顿在1843年发明的 i、j、k 三个虚数单位，满足 i的平方=j的平方=k的平方=-1。四元数能优雅地描述三维旋转，是3D游戏引擎和机器人学的核心工具。但有一个致命缺点：<b>乘法不可交换</b>——先乘 i 再乘 j，和先乘 j 再乘 i，结果不一样！
+</div>
+
+<div class="kg-step">
+  <strong>4维：约化双四元数 (Reduced Quaternion, RQ)</strong>——本文主角。同样是4维，但 i的平方=k的平方=-1（椭圆虚数），而 j的平方=+1（双曲虚数）。关键是：<b>乘法可交换</b>！这让它能像复数一样支持卷积定理和傅里叶变换，同时又能处理3D空间的多通道信号。
+</div>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>实数 = 1条线</h4>
+    <p>只能往前走或往后退，不能转弯。就像火车只能沿铁轨前进。</p>
+  </div>
+  <div class="kg-card">
+    <h4>复数 = 1个平面</h4>
+    <p>可以在平面上任意方向移动和旋转。就像汽车在停车场里自由转向。</p>
+  </div>
+  <div class="kg-card">
+    <h4>四元数 = 3D空间</h4>
+    <p>能在三维空间中任意旋转。就像无人机在天空中翻滚。但操作顺序很重要——先翻滚再俯仰，和先俯仰再翻滚，结果不同！</p>
+  </div>
+  <div class="kg-card">
+    <h4>RQ = 欧几里得+双曲混合空间</h4>
+    <p>既有振荡（i，像钟摆）又有增长（j，像弹弓）的混合空间。操作顺序无所谓，怎么操作都一样——这就是"可交换"的威力。</p>
+  </div>
+</div>
+
+<table>
+<thead><tr><th>数系</th><th>维度</th><th>虚数单位平方</th><th>乘法可交换？</th><th>几何空间</th><th>卷积定理成立？</th></tr></thead>
+<tbody>
+<tr><td><b>实数 (R)</b></td><td>1维</td><td>无虚数</td><td>是</td><td>数轴（直线）</td><td>是</td></tr>
+<tr><td><b>复数 (C)</b></td><td>2维</td><td>i的平方=-1</td><td>是</td><td>欧几里得平面</td><td>是</td></tr>
+<tr><td><b>四元数 (H)</b></td><td>4维</td><td>i的平方=j的平方=k的平方=-1</td><td><b>否</b></td><td>3D旋转空间</td><td><b>否</b></td></tr>
+<tr><td><b>约化双四元数 (RQ)</b></td><td>4维</td><td>i的平方=k的平方=-1, j的平方=+1</td><td><b>是</b></td><td>欧几里得+双曲混合</td><td><b>是</b></td></tr>
+</tbody>
+</table>
+
+<div class="kg-step">
+  <strong>为什么要发明RQ？</strong>因为四元数虽然能处理3D旋转，但它的<b>乘法不可交换</b>导致一个严重问题：卷积定理不成立！卷积定理是信号处理的基石——它说"空间域卷积等于频域乘积"。没有卷积定理，就无法在频域高效计算卷积，也无法定义四元数傅里叶变换来做频域分析。RQ通过修改 j 的平方为+1，让乘法重新变得可交换，从而恢复了卷积定理——这就像是给四元数"松了绑"，让它既能处理多维信号，又能享受频域分析的全部好处。
+</div>
+
+<div class="kg-step">
+  <strong>本章核心</strong>：实数(1维)→复数(2维)→四元数(4维但不可交换)→约化双四元数RQ(4维且可交换)。RQ的精髓在于：j的平方=+1这个"小小改动"，让乘法恢复可交换性，从而让卷积定理重新成立，为超复数神经网络铺平了道路。
+</div>
+
+</div></div>
+<div class="kg-section" id="kg-s14">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>十四、RQ的数学本质——乘法规则与几何空间</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<p>上一章我们知道了RQ"是什么"，这一章我们来拆解它的"内部构造"——乘法规则、共轭、模长，以及它所对应的几何空间。理解了这些，才能真正明白RQ为什么能同时处理"振荡信号"和"指数增长信号"。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-rq-math.jpg" alt="RQ数学本质：乘法规则与几何空间" class="kg-img">
+  <div class="kg-caption">图：RQ的四个分量对应不同的几何空间——i和k对应欧几里得振荡，j对应双曲增长</div>
+</div>
+
+<h4>14.1 RQ的定义</h4>
+
+<p>一个约化双四元数 q 可以写成：</p>
+
+<div class="kg-step">
+  <strong>q = q₀ + q₁i + q₂j + q₃k</strong>
+  <br>其中：
+  <br>· q₀ 是实部（标量部分）
+  <br>· q₁, q₂, q₃ 是三个虚部分量
+  <br>· i的平方 = -1（椭圆虚数，对应欧几里得空间）
+  <br>· j的平方 = +1（双曲虚数，对应双曲空间）
+  <br>· k的平方 = -1（椭圆虚数，对应欧几里得空间）
+</div>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>i 和 k：椭圆虚数（平方=-1）</h4>
+    <p>对应欧几里得空间中的周期性振荡信号。就像<b>钟摆</b>——来回摆动，永远在重复。e的i次方 = cos(θ) + i·sin(θ)，描述的是圆周运动。RGB图像中的R通道和B通道编码到 i 和 k 上。</p>
+  </div>
+  <div class="kg-card">
+    <h4>j：双曲虚数（平方=+1）</h4>
+    <p>对应双曲空间中的指数增长/衰减信号。就像<b>弹弓</b>——拉得越远，弹得越远。e的j次方 = cosh(θ) + j·sinh(θ)，描述的是双曲运动。RGB图像中的G通道编码到 j 上。</p>
+  </div>
+</div>
+
+<h4>14.2 乘法规则表</h4>
+
+<p>RQ最核心的特性是<b>乘法可交换</b>——也就是说，对于任意两个RQ数 p 和 q，都有 p×q = q×p。下面是完整的4×4乘法规则表：</p>
+
+<table>
+<thead><tr><th>×</th><th>1</th><th>i</th><th>j</th><th>k</th></tr></thead>
+<tbody>
+<tr><td><b>1</b></td><td>1</td><td>i</td><td>j</td><td>k</td></tr>
+<tr><td><b>i</b></td><td>i</td><td>-1</td><td>k</td><td>-j</td></tr>
+<tr><td><b>j</b></td><td>j</td><td>k</td><td>+1</td><td>i</td></tr>
+<tr><td><b>k</b></td><td>k</td><td>-j</td><td>i</td><td>-1</td></tr>
+</tbody>
+</table>
+
+<div class="kg-step">
+  <strong>关键乘法规则</strong>：
+  <br>· i × j = j × i = k （可交换！）
+  <br>· j × k = k × j = i （可交换！）
+  <br>· i × k = k × i = <b>-j</b> （可交换，但结果是<b>负的</b>！注意这个负号）
+  <br>· j × j = +1 （双曲虚数的平方是正的，这是RQ与四元数最大的区别）
+</div>
+
+<div class="kg-step">
+  <strong>对比四元数的不可交换性</strong>：在四元数中，i×j = k 但 j×i = -k，两个结果差一个负号——这就是"不可交换"。而在RQ中，i×j = j×i = k，完全相等。这个看似微小的差别，却是RQ能支持卷积定理的根本原因。
+</div>
+
+<h4>14.3 共轭与模长</h4>
+
+<div class="kg-step">
+  <strong>共轭 (Conjugate)</strong>：q的共轭 = q₀ - q₁i - q₂j - q₃k
+  <br>就是把所有虚部的符号取反。共轭在RQ运算中非常重要——比如计算模长、定义内积都需要用到共轭。
+</div>
+
+<div class="kg-step">
+  <strong>模长 (Norm)</strong>：‖q‖的平方 = q₀的平方 + q₁的平方 - q₂的平方 + q₃的平方
+  <br>注意这里 q₂ 前面是<b>减号</b>！因为 j的平方=+1。这使得RQ的范数是"不定范数"，符号类型为 (3,1)——三个正项加一个负项。这种"不定性"正是RQ能同时描述欧几里得空间和双曲空间的原因。
+</div>
+
+<div class="kg-step">
+  <strong>本章核心</strong>：RQ = q₀ + q₁i + q₂j + q₃k，其中i和k是椭圆虚数（平方=-1，像钟摆振荡），j是双曲虚数（平方=+1，像弹弓增长）。乘法完全可交换（i×j=j×i=k），共轭取反所有虚部，模长是不定范数（q₂前面是减号）。i/k对应RGB中的R/B通道（周期信号），j对应G通道（双曲信号）。
+</div>
+
+</div></div>
+<div class="kg-section" id="kg-s15">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>十五、超复数神经网络 vs 实值神经网络——为什么要"升维"？</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<p>现在我们来回答一个关键问题：既然实值神经网络已经这么强大了，为什么还要用超复数（RQ）神经网络？答案在于一个词——<b>耦合</b>。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-rq-vs-real.jpg" alt="实值网络 vs RQ网络处理RGB对比" class="kg-img">
+  <div class="kg-caption">图：实值网络把RGB三通道拆开独立处理（左），RQ网络把RGB编码为一个整体同时处理（右）</div>
+</div>
+
+<h4>15.1 实值网络怎么处理RGB？</h4>
+
+<div class="kg-step">
+  <strong>实值网络的做法</strong>：把RGB图像的三个通道（红R、绿G、蓝B）<b>各自独立</b>处理。每个通道用一组独立的卷积核做卷积，三组权重之间没有任何信息交流。就像三个人各干各的——红通道的人只管红，绿通道的人只管绿，蓝通道的人只管蓝，彼此不说话。
+</div>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>实值网络的问题</h4>
+    <p>· 需要三组独立权重，参数量大<br>· 通道间无耦合，无法建模颜色间的关系<br>· 颜色保真度低——容易产生色偏<br>· 比如处理一片红色天空时，R通道说"很红"，但G和B通道不知道，可能把背景搞乱</p>
+  </div>
+  <div class="kg-card">
+    <h4>RQ网络的解法</h4>
+    <p>· 把RGB编码为一个RQ数：q = R·i + G·j + B·k<br>· 用<b>一个</b>RQ卷积核同时处理三通道<br>· 通道间天然耦合——R、G、B的信息在卷积运算中自动交互<br>· 参数量减少约4倍</p>
+  </div>
+</div>
+
+<h4>15.2 RGB如何编码为RQ？</h4>
+
+<div class="kg-step">
+  <strong>RGB 到 RQ 编码</strong>：q = R·i + G·j + B·k
+  <br>· R（红）编码到 i 分量（椭圆虚数，平方=-1）
+  <br>· G（绿）编码到 j 分量（双曲虚数，平方=+1）
+  <br>· B（蓝）编码到 k 分量（椭圆虚数，平方=-1）
+  <br>· 实部 q₀ 通常设为0或用于编码其他信息
+  <br>这样，一个像素的RGB三通道就被"打包"成了一个4维的RQ数。
+</div>
+
+<h4>15.3 RQ卷积的矩阵展开</h4>
+
+<p>RQ卷积看似复杂，但本质上可以用一个4×4矩阵来等价表示。当两个RQ数做乘法时，可以展开为实数矩阵运算：</p>
+
+<table>
+<thead><tr><th></th><th>q₀</th><th>q₁(i)</th><th>q₂(j)</th><th>q₃(k)</th></tr></thead>
+<tbody>
+<tr><td><b>实部</b></td><td>+w₀</td><td>-w₁</td><td>+w₂</td><td>-w₃</td></tr>
+<tr><td><b>i部</b></td><td>+w₁</td><td>+w₀</td><td>-w₃</td><td>+w₂</td></tr>
+<tr><td><b>j部</b></td><td>+w₂</td><td>+w₃</td><td>+w₀</td><td>+w₁</td></tr>
+<tr><td><b>k部</b></td><td>+w₃</td><td>-w₂</td><td>+w₁</td><td>+w₀</td></tr>
+</tbody>
+</table>
+
+<div class="kg-step">
+  <strong>矩阵展开的含义</strong>：RQ卷积核 w = w₀ + w₁i + w₂j + w₃k 只有4个自由参数，但它通过这个4×4矩阵的约束，自动实现了四通道之间的<b>加权耦合</b>。对比实值网络需要16个独立参数才能实现同等耦合效果，RQ网络的参数效率提升了4倍！
+</div>
+
+<h4>15.4 三种网络对比</h4>
+
+<table>
+<thead><tr><th>特性</th><th>实值网络</th><th>四元数网络</th><th>RQ网络</th></tr></thead>
+<tbody>
+<tr><td><b>RGB编码</b></td><td>三通道独立</td><td>R+Gi+Bj（3虚部）</td><td>Ri+Gj+Bk（3虚部）</td></tr>
+<tr><td><b>参数量</b></td><td>基准（最多）</td><td>减少约1/3</td><td><b>减少约3/4</b></td></tr>
+<tr><td><b>通道耦合</b></td><td>无（独立处理）</td><td>有</td><td><b>有</b></td></tr>
+<tr><td><b>乘法可交换</b></td><td>是（实数天然可交换）</td><td><b>否</b></td><td><b>是</b></td></tr>
+<tr><td><b>卷积定理</b></td><td>成立</td><td><b>不成立</b></td><td><b>成立</b></td></tr>
+<tr><td><b>频域分析</b></td><td>支持FFT</td><td>困难</td><td><b>支持RQ-FFT</b></td></tr>
+<tr><td><b>颜色保真度</b></td><td>一般（易色偏）</td><td>较好</td><td><b>最好</b></td></tr>
+</tbody>
+</table>
+
+<div class="kg-step">
+  <strong>Clifford代数的瓶颈</strong>：有人问，为什么不直接用更高维的Clifford代数？因为高维Clifford代数的乘法<b>不可交换</b>（和四元数一样的问题），导致傅里叶变换困难、卷积定理不成立。RQ的可交换性恰恰解决了这个瓶颈——它是"刚好够用"的甜点：既有多通道耦合能力，又保持了乘法可交换。
+</div>
+
+<div class="kg-step">
+  <strong>泛化能力</strong>：RQ的乘法规则对卷积核的自由度施加了强约束——4个参数决定16个矩阵元素的位置和符号。这种约束就像给网络加了"正则化"，降低了过拟合风险。实验表明，RQ网络在去雨任务上的泛化能力优于同等容量的实值网络。
+</div>
+
+</div></div>
+<div class="kg-section" id="kg-s16">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>十六、RQ-D2UNet架构全解析——双分支如何"分而治之"？</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<p>RQ-D2UNet（Reduced Quaternion Dual-branch Dual U-Net）是本文提出的去雨网络。它的核心思想是"分而治之"——用两个分支分别处理雨纹和背景，再用注意力机制让它们协同工作。下面我们一层层拆解这个架构。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-rq-d2unet-arch.jpg" alt="RQ-D2UNet整体架构图" class="kg-img">
+  <div class="kg-caption">图：RQ-D2UNet三阶段架构——通道填充头 到 双分支U-Net主干 到 三阶段重建尾</div>
+</div>
+
+<h4>16.1 三阶段架构总览</h4>
+
+<div class="kg-flow">
+  <span class="kg-node" style="background:#6366f1;color:#fff;">输入RGB图</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#0ea5e9;color:#fff;">C-Zero Padding（RGB到RQ）</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#f59e0b;color:#fff;">双分支U-Net主干</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#a855f7;color:#fff;">三阶段重建尾(RM)</span>
+  <span class="kg-arrow">→</span>
+  <span class="kg-node" style="background:#10b981;color:#fff;">去雨输出图</span>
+</div>
+
+<div class="kg-step">
+  <strong>阶段一：通道填充头 (C-Zero Padding)</strong>——把RGB图像转换为RQ表示。RGB三个通道分别编码到RQ的 i、j、k 三个虚部，实部补零。就像把三张单独的彩色胶片"叠"成一张超复数胶片。
+</div>
+
+<div class="kg-step">
+  <strong>阶段二：双分支U-Net主干</strong>——核心部分。雨纹分支专注于提取雨纹特征，背景分支专注于恢复干净背景。两个分支通过DBJRM模块交互信息，再通过RQ-SCformer做空间补偿。
+</div>
+
+<div class="kg-step">
+  <strong>阶段三：三阶段重建尾 (Reconstruction Module, RM)</strong>——生成三个输出：去雨图（最终结果）、雨残差（提取的雨纹）、重建雨图（去雨图+雨残差，用于一致性约束）。三个输出互相约束，确保"去雨"和"保背景"的平衡。
+</div>
+
+<h4>16.2 双分支设计</h4>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>雨纹分支 (Rain Streak Branch)</h4>
+    <p>专注于<b>提取雨纹特征</b>。就像一个"找雨"专家——它的任务是从图像中把雨丝、雨滴的特征分离出来。这个分支的输出是雨残差图。</p>
+  </div>
+  <div class="kg-card">
+    <h4>背景分支 (Background Branch)</h4>
+    <p>专注于<b>恢复干净背景</b>。就像一个"修复"专家——它的任务是在去掉雨纹后，把背景的细节、纹理、颜色补回来。这个分支的输出是去雨图。</p>
+  </div>
+</div>
+
+<h4>16.3 DBJRM：双分支联合表示模块</h4>
+
+<div class="kg-step">
+  <strong>DBJRM (Dual-Branch Joint Representation Module)</strong> 由两部分组成：
+  <br>· <b>模块交互 (MI, Module Interaction)</b>：让雨纹分支和背景分支的特征互相传递。就像两个专家定期开会交流——雨纹分支告诉背景分支"这里有雨"，背景分支告诉雨纹分支"这里背景很复杂，别误伤"。
+  <br>· <b>级联残差块 (CRB, Cascaded Residual Block)</b>：在交互后的特征上做深度提炼。残差连接确保信息不丢失，级联结构逐步精炼特征。
+</div>
+
+<h4>16.4 RQ-SCformer：空间补偿Transformer</h4>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-rq-attention.jpg" alt="RQ域三种注意力机制" class="kg-img">
+  <div class="kg-caption">图：RQ域三种注意力——SAU定位雨纹区域、CAU增强敏感通道、EGAU平衡去雨与保背景</div>
+</div>
+
+<div class="kg-step">
+  <strong>RQ-SCformer (RQ Spatial Compensation Transformer)</strong> 的两大核心：
+  <br>· <b>自注意力 (SA, Self-Attention)</b>：在特征维度上计算注意力权重，让网络关注雨纹密集的区域。
+  <br>· <b>Inception架构</b>：多尺度并行——同时用不同大小的卷积核提取特征，既看局部雨丝又看全局结构。就像一个人同时用放大镜和望远镜观察，细节和全局都不放过。
+</div>
+
+<h4>16.5 RQ域三种注意力</h4>
+
+<table>
+<thead><tr><th>注意力</th><th>全称</th><th>作用</th><th>类比</th></tr></thead>
+<tbody>
+<tr><td><b>RQ-SAU</b></td><td>空间注意力</td><td>定位雨纹在图像中的<b>空间位置</b></td><td>像聚光灯——照亮舞台上有雨的区域</td></tr>
+<tr><td><b>RQ-CAU</b></td><td>通道注意力</td><td>增强对雨纹敏感的<b>特征通道</b></td><td>像调音台——调高雨纹相关频段的音量</td></tr>
+<tr><td><b>RQ-EGAU</b></td><td>增强门控注意力</td><td><b>平衡</b>去雨强度与背景保持</td><td>像音量旋钮——去雨太狠就调低，不够就调高</td></tr>
+</tbody>
+</table>
+
+<div class="kg-step">
+  <strong>三种注意力的协作</strong>：SAU先找到"哪里有雨"，CAU再决定"用哪些特征去雨"，EGAU最后把控"去多少雨才不伤背景"。三者形成"定位→增强→调控"的完整链条。
+</div>
+
+<h4>16.6 消融实验结论</h4>
+
+<table>
+<thead><tr><th>去掉的组件</th><th>性能影响</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>去掉RQ（改用实值）</td><td><b>显著下降</b></td><td>RQ是核心——失去通道耦合和参数效率</td></tr>
+<tr><td>去掉双分支</td><td>明显下降</td><td>单分支无法同时兼顾去雨和保背景</td></tr>
+<tr><td>去掉SCformer</td><td>下降</td><td>失去空间补偿和注意力机制，雨纹定位不准</td></tr>
+</tbody>
+</table>
+
+<div class="kg-step">
+  <strong>本章核心</strong>：RQ-D2UNet = C-Zero Padding头 + 双分支U-Net主干（雨纹分支+背景分支+DBJRM+RQ-SCformer）+ 三阶段重建尾。双分支"分而治之"，三种注意力"定位→增强→调控"，三个输出"互相约束"。消融实验证明RQ、双分支、SCformer缺一不可。
+</div>
+
+</div></div>
+<div class="kg-section" id="kg-s17">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>十七、去雨评价体系——如何判断"雨去干净了"？</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<p>一个去雨算法好不好，不能只靠"看着舒服"来判断——我们需要量化的评价指标。本章介绍去雨领域最常用的五个评价指标，以及为什么需要多指标综合评估。</p>
+
+<div class="kg-img-wrap">
+  <img src="reading-notes/assets/knowledge-eval-metrics.jpg" alt="去雨评价指标五维雷达图" class="kg-img">
+  <div class="kg-caption">图：五维评估雷达图——PSNR、SSIM、LPIPS、TIME、Params综合衡量去雨效果</div>
+</div>
+
+<h4>17.1 五大评价指标</h4>
+
+<table>
+<thead><tr><th>指标</th><th>全称</th><th>含义</th><th>越好越？</th><th>典型优值</th></tr></thead>
+<tbody>
+<tr><td><b>PSNR</b></td><td>峰值信噪比</td><td>基于MSE的对数度量，衡量像素级重建质量</td><td>越高越好</td><td>大于30dB为优</td></tr>
+<tr><td><b>SSIM</b></td><td>结构相似性</td><td>综合考虑亮度、对比度、结构三维度</td><td>越高越好</td><td>接近1为优</td></tr>
+<tr><td><b>LPIPS</b></td><td>学习感知图像块相似度</td><td>基于深度网络特征衡量感知差异</td><td>越低越好</td><td>接近0为优</td></tr>
+<tr><td><b>TIME</b></td><td>推理时间</td><td>处理一张图所需的毫秒数</td><td>越低越好</td><td>越小越快</td></tr>
+<tr><td><b>Params</b></td><td>参数量</td><td>模型的可训练参数总数</td><td>越低越好</td><td>越小越轻</td></tr>
+</tbody>
+</table>
+
+<h4>17.2 各指标详解</h4>
+
+<div class="kg-step">
+  <strong>PSNR（峰值信噪比）</strong>：基于像素级均方误差(MSE)的对数度量。公式核心是 PSNR = 10·log10(MAX的平方 / MSE)。PSNR越高，说明去雨图和干净图的像素越接近。通常PSNR > 30dB就算不错，> 35dB算优秀。但PSNR只看像素——两张图可能PSNR很高但看起来模糊。
+</div>
+
+<div class="kg-step">
+  <strong>SSIM（结构相似性）</strong>：不只是看像素差异，还看<b>结构</b>是否保持。SSIM从三个维度评估：亮度(luminance)、对比度(contrast)、结构(structure)。值域[0,1]，越接近1越好。SSIM = 0.95 意味着结构保持得很好。比如去雨后边缘是否锐利、纹理是否清晰，SSIM比PSNR更能反映。
+</div>
+
+<div class="kg-step">
+  <strong>LPIPS（学习感知图像块相似度）</strong>：用预训练的深度网络（如VGG）提取特征，在特征空间计算差异。LPIPS = 0 表示两张图在感知上完全相同。LPIPS越低越好。它衡量的是"人眼看起来像不像"，而不是"像素差多少"。两张PSNR相同的图，LPIPS可能差很多——因为人眼对某些特征更敏感。
+</div>
+
+<div class="kg-step">
+  <strong>TIME（推理时间）</strong>：处理一张测试图所需的毫秒数。衡量模型的<b>速度</b>。越低越好。实际部署中，速度和精度往往需要权衡——太慢的模型无法实时处理视频。
+</div>
+
+<div class="kg-step">
+  <strong>Params（参数量）</strong>：模型的可训练参数总数。衡量模型的<b>大小</b>和轻量化程度。越低越好。参数少的模型不仅推理快，还更不容易过拟合。RQ网络的一个大优势就是参数量比实值网络少约4倍。
+</div>
+
+<h4>17.3 为什么需要多指标？</h4>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>单一指标的盲区</h4>
+    <p>· PSNR只看像素——可能像素差不多但结构模糊<br>· SSIM只看结构——可能结构对了但颜色偏了<br>· LPIPS只看感知——可能看着像但纹理细节丢了<br>· 单看TIME——可能很快但效果差<br>· 单看Params——可能很小但精度不够</p>
+  </div>
+  <div class="kg-card">
+    <h4>多指标的互补</h4>
+    <p>· PSNR管"像素准不准"<br>· SSIM管"结构对不对"<br>· LPIPS管"看着像不像"<br>· TIME管"跑得快不快"<br>· Params管"模型轻不轻"<br>五个维度互相补盲，才能全面评估</p>
+  </div>
+</div>
+
+<div class="kg-step">
+  <strong>五维雷达图理念</strong>：把PSNR、SSIM、LPIPS、TIME、Params五个指标画在一张雷达图上。理想的去雨模型应该在所有维度上都"凸出"——PSNR/SSIM高（质量好）、LPIPS低（感知好）、TIME低（速度快）、Params低（模型轻）。但现实中往往是"跷跷板"——质量高的模型往往又大又慢。RQ-D2UNet的目标就是在这个跷跷板上找到最佳平衡点。
+</div>
+
+<div class="kg-step">
+  <strong>RQ-D2UNet的评估优势</strong>：得益于RQ的参数效率（4倍减少）和双分支架构的精准去雨能力，RQ-D2UNet在五维评估中表现出色——<b>同时提升PSNR和SSIM</b>（去雨质量好），<b>降低Params</b>（模型轻量化），同时保持合理的TIME（推理速度可接受）。这正是"超复数+双分支"架构的价值所在：不是在单一指标上刷分，而是在质量-速度-大小的三角中实现帕累托最优。
+</div>
+
 </div></div>
 </div></div>
 `;
