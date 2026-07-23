@@ -1735,9 +1735,7 @@ body {
   text-align: center; margin: 20px 0;
 }
 .guide-body .kg-img {
-  max-width: 100%; border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  /* moved to global .kg-img with animation */
 }
 .guide-body .kg-caption {
   font-size: 12px; color: var(--text-muted); margin-top: 8px;
@@ -2272,9 +2270,103 @@ body {
   border: 1px dashed var(--border-light);
 }
 .method-empty p { margin-bottom: 12px; }
+
+/* ===== Three.js Particle Background ===== */
+#three-bg-canvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none; opacity: 0.6;
+}
+body { position: relative; }
+
+/* Ensure main content sits above Three.js canvas */
+.sidebar-nav, .settings-btn, .hero, .toolbar, .ai-tools-section,
+.stats-bar, .progress-section, .heatmap-section, .paper-grid,
+.guide-panel, .fab, .settings-modal, .toast, .paper-modal,
+.sort-dropdown, .mobile-overlay {
+  position: relative; z-index: 1;
+}
+
+/* ===== Smooth Panel Transitions ===== */
+.guide-panel {
+  animation: panelSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.guide-panel.closing {
+  animation: panelSlideOut 0.35s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+@keyframes panelSlideIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes panelSlideOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-20px) scale(0.98); }
+}
+
+/* ===== Smooth Accordion ===== */
+.kg-section-body {
+  max-height: 5000px; overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s ease, padding 0.4s ease;
+  opacity: 1; padding-top: 12px;
+}
+.kg-section-body.collapsed {
+  max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0;
+}
+
+/* ===== Smooth Tab Switch ===== */
+.kg-tab-content {
+  display: none; opacity: 0;
+  animation: tabFadeIn 0.4s ease forwards;
+}
+.kg-tab-content.active { display: block; }
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ===== Smooth Image Loading ===== */
+.kg-img {
+  max-width: 100%; border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  opacity: 0; transform: scale(0.95);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s ease;
+}
+.kg-img.loaded { opacity: 1; transform: scale(1); }
+.kg-img:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.12); transform: scale(1.01); }
+
+/* ===== Smooth Button Interactions ===== */
+.btn, .toolbar button, .guide-close-btn, .kg-tab {
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.btn:active, .toolbar button:active {
+  transform: scale(0.95);
+}
+
+/* ===== Card Hover Effects ===== */
+.paper-card {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.35s ease !important;
+}
+.paper-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.1) !important;
+}
+
+/* ===== Smooth Scroll Progress ===== */
+#kgProgressBar {
+  transition: background 0.3s ease;
+}
+#kgProgressFill {
+  transition: width 0.15s linear;
+}
 </style>
 </head>
 <body>
+
+<!-- Three.js Particle Background Canvas -->
+<canvas id="three-bg-canvas"></canvas>
 
 <!-- Settings Button -->
 <button class="settings-btn" id="settingsBtn" title="API 设置">⚙️</button>
@@ -2468,6 +2560,8 @@ body {
 
 <!-- ====== Particle BG ====== -->
 <canvas class="bg-particles" id="bgCanvas"></canvas>
+<!-- Three.js 3D Background -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <!-- ====== FAB: Scroll to Top ====== -->
 <button class="fab" id="fabTop" title="回到顶部">↑</button>
@@ -4419,7 +4513,167 @@ function recordActivity(paperTitle, action) {
 })();
 
 function initParticles() {
+  // Three.js 3D Particle System
+  const canvas3d = document.getElementById('three-bg-canvas');
+  if (!canvas3d || typeof THREE === 'undefined') { initFallback2D(); return; }
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 30;
+
+  const renderer = new THREE.WebGLRenderer({ canvas: canvas3d, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+
+  // 创建粒子系统
+  const particleCount = 800;
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+  const colors = new Float32Array(particleCount * 3);
+  const sizes = new Float32Array(particleCount);
+  const velocities = new Float32Array(particleCount * 3);
+
+  const colorPalette = [
+    new THREE.Color(0x6366f1), // 靛蓝
+    new THREE.Color(0x8b5cf6), // 紫色
+    new THREE.Color(0x06b6d4), // 青色
+    new THREE.Color(0x10b981), // 绿色
+    new THREE.Color(0xf59e0b), // 琥珀
+  ];
+
+  for (let i = 0; i < particleCount; i++) {
+    const i3 = i * 3;
+    positions[i3]     = (Math.random() - 0.5) * 80;
+    positions[i3 + 1] = (Math.random() - 0.5) * 80;
+    positions[i3 + 2] = (Math.random() - 0.5) * 60;
+
+    const col = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+    colors[i3]     = col.r;
+    colors[i3 + 1] = col.g;
+    colors[i3 + 2] = col.b;
+
+    sizes[i] = Math.random() * 3 + 0.5;
+
+    velocities[i3]     = (Math.random() - 0.5) * 0.02;
+    velocities[i3 + 1] = (Math.random() - 0.5) * 0.02;
+    velocities[i3 + 2] = (Math.random() - 0.5) * 0.01;
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  const material = new THREE.PointsMaterial({
+    size: 0.15,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.6,
+    blending: THREE.AdditiveBlending,
+    sizeAttenuation: true,
+  });
+
+  const particleSystem = new THREE.Points(geometry, material);
+  scene.add(particleSystem);
+
+  // 连接线
+  const lineGeometry = new THREE.BufferGeometry();
+  const maxLines = 150;
+  const linePositions = new Float32Array(maxLines * 6);
+  const lineColors = new Float32Array(maxLines * 6);
+  lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+  lineGeometry.setAttribute('color', new THREE.BufferAttribute(lineColors, 3));
+
+  const lineMaterial = new THREE.LineBasicMaterial({
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.12,
+    blending: THREE.AdditiveBlending,
+  });
+  const lineSystem = new THREE.LineSegments(lineGeometry, lineMaterial);
+  scene.add(lineSystem);
+
+  // 鼠标交互
+  let mouseX = 0, mouseY = 0;
+  document.addEventListener('mousemove', function(e) {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = -(e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  // 窗口大小变化
+  window.addEventListener('resize', function() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // 动画循环
+  let time = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    time += 0.005;
+
+    const posArr = geometry.attributes.position.array;
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3;
+      posArr[i3]     += velocities[i3];
+      posArr[i3 + 1] += velocities[i3 + 1];
+      posArr[i3 + 2] += velocities[i3 + 2];
+
+      // 边界反弹
+      if (Math.abs(posArr[i3]) > 40) velocities[i3] *= -1;
+      if (Math.abs(posArr[i3 + 1]) > 40) velocities[i3 + 1] *= -1;
+      if (Math.abs(posArr[i3 + 2]) > 30) velocities[i3 + 2] *= -1;
+    }
+    geometry.attributes.position.needsUpdate = true;
+
+    // 更新连接线
+    let lineIdx = 0;
+    const lp = lineSystem.geometry.attributes.position.array;
+    const lc = lineSystem.geometry.attributes.color.array;
+    for (let i = 0; i < particleCount && lineIdx < maxLines; i++) {
+      for (let j = i + 1; j < particleCount && lineIdx < maxLines; j++) {
+        const i3 = i * 3, j3 = j * 3;
+        const dx = posArr[i3] - posArr[j3];
+        const dy = posArr[i3+1] - posArr[j3+1];
+        const dz = posArr[i3+2] - posArr[j3+2];
+        const dist = dx*dx + dy*dy + dz*dz;
+        if (dist < 25) {
+          const li = lineIdx * 6;
+          lp[li]   = posArr[i3]; lp[li+1] = posArr[i3+1]; lp[li+2] = posArr[i3+2];
+          lp[li+3] = posArr[j3]; lp[li+4] = posArr[j3+1]; lp[li+5] = posArr[j3+2];
+          const alpha = 1 - Math.sqrt(dist) / 5;
+          lc[li] = colors[i3]*alpha; lc[li+1] = colors[i3+1]*alpha; lc[li+2] = colors[i3+2]*alpha;
+          lc[li+3] = colors[j3]*alpha; lc[li+4] = colors[j3+1]*alpha; lc[li+5] = colors[j3+2]*alpha;
+          lineIdx++;
+        }
+      }
+    }
+    // 清空未使用的线段
+    for (let i = lineIdx; i < maxLines; i++) {
+      const li = i * 6;
+      for (let k = 0; k < 6; k++) { lp[li+k] = 0; lc[li+k] = 0; }
+    }
+    lineSystem.geometry.attributes.position.needsUpdate = true;
+    lineSystem.geometry.attributes.color.needsUpdate = true;
+
+    // 相机跟随鼠标 + 自动旋转
+    camera.position.x += (mouseX * 5 - camera.position.x) * 0.02;
+    camera.position.y += (mouseY * 5 - camera.position.y) * 0.02;
+    particleSystem.rotation.y = time * 0.3;
+    particleSystem.rotation.x = Math.sin(time * 0.2) * 0.1;
+    lineSystem.rotation.y = time * 0.3;
+    lineSystem.rotation.x = Math.sin(time * 0.2) * 0.1;
+
+    camera.lookAt(scene.position);
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+function initFallback2D() {
   const canvas = document.getElementById('bgCanvas');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   let particles = [];
 
@@ -4432,11 +4686,8 @@ function initParticles() {
 
   for (let i = 0; i < 50; i++) {
     particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 2 + 1,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5,
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 1, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
       opacity: Math.random() * 0.5 + 0.2,
     });
   }
@@ -4444,18 +4695,34 @@ function initParticles() {
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach(p => {
-      p.x += p.vx;
-      p.y += p.vy;
+      p.x += p.vx; p.y += p.vy;
       if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
       if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(99, 102, 241, ${p.opacity})`;
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(99, 102, 241, ${p.opacity})`; ctx.fill();
     });
     requestAnimationFrame(animate);
   }
   animate();
+}
+
+// Knowledge Framework Image Lazy Load with Fade-in
+function initKgImageLazyLoad() {
+  var images = document.querySelectorAll('.kg-img:not(.loaded)');
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          var img = entry.target;
+          img.classList.add('loaded');
+          observer.unobserve(img);
+        }
+      });
+    }, { rootMargin: '50px' });
+    images.forEach(function(img) { observer.observe(img); });
+  } else {
+    images.forEach(function(img) { img.classList.add('loaded'); });
+  }
 }
 
 // ============================================================
@@ -5761,7 +6028,7 @@ const KNOWLEDGE_HTML = `
 <p>上一章我们知道了RQ"是什么"，这一章我们来拆解它的"内部构造"——乘法规则、共轭、模长，以及它所对应的几何空间。理解了这些，才能真正明白RQ为什么能同时处理"振荡信号"和"指数增长信号"。</p>
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-rq-math.jpg" alt="RQ数学本质：乘法规则与几何空间" class="kg-img">
+  <img src="reading-notes/assets/knowledge-rq-math.png" alt="RQ数学本质：乘法规则与几何空间" class="kg-img">
   <div class="kg-caption">图：RQ的四个分量对应不同的几何空间——i和k对应欧几里得振荡，j对应双曲增长</div>
 </div>
 
@@ -6090,7 +6357,7 @@ const KNOWLEDGE_HTML = `
 <div class="kg-accordion-body">
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-sparse-dict-lowrank.jpg" alt="稀疏表示、字典学习与低秩表示" class="kg-img">
+  <img src="reading-notes/assets/knowledge-sparse-dict-lowrank.png" alt="稀疏表示、字典学习与低秩表示" class="kg-img">
   <div class="kg-caption">图：稀疏表示与字典学习——用最少的关键词概括图像信号</div>
 </div>
 
@@ -6138,7 +6405,7 @@ const KNOWLEDGE_HTML = `
 <div class="kg-accordion-body">
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-self-attention-arch.jpg" alt="自注意力机制架构演进" class="kg-img">
+  <img src="reading-notes/assets/knowledge-self-attention-arch.png" alt="自注意力机制架构演进" class="kg-img">
   <div class="kg-caption">图：自注意力机制——从NLP的Transformer到CV的视觉注意力</div>
 </div>
 
@@ -6314,7 +6581,7 @@ const KNOWLEDGE_HTML = `
 <div class="kg-accordion-body">
 
 <div class="kg-img-wrap">
-  <img src="reading-notes/assets/knowledge-mprnet-multiscale.jpg" alt="MPRNet多阶段多尺度去噪网络" class="kg-img">
+  <img src="reading-notes/assets/knowledge-mprnet-multiscale.png" alt="MPRNet多阶段多尺度去噪网络" class="kg-img">
   <div class="kg-caption">图：MPRNet——三阶段渐进式恢复，从粗到细修复退化图像</div>
 </div>
 
@@ -6380,7 +6647,12 @@ const knowledgeBody = document.getElementById('knowledgeBody');
 
 function openKnowledge() {
   knowledgeBody.innerHTML = KNOWLEDGE_HTML;
+  knowledgePanel.classList.remove('closing');
   knowledgePanel.style.display = 'block';
+  // Re-trigger animation
+  knowledgePanel.style.animation = 'none';
+  knowledgePanel.offsetHeight; // force reflow
+  knowledgePanel.style.animation = '';
   document.getElementById('heroBanner').style.display = 'none';
   document.getElementById('statsBar').style.display = 'none';
   document.getElementById('progressSection').style.display = 'none';
@@ -6394,6 +6666,8 @@ function openKnowledge() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   // Init progress bar & TOC scroll tracking
   kgInitTracking();
+  // Lazy-load images with fade-in
+  setTimeout(initKgImageLazyLoad, 100);
 }
 
 var kgScrollCleanup = null;
@@ -6427,24 +6701,28 @@ function kgInitTracking() {
 }
 
 function closeKnowledge() {
-  knowledgePanel.style.display = 'none';
+  knowledgePanel.classList.add('closing');
+  setTimeout(function() {
+    knowledgePanel.style.display = 'none';
+    knowledgePanel.classList.remove('closing');
+    document.getElementById('heroBanner').style.display = '';
+    document.getElementById('statsBar').style.display = '';
+    document.getElementById('progressSection').style.display = '';
+    document.getElementById('heatmapSection').style.display = '';
+    document.getElementById('paperGrid').style.display = '';
+    document.querySelector('.toolbar').style.display = '';
+  }, 350);
   if (kgScrollCleanup) { kgScrollCleanup(); kgScrollCleanup = null; }
-  document.getElementById('heroBanner').style.display = '';
-  document.getElementById('statsBar').style.display = '';
-  document.getElementById('progressSection').style.display = '';
-  document.getElementById('heatmapSection').style.display = '';
-  document.getElementById('paperGrid').style.display = '';
-  document.querySelector('.toolbar').style.display = '';
 }
 
 document.getElementById('btnKnowledge').addEventListener('click', openKnowledge);
 document.getElementById('knowledgeCloseBtn').addEventListener('click', closeKnowledge);
 
-// Accordion toggle
+// Accordion toggle with smooth animation
 function kgToggleAcc(header) {
   header.classList.toggle('collapsed');
   var body = header.nextElementSibling;
-  body.classList.toggle('collapsed');
+  if (body) body.classList.toggle('collapsed');
 }
 
 // Tab switcher for optimizer comparison
@@ -6618,7 +6896,11 @@ const mainContentNormal = document.getElementById('heroBanner');
 
 function openDrawingGuide() {
   guideBody.innerHTML = DRAWING_GUIDE_HTML;
+  guidePanel.classList.remove('closing');
   guidePanel.style.display = 'block';
+  guidePanel.style.animation = 'none';
+  guidePanel.offsetHeight;
+  guidePanel.style.animation = '';
   // also hide knowledge panel if open
   if (document.getElementById('knowledgePanel')) {
     document.getElementById('knowledgePanel').style.display = 'none';
@@ -6633,13 +6915,17 @@ function openDrawingGuide() {
 }
 
 function closeDrawingGuide() {
-  guidePanel.style.display = 'none';
-  document.getElementById('heroBanner').style.display = '';
-  document.getElementById('statsBar').style.display = '';
-  document.getElementById('progressSection').style.display = '';
-  document.getElementById('heatmapSection').style.display = '';
-  document.getElementById('paperGrid').style.display = '';
-  document.querySelector('.toolbar').style.display = '';
+  guidePanel.classList.add('closing');
+  setTimeout(function() {
+    guidePanel.style.display = 'none';
+    guidePanel.classList.remove('closing');
+    document.getElementById('heroBanner').style.display = '';
+    document.getElementById('statsBar').style.display = '';
+    document.getElementById('progressSection').style.display = '';
+    document.getElementById('heatmapSection').style.display = '';
+    document.getElementById('paperGrid').style.display = '';
+    document.querySelector('.toolbar').style.display = '';
+  }, 350);
 }
 
 document.getElementById('btnDrawingGuide').addEventListener('click', openDrawingGuide);
