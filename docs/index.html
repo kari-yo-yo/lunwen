@@ -2364,6 +2364,81 @@ body { position: relative; }
 #kgProgressFill {
   transition: width 0.15s linear;
 }
+
+/* ========== ECharts Container ========== */
+.kg-card [id^="echarts-"] {
+  border-radius: var(--radius-sm);
+  background: rgba(0,0,0,0.15);
+  padding: 4px;
+}
+[data-theme="light"] .kg-card [id^="echarts-"] {
+  background: rgba(0,0,0,0.03);
+}
+
+/* ========== Tween Animation Classes ========== */
+.tween-fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+}
+.tween-fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tween-scale-in {
+  opacity: 0;
+  transform: scale(0.92);
+}
+.tween-scale-in.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tween-slide-left {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+.tween-slide-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.tween-slide-right {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.tween-slide-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Panel open/close via Tween */
+#knowledgePanel, #guidePanel {
+  transition: none; /* Remove CSS transition, use JS Tween instead */
+}
+
+/* Canvas 2D decoration layer */
+#canvasDecoration {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* WebGL enhanced glow */
+#three-bg-canvas {
+  mix-blend-mode: screen;
+}
+
+/* Knowledge section stagger animation */
+.kg-section {
+  will-change: transform, opacity;
+}
+
 </style>
 </head>
 <body>
@@ -2563,8 +2638,11 @@ body { position: relative; }
 
 <!-- ====== Particle BG ====== -->
 <canvas class="bg-particles" id="bgCanvas"></canvas>
+<canvas id="canvasDecoration"></canvas>
 <!-- Three.js 3D Background -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tweenjs/tween.js@23.1.3/dist/tween.umd.js"></script>
 
 <!-- ====== FAB: Scroll to Top ====== -->
 <button class="fab" id="fabTop" title="回到顶部">↑</button>
@@ -4229,12 +4307,20 @@ function initCardAnimations() {
     card.addEventListener('mouseleave', resetTilt);
   });
 
-  // Fade-in observer
+  // Fade-in observer with Tween enhancement
   if (fadeObserver) fadeObserver.disconnect();
+  var cardIdx = 0;
   fadeObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
+        var card = entry.target;
+        // Use Tween for smooth entrance
+        if (typeof TWEEN !== 'undefined') {
+          tweenCardEntrance(card, cardIdx * 50);
+          cardIdx++;
+        } else {
+          card.classList.add('visible');
+        }
         fadeObserver.unobserve(entry.target);
       }
     });
@@ -4515,8 +4601,835 @@ function recordActivity(paperTitle, action) {
   });
 })();
 
-function initParticles() {
-  // Three.js 3D Particle System
+
+// ============================================================
+//  ECharts — 知识模块图表初始化
+// ============================================================
+function initAllECharts() {
+  if (typeof echarts === 'undefined') { console.warn('ECharts not loaded'); return; }
+  
+  initRainRadar();
+  initActivationChart();
+  initGradientChart();
+  initNNTimeline();
+  initLossSurface();
+}
+
+function initRainRadar() {
+  const dom = document.getElementById('echarts-rain-radar');
+  if (!dom) return;
+  const chart = echarts.init(dom, 'dark');
+  
+  const option = {
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'item' },
+    legend: {
+      data: ['RQ-D2UNet', 'MPRNet', 'Restormer', 'SCGN', 'DRSformer'],
+      bottom: 0,
+      textStyle: { color: '#94a3b8', fontSize: 11 },
+      itemWidth: 12,
+      itemHeight: 8
+    },
+    radar: {
+      indicator: [
+        { name: 'PSNR(dB)', max: 35 },
+        { name: 'SSIM', max: 1.0 },
+        { name: '1-LPIPS', max: 1.0 },
+        { name: '速度(FPS)', max: 100 },
+        { name: '轻量级', max: 1.0 }
+      ],
+      center: ['50%', '46%'],
+      radius: '60%',
+      shape: 'polygon',
+      splitNumber: 5,
+      axisName: { color: '#94a3b8', fontSize: 11 },
+      splitLine: { lineStyle: { color: 'rgba(99,102,241,0.15)' } },
+      splitArea: { areaStyle: { color: ['rgba(99,102,241,0.02)', 'rgba(99,102,241,0.05)'] } },
+      axisLine: { lineStyle: { color: 'rgba(99,102,241,0.2)' } }
+    },
+    series: [{
+      type: 'radar',
+      data: [
+        { value: [32.5, 0.97, 0.88, 25, 0.75], name: 'RQ-D2UNet',
+          lineStyle: { color: '#6366f1', width: 2 },
+          itemStyle: { color: '#6366f1' },
+          areaStyle: { color: 'rgba(99,102,241,0.15)' } },
+        { value: [33.2, 0.98, 0.92, 8, 0.35], name: 'MPRNet',
+          lineStyle: { color: '#f59e0b', width: 2 },
+          itemStyle: { color: '#f59e0b' },
+          areaStyle: { color: 'rgba(245,158,11,0.1)' } },
+        { value: [33.8, 0.98, 0.93, 15, 0.5], name: 'Restormer',
+          lineStyle: { color: '#22c55e', width: 2 },
+          itemStyle: { color: '#22c55e' },
+          areaStyle: { color: 'rgba(34,197,94,0.1)' } },
+        { value: [31.8, 0.96, 0.85, 45, 0.85], name: 'SCGN',
+          lineStyle: { color: '#06b6d4', width: 2 },
+          itemStyle: { color: '#06b6d4' },
+          areaStyle: { color: 'rgba(6,182,212,0.1)' } },
+        { value: [33.5, 0.98, 0.91, 18, 0.6], name: 'DRSformer',
+          lineStyle: { color: '#a855f7', width: 2 },
+          itemStyle: { color: '#a855f7' },
+          areaStyle: { color: 'rgba(168,85,247,0.1)' } }
+      ]
+    }]
+  };
+  
+  chart.setOption(option);
+  window.addEventListener('resize', function() { chart.resize(); });
+  
+  // Auto rotation
+  let angle = 0;
+  setInterval(function() {
+    angle += 3;
+    chart.setOption({ radar: { startAngle: angle % 360 } });
+  }, 100);
+}
+
+function initActivationChart() {
+  const dom = document.getElementById('echarts-activation');
+  if (!dom) return;
+  const chart = echarts.init(dom, 'dark');
+  
+  // Generate data points
+  var xData = [];
+  for (var x = -6; x <= 6; x += 0.1) { xData.push(Math.round(x * 100) / 100); }
+  
+  function relu(x) { return Math.max(0, x); }
+  function leakyRelu(x) { return x > 0 ? x : 0.1 * x; }
+  function gelu(x) { return 0.5 * x * (1 + Math.tanh(Math.sqrt(2 / Math.PI) * (x + 0.044715 * Math.pow(x, 3)))); }
+  function sigmoid(x) { return 1 / (1 + Math.exp(-x)); }
+  function tanh(x) { return Math.tanh(x); }
+  
+  function makeData(fn) { return xData.map(fn); }
+  
+  var option = {
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis', textStyle: { fontSize: 12 } },
+    legend: {
+      data: ['ReLU', 'LeakyReLU', 'GELU', 'Sigmoid', 'Tanh'],
+      bottom: 0,
+      textStyle: { color: '#94a3b8', fontSize: 11 },
+      itemWidth: 16
+    },
+    grid: { left: 50, right: 20, top: 20, bottom: 50 },
+    xAxis: {
+      type: 'category', data: xData,
+      axisLabel: { color: '#64748b', fontSize: 10, interval: 29 },
+      axisLine: { lineStyle: { color: 'rgba(99,102,241,0.2)' } },
+      splitLine: { show: false }
+    },
+    yAxis: {
+      type: 'value', min: -1.5, max: 6,
+      axisLabel: { color: '#64748b', fontSize: 10 },
+      axisLine: { lineStyle: { color: 'rgba(99,102,241,0.2)' } },
+      splitLine: { lineStyle: { color: 'rgba(99,102,241,0.08)' } }
+    },
+    series: [
+      { name: 'ReLU', type: 'line', smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#6366f1' }, data: makeData(relu) },
+      { name: 'LeakyReLU', type: 'line', smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#f59e0b' }, data: makeData(leakyRelu) },
+      { name: 'GELU', type: 'line', smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#22c55e' }, data: makeData(gelu) },
+      { name: 'Sigmoid', type: 'line', smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#06b6d4' }, data: makeData(sigmoid) },
+      { name: 'Tanh', type: 'line', smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#a855f7' }, data: makeData(tanh) }
+    ]
+  };
+  
+  chart.setOption(option);
+  window.addEventListener('resize', function() { chart.resize(); });
+}
+
+function initGradientChart() {
+  const dom = document.getElementById('echarts-gradient');
+  if (!dom) return;
+  const chart = echarts.init(dom, 'dark');
+  
+  // Simulated training loss curves
+  var epochs = [];
+  var sgdLoss = [], momentumLoss = [], adamLoss = [];
+  var s = 3.0, m = 3.0, a = 3.0;
+  
+  for (var i = 0; i <= 200; i++) {
+    epochs.push(i);
+    // SGD: slow, noisy convergence
+    s = 0.5 + 2.5 * Math.exp(-0.012 * i) + 0.15 * Math.sin(i * 0.3) * Math.exp(-0.005 * i);
+    sgdLoss.push(Math.round(s * 100) / 100);
+    // Momentum: faster, smoother
+    m = 0.5 + 2.5 * Math.exp(-0.025 * i) + 0.05 * Math.sin(i * 0.2) * Math.exp(-0.01 * i);
+    momentumLoss.push(Math.round(m * 100) / 100);
+    // Adam: fastest convergence
+    a = 0.5 + 2.5 * Math.exp(-0.04 * i) + 0.02 * Math.sin(i * 0.15) * Math.exp(-0.02 * i);
+    adamLoss.push(Math.round(a * 100) / 100);
+  }
+  
+  var option = {
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis' },
+    legend: {
+      data: ['SGD', 'Momentum', 'Adam'],
+      bottom: 0,
+      textStyle: { color: '#94a3b8', fontSize: 11 }
+    },
+    grid: { left: 55, right: 20, top: 20, bottom: 50 },
+    xAxis: {
+      type: 'category', data: epochs, name: 'Epoch',
+      nameTextStyle: { color: '#64748b' },
+      axisLabel: { color: '#64748b', fontSize: 10, interval: 19 },
+      axisLine: { lineStyle: { color: 'rgba(99,102,241,0.2)' } }
+    },
+    yAxis: {
+      type: 'value', name: 'Loss', min: 0, max: 3.5,
+      nameTextStyle: { color: '#64748b' },
+      axisLabel: { color: '#64748b', fontSize: 10 },
+      axisLine: { lineStyle: { color: 'rgba(99,102,241,0.2)' } },
+      splitLine: { lineStyle: { color: 'rgba(99,102,241,0.08)' } }
+    },
+    series: [
+      { name: 'SGD', type: 'line', smooth: true, symbol: 'none', showSymbol: false,
+        lineStyle: { width: 2, color: '#ef4444' }, areaStyle: { color: 'rgba(239,68,68,0.05)' },
+        data: sgdLoss },
+      { name: 'Momentum', type: 'line', smooth: true, symbol: 'none', showSymbol: false,
+        lineStyle: { width: 2, color: '#f59e0b' }, areaStyle: { color: 'rgba(245,158,11,0.05)' },
+        data: momentumLoss },
+      { name: 'Adam', type: 'line', smooth: true, symbol: 'none', showSymbol: false,
+        lineStyle: { width: 2, color: '#22c55e' }, areaStyle: { color: 'rgba(34,197,94,0.05)' },
+        data: adamLoss }
+    ],
+    animationDuration: 3000,
+    animationEasing: 'cubicOut'
+  };
+  
+  chart.setOption(option);
+  window.addEventListener('resize', function() { chart.resize(); });
+}
+
+function initNNTimeline() {
+  const dom = document.getElementById('echarts-nn-timeline');
+  if (!dom) return;
+  const chart = echarts.init(dom, 'dark');
+  
+  var data = [
+    { name: 'LeNet-5', year: 1998, params: '60K', accuracy: 99.2 },
+    { name: 'AlexNet', year: 2012, params: '60M', accuracy: 84.7 },
+    { name: 'VGGNet', year: 2014, params: '138M', accuracy: 92.7 },
+    { name: 'GoogLeNet', year: 2014, params: '6.8M', accuracy: 93.3 },
+    { name: 'ResNet-50', year: 2015, params: '25.6M', accuracy: 96.4 },
+    { name: 'DenseNet', year: 2017, params: '8M', accuracy: 96.5 },
+    { name: 'EfficientNet', year: 2019, params: '5.3M', accuracy: 97.1 },
+    { name: 'ViT-B', year: 2020, params: '86M', accuracy: 85.5 },
+    { name: 'Swin-T', year: 2021, params: '28M', accuracy: 97.3 },
+    { name: 'ConvNeXt', year: 2022, params: '89M', accuracy: 97.8 },
+    { name: 'ViT-G', year: 2022, params: '1.8B', accuracy: 90.4 }
+  ];
+  
+  var option = {
+    backgroundColor: 'transparent',
+    tooltip: {
+      trigger: 'axis',
+      formatter: function(params) {
+        var d = data[params[0].dataIndex];
+        return '<b>' + d.name + '</b> (' + d.year + ')<br/>' +
+               '参数量: ' + d.params + '<br/>Top-1: ' + d.accuracy + '%';
+      }
+    },
+    grid: { left: 60, right: 60, top: 30, bottom: 50 },
+    xAxis: {
+      type: 'category',
+      data: data.map(function(d) { return d.name; }),
+      axisLabel: { color: '#94a3b8', fontSize: 9, rotate: 30 },
+      axisLine: { lineStyle: { color: 'rgba(99,102,241,0.2)' } }
+    },
+    yAxis: [
+      {
+        type: 'value', name: 'Top-1 (%)', min: 80, max: 100,
+        nameTextStyle: { color: '#64748b', fontSize: 10 },
+        axisLabel: { color: '#64748b', fontSize: 10 },
+        axisLine: { lineStyle: { color: 'rgba(99,102,241,0.2)' } },
+        splitLine: { lineStyle: { color: 'rgba(99,102,241,0.08)' } }
+      },
+      {
+        type: 'category',
+        data: ['1.8B', '138M', '86M', '89M', '60M', '28M', '25.6M', '8M', '6.8M', '5.3M', '60K'],
+        axisLabel: { color: '#64748b', fontSize: 9 },
+        axisLine: { show: false }
+      }
+    ],
+    series: [
+      {
+        name: 'Top-1 准确率',
+        type: 'bar',
+        barWidth: '45%',
+        itemStyle: {
+          borderRadius: [4, 4, 0, 0],
+          color: function(params) {
+            var colors = ['#6366f1','#8b5cf6','#a855f7','#06b6d4','#22c55e','#10b981','#f59e0b','#ef4444','#ec4899','#f97316','#3b82f6'];
+            return colors[params.dataIndex % colors.length];
+          }
+        },
+        label: {
+          show: true, position: 'top',
+          formatter: '{c}%', fontSize: 9, color: '#94a3b8'
+        },
+        data: data.map(function(d) { return d.accuracy; })
+      }
+    ]
+  };
+  
+  chart.setOption(option);
+  window.addEventListener('resize', function() { chart.resize(); });
+}
+
+function initLossSurface() {
+  const dom = document.getElementById('echarts-loss-surface');
+  if (!dom) return;
+  const chart = echarts.init(dom, 'dark');
+  
+  var xData = [];
+  for (var x = -3; x <= 3; x += 0.05) { xData.push(Math.round(x * 100) / 100); }
+  
+  function mse(e) { return e * e; }
+  function ce(e) {
+    // Cross-entropy like: -log(sigmoid(e)) approximation
+    var s = 1 / (1 + Math.exp(-e));
+    return s > 0.001 ? -Math.log(s) : 7;
+  }
+  function huber(e) {
+    var d = Math.abs(e);
+    return d <= 1 ? 0.5 * e * e : d - 0.5;
+  }
+  function smoothL1(e) {
+    var d = Math.abs(e);
+    return d < 1 ? 0.5 * e * e : d - 0.5;
+  }
+  
+  function makeData(fn) { return xData.map(fn); }
+  
+  var option = {
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis' },
+    legend: {
+      data: ['MSE', 'Cross-Entropy', 'Huber Loss', 'Smooth L1'],
+      bottom: 0,
+      textStyle: { color: '#94a3b8', fontSize: 11 }
+    },
+    grid: { left: 50, right: 20, top: 20, bottom: 50 },
+    xAxis: {
+      type: 'category', data: xData, name: 'Error',
+      nameTextStyle: { color: '#64748b', fontSize: 10 },
+      axisLabel: { color: '#64748b', fontSize: 10, interval: 29 },
+      axisLine: { lineStyle: { color: 'rgba(99,102,241,0.2)' } }
+    },
+    yAxis: {
+      type: 'value', name: 'Loss', min: 0, max: 8,
+      nameTextStyle: { color: '#64748b', fontSize: 10 },
+      axisLabel: { color: '#64748b', fontSize: 10 },
+      axisLine: { lineStyle: { color: 'rgba(99,102,241,0.2)' } },
+      splitLine: { lineStyle: { color: 'rgba(99,102,241,0.08)' } }
+    },
+    series: [
+      { name: 'MSE', type: 'line', smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#6366f1' }, data: makeData(mse) },
+      { name: 'Cross-Entropy', type: 'line', smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#ef4444' }, data: makeData(ce) },
+      { name: 'Huber Loss', type: 'line', smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#22c55e' }, data: makeData(huber) },
+      { name: 'Smooth L1', type: 'line', smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#f59e0b' }, data: makeData(smoothL1) }
+    ]
+  };
+  
+  chart.setOption(option);
+  window.addEventListener('resize', function() { chart.resize(); });
+}
+
+// ============================================================
+//  Tween.js — 面板切换 + 卡片入场动画
+// ============================================================
+function tweenOpenPanel(panel, callback) {
+  // Using CSS transitions as fallback when Tween is unavailable
+  if (typeof TWEEN === 'undefined') {
+    panel.style.display = 'block';
+    panel.style.opacity = '1';
+    panel.style.transform = 'translateY(0) scale(1)';
+    if (callback) callback();
+    return;
+  }
+  
+  panel.style.display = 'block';
+  panel.style.opacity = '0';
+  panel.style.transform = 'translateY(30px) scale(0.97)';
+  
+  var tweenObj = { opacity: 0, y: 30, scale: 0.97 };
+  new TWEEN.Tween(tweenObj)
+    .to({ opacity: 1, y: 0, scale: 1 }, 450)
+    .easing(TWEEN.Easing.Cubic.Out)
+    .onUpdate(function() {
+      panel.style.opacity = tweenObj.opacity;
+      panel.style.transform = 'translateY(' + tweenObj.y + 'px) scale(' + tweenObj.scale + ')';
+    })
+    .onComplete(function() {
+      panel.style.transform = '';
+      if (callback) callback();
+    })
+    .start();
+}
+
+function tweenClosePanel(panel, callback) {
+  if (typeof TWEEN === 'undefined') {
+    panel.style.display = 'none';
+    if (callback) callback();
+    return;
+  }
+  
+  var tweenObj = { opacity: 1, y: 0, scale: 1 };
+  new TWEEN.Tween(tweenObj)
+    .to({ opacity: 0, y: -20, scale: 0.98 }, 300)
+    .easing(TWEEN.Easing.Cubic.In)
+    .onUpdate(function() {
+      panel.style.opacity = tweenObj.opacity;
+      panel.style.transform = 'translateY(' + tweenObj.y + 'px) scale(' + tweenObj.scale + ')';
+    })
+    .onComplete(function() {
+      panel.style.display = 'none';
+      panel.style.transform = '';
+      if (callback) callback();
+    })
+    .start();
+}
+
+// Tween animation loop
+function startTweenLoop() {
+  if (typeof TWEEN === 'undefined') return;
+  function animate(time) {
+    requestAnimationFrame(animate);
+    TWEEN.update(time);
+  }
+  requestAnimationFrame(animate);
+}
+startTweenLoop();
+
+// Replace openKnowledge with Tween version
+var _origOpenKnowledge = openKnowledge;
+openKnowledge = function() {
+  var panel = document.getElementById('knowledgePanel');
+  knowledgeBody.innerHTML = KNOWLEDGE_HTML;
+  document.getElementById('heroBanner').style.display = 'none';
+  document.getElementById('statsBar').style.display = 'none';
+  document.getElementById('progressSection').style.display = 'none';
+  document.getElementById('heatmapSection').style.display = 'none';
+  document.getElementById('paperGrid').style.display = 'none';
+  document.querySelector('.toolbar').style.display = 'none';
+  if (document.getElementById('guidePanel')) {
+    document.getElementById('guidePanel').style.display = 'none';
+  }
+  
+  tweenOpenPanel(panel, function() {
+    kgInitTracking();
+    setTimeout(initKgImageLazyLoad, 100);
+    setTimeout(initAllECharts, 300);
+    // Stagger-animate knowledge sections
+    tweenStaggerSections();
+  });
+  
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// Replace closeKnowledge with Tween version
+var _origCloseKnowledge = closeKnowledge;
+closeKnowledge = function() {
+  var panel = document.getElementById('knowledgePanel');
+  tweenClosePanel(panel, function() {
+    document.getElementById('heroBanner').style.display = '';
+    document.getElementById('statsBar').style.display = '';
+    document.getElementById('progressSection').style.display = '';
+    document.getElementById('heatmapSection').style.display = '';
+    document.getElementById('paperGrid').style.display = '';
+    document.querySelector('.toolbar').style.display = '';
+  });
+  if (kgScrollCleanup) { kgScrollCleanup(); kgScrollCleanup = null; }
+};
+
+// Stagger animate knowledge sections
+function tweenStaggerSections() {
+  if (typeof TWEEN === 'undefined') return;
+  var sections = document.querySelectorAll('.kg-section');
+  sections.forEach(function(sec, i) {
+    var tweenObj = { opacity: 0, y: 20 };
+    sec.style.opacity = '0';
+    sec.style.transform = 'translateY(20px)';
+    new TWEEN.Tween(tweenObj)
+      .delay(i * 60)
+      .to({ opacity: 1, y: 0 }, 400)
+      .easing(TWEEN.Easing.Cubic.Out)
+      .onUpdate(function() {
+        sec.style.opacity = tweenObj.opacity;
+        sec.style.transform = 'translateY(' + tweenObj.y + 'px)';
+      })
+      .start();
+  });
+}
+
+// Paper card entrance with Tween
+function tweenCardEntrance(card, delay) {
+  if (typeof TWEEN === 'undefined') {
+    card.style.opacity = '1';
+    return;
+  }
+  var tweenObj = { opacity: 0, y: 30, scale: 0.95 };
+  card.style.opacity = '0';
+  new TWEEN.Tween(tweenObj)
+    .delay(delay || 0)
+    .to({ opacity: 1, y: 0, scale: 1 }, 500)
+    .easing(TWEEN.Easing.Back.Out)
+    .onUpdate(function() {
+      card.style.opacity = tweenObj.opacity;
+      card.style.transform = 'translateY(' + tweenObj.y + 'px) scale(' + tweenObj.scale + ')';
+    })
+    .start();
+}
+
+// Scroll-triggered parallax with Tween
+function initTweenParallax() {
+  if (typeof TWEEN === 'undefined') return;
+  var hero = document.getElementById('heroBanner');
+  if (!hero) return;
+  
+  var scrollY = 0;
+  window.addEventListener('scroll', function() {
+    scrollY = window.scrollY;
+  }, { passive: true });
+  
+  function updateParallax() {
+    requestAnimationFrame(updateParallax);
+    if (scrollY > 600) return; // Only in hero area
+    hero.style.transform = 'translateY(' + (scrollY * 0.3) + 'px)';
+    hero.style.opacity = Math.max(0, 1 - scrollY / 500);
+  }
+  updateParallax();
+}
+
+// ============================================================
+//  Canvas 2D — 装饰层（动态网格 + 浮动粒子）
+// ============================================================
+function initCanvasDecoration() {
+  var canvas = document.getElementById('canvasDecoration');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  
+  // Floating geometric shapes
+  var shapes = [];
+  var shapeCount = 12;
+  for (var i = 0; i < shapeCount; i++) {
+    shapes.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 30 + 10,
+      type: ['circle', 'triangle', 'square', 'diamond'][Math.floor(Math.random() * 4)],
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.01,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.2,
+      opacity: Math.random() * 0.15 + 0.05,
+      hue: Math.random() * 60 + 220 // Blue-purple range
+    });
+  }
+  
+  // Grid lines
+  var gridSpacing = 80;
+  
+  function drawGrid() {
+    ctx.strokeStyle = 'rgba(99, 102, 241, 0.03)';
+    ctx.lineWidth = 0.5;
+    
+    // Vertical lines
+    for (var x = 0; x < canvas.width; x += gridSpacing) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    // Horizontal lines
+    for (var y = 0; y < canvas.height; y += gridSpacing) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+  }
+  
+  function drawShape(s) {
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(s.rotation);
+    ctx.strokeStyle = 'hsla(' + s.hue + ', 60%, 70%, ' + s.opacity + ')';
+    ctx.fillStyle = 'hsla(' + s.hue + ', 60%, 70%, ' + (s.opacity * 0.3) + ')';
+    ctx.lineWidth = 1;
+    
+    var r = s.size / 2;
+    
+    switch(s.type) {
+      case 'circle':
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        break;
+      case 'triangle':
+        ctx.beginPath();
+        ctx.moveTo(0, -r);
+        ctx.lineTo(r * 0.866, r * 0.5);
+        ctx.lineTo(-r * 0.866, r * 0.5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        break;
+      case 'square':
+        ctx.fillRect(-r, -r, s.size, s.size);
+        ctx.strokeRect(-r, -r, s.size, s.size);
+        break;
+      case 'diamond':
+        ctx.beginPath();
+        ctx.moveTo(0, -r);
+        ctx.lineTo(r, 0);
+        ctx.lineTo(0, r);
+        ctx.lineTo(-r, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        break;
+    }
+    
+    ctx.restore();
+  }
+  
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGrid();
+    
+    shapes.forEach(function(s) {
+      s.x += s.vx;
+      s.y += s.vy;
+      s.rotation += s.rotSpeed;
+      
+      // Wrap around
+      if (s.x < -s.size) s.x = canvas.width + s.size;
+      if (s.x > canvas.width + s.size) s.x = -s.size;
+      if (s.y < -s.size) s.y = canvas.height + s.size;
+      if (s.y > canvas.height + s.size) s.y = -s.size;
+      
+      drawShape(s);
+    });
+    
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+// ============================================================
+//  WebGL 增强 — 自定义着色器粒子系统
+// ============================================================
+function initEnhancedParticles() {
+  var canvas3d = document.getElementById('three-bg-canvas');
+  if (!canvas3d || typeof THREE === 'undefined') return;
+  
+  // Check if WebGL supports custom shaders
+  var testCanvas = document.createElement('canvas');
+  var gl = testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
+  if (!gl) { initFallback2D(); return; }
+  
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 30;
+  
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas3d, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+  
+  // Custom shader material for glowing particles
+  var vertexShader = [
+    'attribute float aSize;',
+    'attribute vec3 aColor;',
+    'varying vec3 vColor;',
+    'varying float vAlpha;',
+    'uniform float uTime;',
+    'void main() {',
+    '  vColor = aColor;',
+    '  vec3 pos = position;',
+    '  pos.y += sin(uTime + position.x * 0.5) * 0.5;',
+    '  pos.x += cos(uTime * 0.7 + position.z * 0.3) * 0.3;',
+    '  vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);',
+    '  gl_PointSize = aSize * (200.0 / -mvPosition.z);',
+    '  gl_PointSize = max(1.0, gl_PointSize);',
+    '  vAlpha = smoothstep(80.0, 20.0, -mvPosition.z);',
+    '  gl_Position = projectionMatrix * mvPosition;',
+    '}'
+  ].join('\n');
+  
+  var fragmentShader = [
+    'varying vec3 vColor;',
+    'varying float vAlpha;',
+    'void main() {',
+    '  float dist = length(gl_PointCoord - vec2(0.5));',
+    '  if (dist > 0.5) discard;',
+    '  float glow = 1.0 - smoothstep(0.0, 0.5, dist);',
+    '  glow = pow(glow, 1.5);',
+    '  gl_FragColor = vec4(vColor, glow * vAlpha * 0.7);',
+    '}'
+  ].join('\n');
+  
+  var particleCount = 600;
+  var geometry = new THREE.BufferGeometry();
+  var positions = new Float32Array(particleCount * 3);
+  var colors = new Float32Array(particleCount * 3);
+  var sizes = new Float32Array(particleCount);
+  var velocities = new Float32Array(particleCount * 3);
+  
+  var palette = [
+    new THREE.Color(0x6366f1),
+    new THREE.Color(0x8b5cf6),
+    new THREE.Color(0x06b6d4),
+    new THREE.Color(0x10b981),
+    new THREE.Color(0xf59e0b)
+  ];
+  
+  for (var i = 0; i < particleCount; i++) {
+    var i3 = i * 3;
+    positions[i3]     = (Math.random() - 0.5) * 80;
+    positions[i3 + 1] = (Math.random() - 0.5) * 80;
+    positions[i3 + 2] = (Math.random() - 0.5) * 60;
+    
+    var col = palette[Math.floor(Math.random() * palette.length)];
+    colors[i3]     = col.r;
+    colors[i3 + 1] = col.g;
+    colors[i3 + 2] = col.b;
+    
+    sizes[i] = Math.random() * 4 + 1;
+    
+    velocities[i3]     = (Math.random() - 0.5) * 0.015;
+    velocities[i3 + 1] = (Math.random() - 0.5) * 0.015;
+    velocities[i3 + 2] = (Math.random() - 0.5) * 0.008;
+  }
+  
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+  
+  var material = new THREE.ShaderMaterial({
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
+    uniforms: { uTime: { value: 0 } },
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  
+  var particles = new THREE.Points(geometry, material);
+  scene.add(particles);
+  
+  // Connection lines
+  var lineGeometry = new THREE.BufferGeometry();
+  var maxLines = 120;
+  var linePositions = new Float32Array(maxLines * 6);
+  var lineColors = new Float32Array(maxLines * 6);
+  lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+  lineGeometry.setAttribute('color', new THREE.BufferAttribute(lineColors, 3));
+  
+  var lineMaterial = new THREE.LineBasicMaterial({
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.1,
+    blending: THREE.AdditiveBlending
+  });
+  var lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+  scene.add(lines);
+  
+  var mouseX = 0, mouseY = 0;
+  document.addEventListener('mousemove', function(e) {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = -(e.clientY / window.innerHeight - 0.5) * 2;
+  });
+  
+  window.addEventListener('resize', function() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+  
+  var time = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    time += 0.005;
+    material.uniforms.uTime.value = time;
+    
+    var posArr = geometry.attributes.position.array;
+    for (var i = 0; i < particleCount; i++) {
+      var i3 = i * 3;
+      posArr[i3]     += velocities[i3];
+      posArr[i3 + 1] += velocities[i3 + 1];
+      posArr[i3 + 2] += velocities[i3 + 2];
+      if (Math.abs(posArr[i3]) > 40) velocities[i3] *= -1;
+      if (Math.abs(posArr[i3 + 1]) > 40) velocities[i3 + 1] *= -1;
+      if (Math.abs(posArr[i3 + 2]) > 30) velocities[i3 + 2] *= -1;
+    }
+    geometry.attributes.position.needsUpdate = true;
+    
+    // Update connection lines
+    var lineIdx = 0;
+    var lp = lines.geometry.attributes.position.array;
+    var lc = lines.geometry.attributes.color.array;
+    for (var i = 0; i < particleCount && lineIdx < maxLines; i++) {
+      for (var j = i + 1; j < particleCount && lineIdx < maxLines; j++) {
+        var i3 = i * 3, j3 = j * 3;
+        var dx = posArr[i3] - posArr[j3];
+        var dy = posArr[i3+1] - posArr[j3+1];
+        var dz = posArr[i3+2] - posArr[j3+2];
+        var dist = dx*dx + dy*dy + dz*dz;
+        if (dist < 20) {
+          var li = lineIdx * 6;
+          lp[li] = posArr[i3]; lp[li+1] = posArr[i3+1]; lp[li+2] = posArr[i3+2];
+          lp[li+3] = posArr[j3]; lp[li+4] = posArr[j3+1]; lp[li+5] = posArr[j3+2];
+          var alpha = 1 - Math.sqrt(dist) / 4.5;
+          lc[li] = colors[i3]*alpha; lc[li+1] = colors[i3+1]*alpha; lc[li+2] = colors[i3+2]*alpha;
+          lc[li+3] = colors[j3]*alpha; lc[li+4] = colors[j3+1]*alpha; lc[li+5] = colors[j3+2]*alpha;
+          lineIdx++;
+        }
+      }
+    }
+    for (var i = lineIdx; i < maxLines; i++) {
+      var li = i * 6;
+      for (var k = 0; k < 6; k++) { lp[li+k] = 0; lc[li+k] = 0; }
+    }
+    lines.geometry.attributes.position.needsUpdate = true;
+    lines.geometry.attributes.color.needsUpdate = true;
+    
+    camera.position.x += (mouseX * 5 - camera.position.x) * 0.02;
+    camera.position.y += (mouseY * 5 - camera.position.y) * 0.02;
+    particles.rotation.y = time * 0.3;
+    particles.rotation.x = Math.sin(time * 0.2) * 0.1;
+    lines.rotation.y = time * 0.3;
+    lines.rotation.x = Math.sin(time * 0.2) * 0.1;
+    
+    camera.lookAt(scene.position);
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+// ============================================================
+//  Enhanced Init — Replace old initParticles
+// ============================================================
+// Override initParticles to use WebGL shader version
+initParticles = function() {
+  initEnhancedParticles();
+  initCanvasDecoration();
+  initTweenParallax();
+};
+
+
+// [Original initParticles overridden above]
+function initParticles_original() {
   const canvas3d = document.getElementById('three-bg-canvas');
   if (!canvas3d || typeof THREE === 'undefined') { initFallback2D(); return; }
 
@@ -5672,6 +6585,12 @@ const KNOWLEDGE_HTML = `
 </tbody>
 </table>
 
+<div class="kg-card" style="margin-top:16px;">
+  <h4>🕐 神经网络进化时间线（交互式）</h4>
+  <div id="echarts-nn-timeline" style="width:100%;height:350px;"></div>
+  <div class="kg-caption">图：从 LeNet 到 Vision Transformer 的参数量与 Top-1 准确率演进<br>💡 悬停查看详细信息，滚轮缩放时间轴</div>
+</div>
+
 <p><b>为什么多层能解决非线性问题？</b>因为每一层都在做一次非线性变换（通过激活函数），多次叠加后就能"弯折"空间，把非线性问题变成线性可分的。就像折纸——一次对折看不出什么，但反复对折后就能折出复杂的形状。</p>
 
 <h4>8.3 从MLP到"深度"神经网络</h4>
@@ -5800,6 +6719,12 @@ const KNOWLEDGE_HTML = `
 </tbody>
 </table>
 
+<div class="kg-card" style="margin-top:16px;">
+  <h4>📈 激活函数形态对比（交互式）</h4>
+  <div id="echarts-activation" style="width:100%;height:380px;"></div>
+  <div class="kg-caption">图：ReLU / LeakyReLU / GELU / Sigmoid / Tanh 函数曲线对比<br>💡 悬停查看具体数值，点击图例切换函数</div>
+</div>
+
 <p><b>选择建议</b>：隐藏层首选 <code>ReLU</code>（简单高效），遇到神经元死亡换 <code>Leaky ReLU</code>；Transformer类网络用 <code>GELU</code>；二分类输出层用 <code>Sigmoid</code>。</p>
 </div></div>
 <div class="kg-section" id="kg-s11">
@@ -5852,6 +6777,12 @@ const KNOWLEDGE_HTML = `
 <tr><td><b>小批量梯度下降 (Mini-batch GD)</b></td><td>一小批样本（如32/64/128）</td><td>较快</td><td>较稳定</td><td>每次看一小片区域再决定方向</td></tr>
 </tbody>
 </table>
+
+<div class="kg-card" style="margin-top:16px;">
+  <h4>📉 梯度下降收敛过程可视化（交互式动画）</h4>
+  <div id="echarts-gradient" style="width:100%;height:380px;"></div>
+  <div class="kg-caption">图：SGD / Momentum / Adam 三种优化器的损失收敛曲线对比<br>💡 动画播放展示训练过程，点击暂停/继续</div>
+</div>
 
 <h4>11.3 优化器进化史：从SGD到Adam</h4>
 
@@ -5943,6 +6874,12 @@ const KNOWLEDGE_HTML = `
 <tr><td><b>Log-Cosh</b></td><td>L = log(cosh(y - ŷ))</td><td>比Huber更平滑，二阶可导</td><td>XGBoost、需要二阶导数的优化</td></tr>
 </tbody>
 </table>
+
+<div class="kg-card" style="margin-top:16px;">
+  <h4>📊 损失函数曲面可视化（交互式）</h4>
+  <div id="echarts-loss-surface" style="width:100%;height:380px;"></div>
+  <div class="kg-caption">图：MSE / Cross-Entropy / Huber Loss 在不同误差下的损失值对比<br>💡 悬停查看具体损失值</div>
+</div>
 
 <h4>12.2 分类任务用的损失函数</h4>
 
@@ -6328,6 +7265,12 @@ const KNOWLEDGE_HTML = `
 </tbody>
 </table>
 
+<div class="kg-card" style="margin-top:16px;">
+  <h4>📊 模型综合能力雷达图（交互式）</h4>
+  <div id="echarts-rain-radar" style="width:100%;height:400px;"></div>
+  <div class="kg-caption">图：去雨模型在 PSNR、SSIM、LPIPS、推理速度、参数量 五个维度的综合对比<br>💡 点击图例可切换显示/隐藏模型，拖动旋转查看不同角度</div>
+</div>
+
 <h4>17.2 各指标详解</h4>
 
 <div class="kg-step">
@@ -6687,6 +7630,10 @@ function openKnowledge() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   // Init progress bar & TOC scroll tracking
   kgInitTracking();
+
+  // 初始化 ECharts 图表（延迟 300ms 等待 DOM 渲染）
+  setTimeout(initAllECharts, 300);
+
   // Lazy-load images with fade-in
   setTimeout(initKgImageLazyLoad, 100);
 }
