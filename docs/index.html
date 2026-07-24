@@ -2572,7 +2572,7 @@ body { position: relative; }
   <div class="toolbar">
     <div class="search-box">
       <span class="icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="搜索论文标题、标签、方法或首字母缩写（如 MPR、DRS、DAWN）…" />
+      <input type="text" id="searchInput" placeholder="搜索标题、标签、方法、分类或场景（如 注意力、DAWN、去雨）…" />
     </div>
     <div class="status-filter" id="statusFilter">
       <button class="status-btn active" data-status="all">全部</button>
@@ -3476,6 +3476,20 @@ function renderPapers() {
       if (p.painPoints && p.painPoints.toLowerCase().includes(q)) return true;
       if (p.tags && p.tags.some(t => t.toLowerCase().includes(q))) return true;
 
+      // 1b. 分类名称匹配 (如 "注意力" "去雨" "通道增强")
+      if (p.category && p.category.toLowerCase().includes(q)) return true;
+
+      // 1c. AI提取方法数据匹配 (core_methods + method_types)
+      if (p.methods) {
+        if (p.methods.core_methods && p.methods.core_methods.some(m => m.toLowerCase().includes(q))) return true;
+        const types = p.methods.method_types || {};
+        const typeVals = Object.values(types);
+        if (typeVals.some(v => v.toLowerCase().includes(q))) return true;
+      }
+
+      // 1d. 适用场景匹配
+      if (p.scenarios && p.scenarios.toLowerCase().includes(q)) return true;
+
       // 2. 论文名称首字母/缩写匹配
       const title = p.title || '';
 
@@ -3506,6 +3520,29 @@ function renderPapers() {
       const words = title.split(/[\s\-:,()\/]+/).filter(w => w.length > 0);
       const acronym = words.map(w => w[0]).join('').toLowerCase();
       if (acronym.length >= 2 && (acronym.startsWith(q) || acronym.includes(q))) return true;
+
+      // 3. 中文关键词模糊匹配 —— 支持按方法中文名搜索
+      const cnFields = [p.method, p.summary, p.painPoints].filter(Boolean).join(' ');
+      if (cnFields.length > 0) {
+        // 3a. 中文搜索：直接子串（已覆盖）
+        // 3b. 拼音首字母简化匹配 (常见学术缩写→中文名映射)
+        const aliasMap = {
+          'attention': '注意力', 'se': 'SE通道注意力', 'cbam': 'CBAM通道空间注意力',
+          'transformer': 'Transformer自注意力', 'wavelet': '小波', 'sparse': '稀疏',
+          'channel': '通道', 'spatial': '空间', 'normalize': '归一化',
+          'derain': '去雨', 'dehaze': '去雾', 'denoise': '去噪', 'deblur': '去模糊',
+          'restoration': '恢复', 'enhance': '增强', 'super': '超分',
+        };
+        for (const [enKey, cnVal] of Object.entries(aliasMap)) {
+          if (cnVal.includes(q) || enKey.includes(q)) {
+            // 找到别名映射，检查该论文是否与此领域相关
+            if (p.method && p.method.includes(cnVal)) return true;
+            if (p.tags && p.tags.some(t => t.includes(enKey) || t.includes(cnVal))) return true;
+            if (p.category && (p.category.includes(cnVal) || p.category.toLowerCase().includes(enKey))) return true;
+            if (p.methods && p.methods.core_methods && p.methods.core_methods.some(m => m.toLowerCase().includes(enKey))) return true;
+          }
+        }
+      }
 
       return false;
     });
