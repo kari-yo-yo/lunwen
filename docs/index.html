@@ -8291,6 +8291,1093 @@ function initBNDemo() {
   canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
 }
 
+
+// ================================================================
+// 动态演示：频域分解 (Canvas 2D + requestAnimationFrame)
+// ================================================================
+function initFreqDemo() {
+  var canvas = document.getElementById('canvas-freq-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    var cellW = (W - 40) / 3;
+    var cellH = H - 50;
+    var labels = ['原图（空间域）', '低频分量（大色块）', '高频分量（细节）'];
+    var colors = ['#6366f1', '#7BA7CC', '#CC8888'];
+
+    for (var i = 0; i < 3; i++) {
+      var x0 = 20 + i * cellW;
+      ctx.strokeStyle = colors[i];
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x0 + 5, 15, cellW - 15, cellH);
+      ctx.fillStyle = colors[i];
+      ctx.font = 'bold 11px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.fillText(labels[i], x0 + (cellW - 5) / 2 + 5, H - 20);
+      var cx = x0 + (cellW - 5) / 2 + 5;
+      var cy = 15 + cellH / 2;
+      if (i === 0) {
+        ctx.fillStyle = '#D4C5A0';
+        ctx.fillRect(x0 + 15, 25, cellW - 25, cellH - 20);
+        for (var s = 0; s < 8; s++) {
+          var sy = 30 + s * (cellH - 30) / 8;
+          ctx.strokeStyle = 'rgba(100,80,60,' + (0.3 + 0.1 * Math.sin(t * 0.05 + s)) + ')';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(x0 + 15, sy);
+          ctx.lineTo(x0 + cellW - 15, sy);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = '#5A4030';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x0 + 25, 30, 30, 25);
+      } else if (i === 1) {
+        ctx.fillStyle = '#D4C5A0';
+        ctx.fillRect(x0 + 15, 25, cellW - 25, cellH - 20);
+        ctx.fillStyle = '#C0A878';
+        ctx.fillRect(x0 + 25, 30, 30, 25);
+        ctx.fillStyle = 'rgba(200,180,140,0.8)';
+        ctx.font = '10px Microsoft YaHei';
+        ctx.textAlign = 'center';
+        ctx.fillText('平滑区域', cx, cy + 5);
+      } else {
+        ctx.fillStyle = '#f5f0eb';
+        ctx.fillRect(x0 + 15, 25, cellW - 25, cellH - 20);
+        ctx.strokeStyle = '#CC8888';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x0 + 25, 30, 30, 25);
+        for (var s = 0; s < 6; s++) {
+          var sy = 55 + s * 12;
+          var alpha = 0.4 + 0.3 * Math.sin(t * 0.08 + s * 0.5);
+          ctx.strokeStyle = 'rgba(200,100,80,' + alpha + ')';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x0 + 15, sy);
+          ctx.lineTo(x0 + cellW - 15, sy);
+          ctx.stroke();
+        }
+      }
+      if (i < 2) {
+        ctx.strokeStyle = '#D4A574';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x0 + cellW - 12, cy);
+        ctx.lineTo(x0 + cellW - 2, cy);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x0 + cellW - 6, cy - 4);
+        ctx.lineTo(x0 + cellW - 2, cy);
+        ctx.lineTo(x0 + cellW - 6, cy + 4);
+        ctx.stroke();
+      }
+    }
+    ctx.fillStyle = '#8B7E74';
+    ctx.font = '10px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('FFT分解：原图 = 低频（背景色块）+ 高频（边缘纹理）', W / 2, H - 5);
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 动态演示：陷波/带阻滤波器 (Canvas 2D)
+// ================================================================
+function initNotchDemo() {
+  var canvas = document.getElementById('canvas-notch-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    var cellW = (W - 40) / 2;
+    var cellH = H - 60;
+    var panels = [
+      { title: '陷波滤波器 (Notch)', x: 20, type: 'notch', color: '#CC8888' },
+      { title: '带阻滤波器 (Band-Stop)', x: 20 + cellW + 10, type: 'band', color: '#7BA7CC' }
+    ];
+    for (var p = 0; p < 2; p++) {
+      var pnl = panels[p];
+      var px = pnl.x;
+      ctx.fillStyle = '#f5f0eb';
+      ctx.fillRect(px, 15, cellW, cellH);
+      ctx.strokeStyle = pnl.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(px, 15, cellW, cellH);
+      ctx.fillStyle = pnl.color;
+      ctx.font = 'bold 11px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.fillText(pnl.title, px + cellW / 2, 12);
+      var cx = px + cellW / 2;
+      var cy = 15 + cellH / 2;
+      var maxR = Math.min(cellW, cellH) / 2 - 10;
+      for (var r = maxR; r > 0; r -= 2) {
+        var brightness = 180 - r * 1.5;
+        ctx.fillStyle = 'rgb(' + brightness + ',' + (brightness + 10) + ',' + (brightness + 20) + ')';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      var pulse = 0.7 + 0.3 * Math.sin(t * 0.05);
+      if (pnl.type === 'notch') {
+        var notchAngle = t * 0.02;
+        for (var n = 0; n < 2; n++) {
+          var nx = cx + Math.cos(notchAngle + n * Math.PI) * maxR * 0.6;
+          var ny = cy + Math.sin(notchAngle + n * Math.PI) * maxR * 0.6;
+          ctx.fillStyle = 'rgba(200,80,80,' + pulse + ')';
+          ctx.beginPath();
+          ctx.arc(nx, ny, 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#CC4444';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(nx, ny, 8, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.fillStyle = '#4A4A4A';
+        ctx.font = '9px Microsoft YaHei';
+        ctx.textAlign = 'center';
+        ctx.fillText('精准挖掉特定频率点', cx, cy + maxR + 15);
+      } else {
+        var bandR = maxR * 0.5;
+        var bandW = 15 + 5 * Math.sin(t * 0.03);
+        ctx.strokeStyle = 'rgba(80,120,200,' + pulse + ')';
+        ctx.lineWidth = bandW;
+        ctx.beginPath();
+        ctx.arc(cx, cy, bandR, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = '#3B6BA5';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.arc(cx, cy, bandR + bandW / 2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(cx, cy, bandR - bandW / 2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#4A4A4A';
+        ctx.font = '9px Microsoft YaHei';
+        ctx.textAlign = 'center';
+        ctx.fillText('挡掉一整段频率范围', cx, cy + maxR + 15);
+      }
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#8B7E74';
+    ctx.font = '10px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('频谱中心=低频，边缘=高频。红色=被滤除的频率', W / 2, H - 5);
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 动态演示：小波多级分解 (Canvas 2D)
+// ================================================================
+function initWaveletDemo() {
+  var canvas = document.getElementById('canvas-wavelet-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    var phase = Math.floor(t / 80) % 4;
+    var fade = (t % 80) / 80;
+    var x0 = 30, y0 = 20, s0 = 180;
+    if (phase === 0) { ctx.globalAlpha = 1; } else { ctx.globalAlpha = 0.3; }
+    ctx.fillStyle = '#D4C5A0';
+    ctx.fillRect(x0, y0, s0, s0);
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x0, y0, s0, s0);
+    ctx.fillStyle = '#6366f1';
+    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('原图', x0 + s0 / 2, y0 - 5);
+    ctx.globalAlpha = 1;
+    if (phase >= 1) {
+      var x1 = x0 + s0 + 30, y1 = y0, s1 = s0 / 2;
+      var alpha1 = phase === 1 ? Math.min(fade * 2, 1) : 1;
+      var subbands1 = [
+        { name: 'LL', x: x1, y: y1, color: '#8FB996', desc: '低频近似' },
+        { name: 'LH', x: x1 + s1, y: y1, color: '#7BA7CC', desc: '水平细节' },
+        { name: 'HL', x: x1, y: y1 + s1, color: '#D4A574', desc: '垂直细节' },
+        { name: 'HH', x: x1 + s1, y: y1 + s1, color: '#CC8888', desc: '对角细节' }
+      ];
+      for (var i = 0; i < 4; i++) {
+        var sb = subbands1[i];
+        ctx.globalAlpha = alpha1;
+        ctx.fillStyle = sb.color;
+        ctx.fillRect(sb.x, sb.y, s1, s1);
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(sb.x, sb.y, s1, s1);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 12px Microsoft YaHei';
+        ctx.textAlign = 'center';
+        ctx.fillText(sb.name, sb.x + s1 / 2, sb.y + s1 / 2 + 4);
+        ctx.font = '9px Microsoft YaHei';
+        ctx.fillText(sb.desc, sb.x + s1 / 2, sb.y + s1 - 5);
+      }
+      ctx.globalAlpha = 1;
+      if (phase === 1) {
+        ctx.strokeStyle = 'rgba(212,165,116,' + alpha1 + ')';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x0 + s0 + 5, y0 + s0 / 2);
+        ctx.lineTo(x1 - 5, y0 + s0 / 2);
+        ctx.stroke();
+      }
+    }
+    if (phase >= 2) {
+      var x2 = x1 + s0 + 30, y2 = y1, s2 = s1 / 2;
+      var alpha2 = phase === 2 ? Math.min(fade * 2, 1) : 1;
+      var subbands2 = [
+        { name: 'LL\u2082', x: x2, y: y2, color: '#6B9E72', desc: '更低频' },
+        { name: 'LH\u2082', x: x2 + s2, y: y2, color: '#6B97B8', desc: '水平\u2082' },
+        { name: 'HL\u2082', x: x2, y: y2 + s2, color: '#C49560', desc: '垂直\u2082' },
+        { name: 'HH\u2082', x: x2 + s2, y: y2 + s2, color: '#B87878', desc: '对角\u2082' }
+      ];
+      for (var i = 0; i < 4; i++) {
+        var sb = subbands2[i];
+        ctx.globalAlpha = alpha2;
+        ctx.fillStyle = sb.color;
+        ctx.fillRect(sb.x, sb.y, s2, s2);
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(sb.x, sb.y, s2, s2);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 10px Microsoft YaHei';
+        ctx.textAlign = 'center';
+        ctx.fillText(sb.name, sb.x + s2 / 2, sb.y + s2 / 2 + 3);
+      }
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = 'rgba(212,165,116,' + alpha2 + ')';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x1 + s1 + 5, y1 + s1 / 2);
+      ctx.lineTo(x2 - 5, y1 + s1 / 2);
+      ctx.stroke();
+    }
+    var phaseLabels = ['Step 1: 原图', 'Step 2: 一级分解 -> 4子带', 'Step 3: LL继续分解', 'Step 4: 多分辨率金字塔完成'];
+    ctx.fillStyle = '#D4A574';
+    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.textAlign = 'left';
+    ctx.fillText(phaseLabels[phase], 30, H - 15);
+    var progressW = 200;
+    var progressX = W - progressW - 30;
+    ctx.fillStyle = '#e8e4df';
+    ctx.fillRect(progressX, H - 22, progressW, 6);
+    ctx.fillStyle = '#D4A574';
+    ctx.fillRect(progressX, H - 22, progressW * ((t % 320) / 320), 6);
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 动态演示：稀疏编码 (Canvas 2D)
+// ================================================================
+function initSparseDemo() {
+  var canvas = document.getElementById('canvas-sparse-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+  var atoms = [];
+  for (var i = 0; i < 8; i++) {
+    atoms.push({ active: false, weight: 0, targetWeight: 0 });
+  }
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    var cycle = Math.floor(t / 120) % 3;
+    if (t % 120 === 0) {
+      for (var i = 0; i < atoms.length; i++) {
+        if (Math.random() < 0.35) {
+          atoms[i].active = true;
+          atoms[i].targetWeight = 0.3 + Math.random() * 0.7;
+        } else {
+          atoms[i].active = false;
+          atoms[i].targetWeight = 0;
+        }
+      }
+    }
+    for (var i = 0; i < atoms.length; i++) {
+      atoms[i].weight += (atoms[i].targetWeight - atoms[i].weight) * 0.08;
+    }
+    var atomSize = 36;
+    var atomCols = 4;
+    var atomStartX = 30;
+    var atomStartY = 30;
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('过完备字典 D', atomStartX + atomCols * atomSize / 2, 20);
+    for (var i = 0; i < atoms.length; i++) {
+      var col = i % atomCols;
+      var row = Math.floor(i / atomCols);
+      var ax = atomStartX + col * (atomSize + 4);
+      var ay = atomStartY + row * (atomSize + 4);
+      ctx.fillStyle = atoms[i].weight > 0.05 ? 'rgba(143,185,150,' + atoms[i].weight + ')' : '#e8e4df';
+      ctx.fillRect(ax, ay, atomSize, atomSize);
+      ctx.strokeStyle = atoms[i].weight > 0.05 ? '#10b981' : '#ccc';
+      ctx.lineWidth = atoms[i].weight > 0.05 ? 2 : 1;
+      ctx.strokeRect(ax, ay, atomSize, atomSize);
+      ctx.fillStyle = atoms[i].weight > 0.05 ? '#fff' : '#aaa';
+      ctx.font = '8px Microsoft YaHei';
+      ctx.fillText('d' + (i + 1), ax + atomSize / 2, ay + atomSize / 2 + 3);
+      if (atoms[i].weight > 0.05) {
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(ax, ay + atomSize - 3, atomSize * atoms[i].weight, 3);
+      }
+    }
+    var coefX = atomStartX + atomCols * (atomSize + 4) + 30;
+    var coefY = 30;
+    var coefH = 18;
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('稀疏系数 \u03b1', coefX + 30, 20);
+    for (var i = 0; i < atoms.length; i++) {
+      var cy = coefY + i * (coefH + 2);
+      ctx.fillStyle = '#e8e4df';
+      ctx.fillRect(coefX, cy, 60, coefH);
+      if (atoms[i].weight > 0.05) {
+        ctx.fillStyle = 'rgba(99,102,241,' + atoms[i].weight + ')';
+        ctx.fillRect(coefX, cy, 60 * atoms[i].weight, coefH);
+      }
+      ctx.strokeStyle = '#ccc';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(coefX, cy, 60, coefH);
+      ctx.fillStyle = '#4A4A4A';
+      ctx.font = '8px Microsoft YaHei';
+      ctx.textAlign = 'left';
+      ctx.fillText('\u03b1' + (i + 1) + '=' + atoms[i].weight.toFixed(2), coefX + 4, cy + 12);
+    }
+    var resultX = coefX + 90;
+    var resultY = 30;
+    var resultSize = 80;
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('重构信号 y=D\u03b1', resultX + resultSize / 2, 20);
+    ctx.fillStyle = '#f5f0eb';
+    ctx.fillRect(resultX, resultY, resultSize, resultSize);
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(resultX, resultY, resultSize, resultSize);
+    var totalWeight = 0;
+    for (var i = 0; i < atoms.length; i++) totalWeight += atoms[i].weight;
+    if (totalWeight > 0.1) {
+      for (var i = 0; i < atoms.length; i++) {
+        if (atoms[i].weight > 0.05) {
+          var alpha = atoms[i].weight / totalWeight;
+          ctx.fillStyle = 'rgba(99,102,241,' + (alpha * 0.5) + ')';
+          var px = resultX + 10 + (i % 3) * 22;
+          var py = resultY + 10 + Math.floor(i / 3) * 22;
+          ctx.fillRect(px, py, 18, 18);
+        }
+      }
+    }
+    ctx.strokeStyle = '#D4A574';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(coefX - 15, 30 + 4 * (coefH + 2));
+    ctx.lineTo(coefX - 2, 30 + 4 * (coefH + 2));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(coefX + 62, 30 + 4 * (coefH + 2));
+    ctx.lineTo(resultX - 5, 30 + 4 * (coefH + 2));
+    ctx.stroke();
+    var phaseLabels = ['选择少量原子（大多数\u03b1=0）', '非零系数加权组合', '稀疏重构完成'];
+    ctx.fillStyle = '#D4A574';
+    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.textAlign = 'left';
+    ctx.fillText(phaseLabels[cycle], 30, H - 10);
+    var nonzero = 0;
+    for (var i = 0; i < atoms.length; i++) { if (atoms[i].weight > 0.05) nonzero++; }
+    ctx.fillStyle = '#8B7E74';
+    ctx.textAlign = 'right';
+    ctx.fillText('稀疏度: ' + nonzero + '/' + atoms.length + ' 非零 (' + Math.round(nonzero / atoms.length * 100) + '%)', W - 30, H - 10);
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 动态演示：反向传播链式法则 (Canvas 2D)
+// ================================================================
+function initBackpropDemo() {
+  var canvas = document.getElementById('canvas-backprop-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    var layers = [3, 4, 4, 2];
+    var layerNames = ['输入层', '隐藏层1', '隐藏层2', '输出层'];
+    var layerSpacing = (W - 120) / (layers.length - 1);
+    var startX = 60;
+    var centerY = H / 2 - 10;
+    var phase = Math.floor(t / 100) % 2;
+    var progress = (t % 100) / 100;
+    for (var L = 0; L < layers.length - 1; L++) {
+      var x1 = startX + L * layerSpacing;
+      var x2 = startX + (L + 1) * layerSpacing;
+      for (var i = 0; i < layers[L]; i++) {
+        for (var j = 0; j < layers[L + 1]; j++) {
+          var y1 = centerY - (layers[L] - 1) * 25 + i * 50;
+          var y2 = centerY - (layers[L + 1] - 1) * 25 + j * 50;
+          if (phase === 0) {
+            var lineProgress = Math.max(0, Math.min(1, progress * (layers.length - 1) - L));
+            ctx.strokeStyle = 'rgba(99,102,241,' + (0.1 + lineProgress * 0.5) + ')';
+          } else {
+            var revL = layers.length - 2 - L;
+            var lineProgress = Math.max(0, Math.min(1, progress * (layers.length - 1) - revL));
+            ctx.strokeStyle = 'rgba(204,80,80,' + (0.1 + lineProgress * 0.5) + ')';
+          }
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      }
+    }
+    for (var L = 0; L < layers.length; L++) {
+      var x = startX + L * layerSpacing;
+      for (var i = 0; i < layers[L]; i++) {
+        var y = centerY - (layers[L] - 1) * 25 + i * 50;
+        var activation = 0;
+        if (phase === 0) { activation = Math.max(0, Math.min(1, progress * (layers.length) - L)); }
+        else { var revL = layers.length - 1 - L; activation = Math.max(0, Math.min(1, progress * (layers.length) - revL)); }
+        var r = 10 + activation * 4;
+        var color = phase === 0 ? '99,102,241' : '204,80,80';
+        ctx.fillStyle = 'rgba(' + color + ',' + (0.3 + activation * 0.7) + ')';
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = phase === 0 ? '#6366f1' : '#CC5050';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#4A4A4A';
+      ctx.font = 'bold 10px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.fillText(layerNames[L], x, H - 30);
+    }
+    var arrowY = 20;
+    if (phase === 0) {
+      ctx.fillStyle = '#6366f1';
+      ctx.font = 'bold 11px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.fillText('前向传播 ->', W / 2, arrowY);
+      var ax = startX + progress * (W - 120);
+      ctx.strokeStyle = '#6366f1';
+      ctx.beginPath();
+      ctx.moveTo(ax - 10, arrowY + 8);
+      ctx.lineTo(ax, arrowY + 8);
+      ctx.lineTo(ax - 5, arrowY + 4);
+      ctx.moveTo(ax, arrowY + 8);
+      ctx.lineTo(ax - 5, arrowY + 12);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = '#CC5050';
+      ctx.font = 'bold 11px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.fillText('<- 反向传播（链式法则）', W / 2, arrowY);
+      var ax = W - 60 - progress * (W - 120);
+      ctx.strokeStyle = '#CC5050';
+      ctx.beginPath();
+      ctx.moveTo(ax + 10, arrowY + 8);
+      ctx.lineTo(ax, arrowY + 8);
+      ctx.lineTo(ax + 5, arrowY + 4);
+      ctx.moveTo(ax, arrowY + 8);
+      ctx.lineTo(ax + 5, arrowY + 12);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#8B7E74';
+    ctx.font = '10px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    if (phase === 0) { ctx.fillText('前向: z=wx+b -> a=\u03c3(z) -> 逐层传递到输出', W / 2, H - 10); }
+    else { ctx.fillText('反向: \u2202L/\u2202w = \u2202L/\u2202a \u00d7 \u2202a/\u2202z \u00d7 \u2202z/\u2202w（链式法则逐层回传）', W / 2, H - 10); }
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 动态演示：自注意力QKV计算 (Canvas 2D)
+// ================================================================
+function initAttentionDemo() {
+  var canvas = document.getElementById('canvas-attention-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    var step = Math.floor(t / 90) % 4;
+    var fade = (t % 90) / 90;
+    var n = 4;
+    var cellSize = 28;
+    var matW = n * cellSize;
+    var visibleMats = [];
+    if (step === 0) {
+      visibleMats = [
+        { label: 'Q', color: '#6366f1', name: 'Query', showFade: 1 },
+        { label: 'K\u1d40', color: '#7BA7CC', name: 'Key转置', showFade: 1 },
+        { label: 'QK\u1d40', color: '#D4A574', name: '分数矩阵', showFade: fade }
+      ];
+    } else if (step === 1) {
+      visibleMats = [{ label: 'QK\u1d40/\u221adk', color: '#D4A574', name: '缩放后', showFade: 1 }];
+    } else if (step === 2) {
+      visibleMats = [{ label: 'softmax', color: '#8FB996', name: '归一化权重', showFade: 1 }];
+    } else {
+      visibleMats = [
+        { label: 'Attn', color: '#8FB996', name: '权重', showFade: 1 },
+        { label: 'V', color: '#CC8888', name: 'Value', showFade: 1 },
+        { label: 'Out', color: '#A890C0', name: '输出', showFade: fade }
+      ];
+    }
+    var scaledCell = Math.min(cellSize, (W - 60) / (visibleMats.length * n + visibleMats.length));
+    var scaledMat = n * scaledCell;
+    var startX = (W - (visibleMats.length * scaledMat + (visibleMats.length - 1) * 25)) / 2;
+    for (var m = 0; m < visibleMats.length; m++) {
+      var mat = visibleMats[m];
+      var mx = startX + m * (scaledMat + 25);
+      var my = 70;
+      var alpha = mat.showFade !== undefined ? mat.showFade : 1;
+      ctx.fillStyle = mat.color;
+      ctx.globalAlpha = alpha;
+      ctx.font = 'bold 12px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.fillText(mat.label, mx + scaledMat / 2, my - 12);
+      ctx.font = '9px Microsoft YaHei';
+      ctx.fillStyle = '#8B7E74';
+      ctx.fillText(mat.name, mx + scaledMat / 2, my - 2);
+      for (var i = 0; i < n; i++) {
+        for (var j = 0; j < n; j++) {
+          var cx = mx + j * scaledCell;
+          var cy = my + i * scaledCell;
+          var val = 0;
+          if (mat.label === 'Q' || mat.label === 'K\u1d40' || mat.label === 'V') {
+            val = (Math.sin(i * 1.3 + j * 0.7 + m * 2) + 1) / 2;
+          } else if (mat.label === 'QK\u1d40' || mat.label === 'QK\u1d40/\u221adk') {
+            val = (Math.cos(i - j) + 1) / 2 * (0.3 + 0.7 * alpha);
+          } else if (mat.label === 'softmax' || mat.label === 'Attn') {
+            var rowSum = 0;
+            for (var k = 0; k < n; k++) { rowSum += Math.exp(Math.cos(i - k)); }
+            val = Math.exp(Math.cos(i - j)) / rowSum;
+          } else if (mat.label === 'Out') {
+            val = (Math.sin(i * 0.5 + j * 1.2) + 1) / 2 * alpha;
+          }
+          ctx.fillStyle = mat.color;
+          ctx.globalAlpha = val * alpha;
+          ctx.fillRect(cx, cy, scaledCell - 1, scaledCell - 1);
+          ctx.globalAlpha = alpha;
+          ctx.strokeStyle = '#ccc';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(cx, cy, scaledCell - 1, scaledCell - 1);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+    var stepLabels = ['Step 1: Q \u00d7 K\u1d40 -> 注意力分数矩阵', 'Step 2: \u00f7 \u221adk -> 缩放（防止梯度消失）', 'Step 3: softmax -> 归一化（每行和=1）', 'Step 4: 权重 \u00d7 V -> 加权提取信息'];
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = 'bold 13px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText(stepLabels[step], W / 2, 25);
+    var stepW = 100;
+    var stepStartX = (W - 4 * stepW) / 2;
+    for (var s = 0; s < 4; s++) {
+      ctx.fillStyle = s === step ? '#D4A574' : '#e8e4df';
+      ctx.fillRect(stepStartX + s * stepW, 38, stepW - 4, 6);
+      if (s === step) {
+        ctx.fillStyle = '#D4A574';
+        ctx.fillRect(stepStartX + s * stepW, 38, (stepW - 4) * fade, 6);
+      }
+    }
+    ctx.fillStyle = '#8B7E74';
+    ctx.font = '11px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('Attention(Q,K,V) = softmax(QK\u1d40/\u221adk)\u00b7V', W / 2, H - 15);
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 动态演示：SE注意力 Squeeze-Excitation-Scale (Canvas 2D)
+// ================================================================
+function initSEDemo() {
+  var canvas = document.getElementById('canvas-se-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    var phase = Math.floor(t / 100) % 3;
+    var fade = (t % 100) / 100;
+    var numChannels = 6;
+    var channelH = 20;
+    var channelW = 50;
+    var startX = 30;
+    var startY = 50;
+    var sqX = startX, sqY = startY;
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('Squeeze', sqX + channelW / 2, sqY - 8);
+    ctx.font = '9px Microsoft YaHei';
+    ctx.fillStyle = '#8B7E74';
+    ctx.fillText('全局平均池化', sqX + channelW / 2, sqY - 22);
+    for (var c = 0; c < numChannels; c++) {
+      var cy = sqY + c * (channelH + 2);
+      var alpha = phase === 0 ? Math.min(1, fade * 2 - c * 0.1) : 1;
+      if (alpha < 0) alpha = 0;
+      ctx.fillStyle = 'rgba(99,102,241,' + (0.3 + alpha * 0.5) + ')';
+      ctx.fillRect(sqX, cy, channelW, channelH);
+      ctx.strokeStyle = '#6366f1';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(sqX, cy, channelW, channelH);
+      ctx.fillStyle = '#fff';
+      ctx.font = '8px Microsoft YaHei';
+      ctx.fillText('C' + (c + 1), sqX + channelW / 2, cy + channelH / 2 + 3);
+    }
+    var arrow1X = sqX + channelW + 5;
+    var arrow1Y = sqY + numChannels * (channelH + 2) / 2;
+    ctx.strokeStyle = '#D4A574';
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = phase >= 0 ? 1 : 0.3;
+    ctx.beginPath();
+    ctx.moveTo(arrow1X, arrow1Y);
+    ctx.lineTo(arrow1X + 25, arrow1Y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(arrow1X + 20, arrow1Y - 4);
+    ctx.lineTo(arrow1X + 25, arrow1Y);
+    ctx.lineTo(arrow1X + 20, arrow1Y + 4);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    var exX = sqX + channelW + 35, exY = sqY;
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('Excitation', exX + channelW / 2, exY - 8);
+    ctx.font = '9px Microsoft YaHei';
+    ctx.fillStyle = '#8B7E74';
+    ctx.fillText('FC->ReLU->FC->\u03c3', exX + channelW / 2, exY - 22);
+    for (var c = 0; c < numChannels; c++) {
+      var cy = exY + c * (channelH + 2);
+      var weight = 0.3 + 0.5 * Math.abs(Math.sin(t * 0.03 + c * 0.8));
+      var alpha = phase === 1 ? Math.min(1, fade * 2 - c * 0.1) : (phase >= 1 ? 1 : 0.3);
+      if (alpha < 0) alpha = 0;
+      ctx.fillStyle = 'rgba(143,185,150,' + alpha + ')';
+      ctx.fillRect(exX, cy, channelW * weight, channelH);
+      ctx.fillStyle = 'rgba(200,200,200,' + alpha + ')';
+      ctx.fillRect(exX + channelW * weight, cy, channelW * (1 - weight), channelH);
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(exX, cy, channelW, channelH);
+      ctx.fillStyle = '#4A4A4A';
+      ctx.font = '8px Microsoft YaHei';
+      ctx.textAlign = 'left';
+      ctx.fillText('w=' + weight.toFixed(2), exX + 4, cy + channelH / 2 + 3);
+    }
+    var arrow2X = exX + channelW + 5;
+    var arrow2Y = exY + numChannels * (channelH + 2) / 2;
+    ctx.strokeStyle = '#D4A574';
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = phase >= 1 ? 1 : 0.3;
+    ctx.beginPath();
+    ctx.moveTo(arrow2X, arrow2Y);
+    ctx.lineTo(arrow2X + 25, arrow2Y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(arrow2X + 20, arrow2Y - 4);
+    ctx.lineTo(arrow2X + 25, arrow2Y);
+    ctx.lineTo(arrow2X + 20, arrow2Y + 4);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    var scX = exX + channelW + 35, scY = sqY;
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('Scale', scX + channelW / 2, scY - 8);
+    ctx.font = '9px Microsoft YaHei';
+    ctx.fillStyle = '#8B7E74';
+    ctx.fillText('通道加权', scX + channelW / 2, scY - 22);
+    for (var c = 0; c < numChannels; c++) {
+      var cy = scY + c * (channelH + 2);
+      var weight = 0.3 + 0.5 * Math.abs(Math.sin(t * 0.03 + c * 0.8));
+      var alpha = phase === 2 ? Math.min(1, fade * 2 - c * 0.1) : (phase >= 2 ? 1 : 0.3);
+      if (alpha < 0) alpha = 0;
+      ctx.fillStyle = 'rgba(204,136,136,' + (weight * alpha) + ')';
+      ctx.fillRect(scX, cy, channelW, channelH);
+      ctx.strokeStyle = '#CC8888';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(scX, cy, channelW, channelH);
+      ctx.fillStyle = '#fff';
+      ctx.font = '8px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.fillText('\u00d7' + weight.toFixed(1), scX + channelW / 2, cy + channelH / 2 + 3);
+    }
+    var outX = scX + channelW + 35, outY = sqY;
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('输出', outX + channelW / 2, outY - 8);
+    for (var c = 0; c < numChannels; c++) {
+      var cy = outY + c * (channelH + 2);
+      var weight = 0.3 + 0.5 * Math.abs(Math.sin(t * 0.03 + c * 0.8));
+      ctx.fillStyle = 'rgba(168,144,192,' + weight + ')';
+      ctx.fillRect(outX, cy, channelW, channelH);
+      ctx.strokeStyle = '#A890C0';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(outX, cy, channelW, channelH);
+    }
+    var arrow3X = scX + channelW + 5;
+    var arrow3Y = scY + numChannels * (channelH + 2) / 2;
+    ctx.strokeStyle = '#D4A574';
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = phase >= 2 ? 1 : 0.3;
+    ctx.beginPath();
+    ctx.moveTo(arrow3X, arrow3Y);
+    ctx.lineTo(arrow3X + 25, arrow3Y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(arrow3X + 20, arrow3Y - 4);
+    ctx.lineTo(arrow3X + 25, arrow3Y);
+    ctx.lineTo(arrow3X + 20, arrow3Y + 4);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    var stepNames = ['Squeeze', 'Excitation', 'Scale'];
+    var stepColors = ['#6366f1', '#10b981', '#CC8888'];
+    var stepW = 120;
+    var stepStartX = (W - 3 * stepW) / 2;
+    for (var s = 0; s < 3; s++) {
+      ctx.fillStyle = s === phase ? stepColors[s] : '#e8e4df';
+      ctx.fillRect(stepStartX + s * stepW, H - 25, stepW - 4, 8);
+      if (s === phase) {
+        ctx.fillStyle = stepColors[s];
+        ctx.fillRect(stepStartX + s * stepW, H - 25, (stepW - 4) * fade, 8);
+      }
+      ctx.fillStyle = s === phase ? stepColors[s] : '#8B7E74';
+      ctx.font = 'bold 10px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.fillText(stepNames[s], stepStartX + s * stepW + (stepW - 4) / 2, H - 8);
+    }
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 小概念演示：感知机 (Canvas 2D)
+// ================================================================
+function initPerceptronDemo() {
+  var canvas = document.getElementById('canvas-perceptron-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    var inputs = [
+      { label: 'x\u2081', val: 0.8, w: 0.5 },
+      { label: 'x\u2082', val: 0.5, w: -0.3 },
+      { label: 'x\u2083', val: 0.3, w: 0.7 }
+    ];
+    var inX = 40, neuronX = W - 80, neuronY = H / 2;
+    var pulseT = (t % 60) / 60;
+    for (var i = 0; i < inputs.length; i++) {
+      var iy = 25 + i * 35;
+      ctx.fillStyle = '#7BA7CC';
+      ctx.beginPath();
+      ctx.arc(inX, iy, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#5B8AB8';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.fillText(inputs[i].label, inX, iy + 4);
+      var lineProgress = Math.max(0, Math.min(1, pulseT * 3 - i * 0.3));
+      var weightColor = inputs[i].w > 0 ? '#10b981' : '#CC5050';
+      ctx.strokeStyle = weightColor;
+      ctx.lineWidth = 1 + Math.abs(inputs[i].w) * 2;
+      ctx.globalAlpha = 0.3 + lineProgress * 0.5;
+      ctx.beginPath();
+      ctx.moveTo(inX + 12, iy);
+      ctx.lineTo(neuronX - 18, neuronY);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      var midX = (inX + neuronX) / 2;
+      var midY = (iy + neuronY) / 2;
+      ctx.fillStyle = weightColor;
+      ctx.font = '9px Microsoft YaHei';
+      ctx.fillText('w=' + inputs[i].w, midX, midY - 5);
+      if (lineProgress > 0 && lineProgress < 1) {
+        var px = inX + 12 + (neuronX - 18 - inX - 12) * lineProgress;
+        var py = iy + (neuronY - iy) * lineProgress;
+        ctx.fillStyle = '#D4A574';
+        ctx.beginPath();
+        ctx.arc(px, py, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    var sum = 0;
+    for (var i = 0; i < inputs.length; i++) { sum += inputs[i].val * inputs[i].w; }
+    sum += 0.1;
+    var activated = 1 / (1 + Math.exp(-sum));
+    var neuronPulse = 0.7 + 0.3 * Math.sin(t * 0.1);
+    ctx.fillStyle = 'rgba(99,102,241,' + neuronPulse + ')';
+    ctx.beginPath();
+    ctx.arc(neuronX, neuronY, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 9px Microsoft YaHei';
+    ctx.fillText('\u03a3->\u03c3', neuronX, neuronY + 3);
+    ctx.fillStyle = '#8FB996';
+    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.textAlign = 'left';
+    ctx.fillText('y=' + activated.toFixed(3), neuronX + 25, neuronY + 3);
+    ctx.fillStyle = '#8B7E74';
+    ctx.font = '9px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('y = \u03c3(\u03a3 w\u1d62x\u1d62 + b)', W / 2, H - 5);
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 小概念演示：损失函数曲面 (Canvas 2D)
+// ================================================================
+function initLossDemo() {
+  var canvas = document.getElementById('canvas-loss-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    var cellW = (W - 40) / 2;
+    var labels = ['MSE Loss（碗形曲面）', 'Cross-Entropy Loss'];
+    var colors = ['#7BA7CC', '#CC8888'];
+    for (var p = 0; p < 2; p++) {
+      var px = 20 + p * (cellW + 10);
+      var py = 15;
+      var pw = cellW - 10;
+      var ph = H - 40;
+      ctx.fillStyle = '#faf8f5';
+      ctx.fillRect(px, py, pw, ph);
+      ctx.strokeStyle = colors[p];
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(px, py, pw, ph);
+      ctx.fillStyle = colors[p];
+      ctx.font = 'bold 10px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.fillText(labels[p], px + pw / 2, py - 3);
+      var cx = px + pw / 2;
+      var cy = py + ph / 2 + 5;
+      var minR = 5;
+      var maxR = Math.min(pw, ph) / 2 - 8;
+      for (var r = maxR; r > minR; r -= 4) {
+        var ratio = (r - minR) / (maxR - minR);
+        var lossVal = ratio * (p === 0 ? ratio : Math.sqrt(ratio));
+        var brightness = Math.floor(200 - lossVal * 120);
+        ctx.strokeStyle = 'rgba(' + brightness + ',' + (brightness + 10) + ',' + (brightness + 20) + ',0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+      ctx.fill();
+      var ballAngle = t * 0.03 + p * Math.PI;
+      var ballR = maxR * (0.7 + 0.25 * Math.cos(t * 0.04 + p));
+      var bx = cx + Math.cos(ballAngle) * ballR;
+      var by = cy + Math.sin(ballAngle) * ballR;
+      ctx.strokeStyle = 'rgba(212,165,116,0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      for (var s = 0; s < 20; s++) {
+        var sa = (t - s * 3) * 0.03 + p * Math.PI;
+        var sr = maxR * (0.7 + 0.25 * Math.cos((t - s * 3) * 0.04 + p));
+        var sx = cx + Math.cos(sa) * sr;
+        var sy = cy + Math.sin(sa) * sr;
+        if (s === 0) ctx.moveTo(sx, sy);
+        else ctx.lineTo(sx, sy);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#D4A574';
+      ctx.beginPath();
+      ctx.arc(bx, by, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#B88A5A';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#10b981';
+      ctx.font = '8px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.fillText('min', cx, cy + 15);
+    }
+    ctx.fillStyle = '#8B7E74';
+    ctx.font = '9px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('小球沿梯度方向滚向最低点（最优解）', W / 2, H - 5);
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 小概念演示：Contourlet vs 小波方向性 (Canvas 2D)
+// ================================================================
+function initContourletDemo() {
+  var canvas = document.getElementById('canvas-contourlet-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    var cellW = (W - 30) / 2;
+    var cellH = H - 35;
+    var lx = 10, ly = 15;
+    ctx.fillStyle = '#faf8f5';
+    ctx.fillRect(lx, ly, cellW - 5, cellH);
+    ctx.strokeStyle = '#7BA7CC';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(lx, ly, cellW - 5, cellH);
+    ctx.fillStyle = '#7BA7CC';
+    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('小波（正方形）', lx + (cellW - 5) / 2, ly - 3);
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (var x = 0; x < cellW - 20; x += 2) {
+      var y = 20 + 15 * Math.sin(x * 0.06) + 30;
+      if (x === 0) ctx.moveTo(lx + 10 + x, ly + y);
+      else ctx.lineTo(lx + 10 + x, ly + y);
+    }
+    ctx.stroke();
+    var sqSize = 12;
+    for (var sx = 0; sx < cellW - 20; sx += sqSize) {
+      for (var sy = 0; sy < cellH - 10; sy += sqSize) {
+        var px = lx + 10 + sx;
+        var py = ly + 10 + sy;
+        var curveY = 20 + 15 * Math.sin(sx * 0.06) + 30;
+        if (Math.abs(py - ly - curveY) < sqSize) {
+          ctx.fillStyle = 'rgba(123,167,204,0.4)';
+          ctx.fillRect(px, py, sqSize - 1, sqSize - 1);
+          ctx.strokeStyle = '#5B8AB8';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(px, py, sqSize - 1, sqSize - 1);
+        }
+      }
+    }
+    var rx = 10 + cellW + 5, ry = 15;
+    ctx.fillStyle = '#faf8f5';
+    ctx.fillRect(rx, ry, cellW - 5, cellH);
+    ctx.strokeStyle = '#D4A574';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(rx, ry, cellW - 5, cellH);
+    ctx.fillStyle = '#D4A574';
+    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('Contourlet（细长条）', rx + (cellW - 5) / 2, ry - 3);
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (var x = 0; x < cellW - 20; x += 2) {
+      var y = 20 + 15 * Math.sin(x * 0.06) + 30;
+      if (x === 0) ctx.moveTo(rx + 10 + x, ry + y);
+      else ctx.lineTo(rx + 10 + x, ry + y);
+    }
+    ctx.stroke();
+    var stripW = 24, stripH = 6;
+    for (var sx = 0; sx < cellW - 30; sx += stripW - 4) {
+      var curveY = 20 + 15 * Math.sin(sx * 0.06) + 30;
+      var angle = Math.atan(15 * 0.06 * Math.cos(sx * 0.06));
+      ctx.save();
+      ctx.translate(rx + 10 + sx + stripW / 2, ry + curveY);
+      ctx.rotate(angle);
+      ctx.fillStyle = 'rgba(212,165,116,0.4)';
+      ctx.fillRect(-stripW / 2, -stripH / 2, stripW, stripH);
+      ctx.strokeStyle = '#B88A5A';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(-stripW / 2, -stripH / 2, stripW, stripH);
+      ctx.restore();
+    }
+    ctx.fillStyle = '#8B7E74';
+    ctx.font = '9px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('同一条曲线：正方形方块多且碎，细长条带少且贴合', W / 2, H - 5);
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+
 // Accordion toggle with smooth animation
 function kgToggleAcc(header) {
   header.classList.toggle('collapsed');
