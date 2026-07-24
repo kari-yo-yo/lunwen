@@ -5018,6 +5018,12 @@ openKnowledge = function() {
     setTimeout(initAllECharts, 300);
     // Stagger-animate knowledge sections
     tweenStaggerSections();
+    // 初始化Canvas动态演示
+    setTimeout(function() {
+      initLRDemo();
+      initInitDemo();
+      initBNDemo();
+    }, 500);
   });
   
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -8152,21 +8158,6 @@ function initBNDemo() {
   draw();
   canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
 }
-
-// ================================================================
-// 知识面板打开时初始化所有Canvas演示
-// ================================================================
-var _origOpenKnowledge = openKnowledge;
-openKnowledge = function() {
-  _origOpenKnowledge();
-  // 延迟初始化Canvas，等待DOM渲染
-  setTimeout(function() {
-    initLRDemo();
-    initInitDemo();
-    initBNDemo();
-  }, 500);
-};
-
 
 // Accordion toggle with smooth animation
 function kgToggleAcc(header) {
