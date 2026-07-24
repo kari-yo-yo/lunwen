@@ -5092,6 +5092,16 @@ openKnowledge = function() {
       initLRDemo();
       initInitDemo();
       initBNDemo();
+      initFreqDemo();
+      initNotchDemo();
+      initWaveletDemo();
+      initSparseDemo();
+      initBackpropDemo();
+      initAttentionDemo();
+      initSEDemo();
+      initPerceptronDemo();
+      initLossDemo();
+      initContourletDemo();
     }, 500);
   });
   
@@ -6301,7 +6311,13 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
   <span class="kg-node" style="background:#0ea5e9;color:#fff;">逆傅里叶变换(IFFT)</span>
   <span class="kg-arrow">→</span>
   <span class="kg-node" style="background:#6366f1;color:#fff;">结果图像</span>
-</div></div></div>
+</div>
+
+<div class="kg-card" style="margin-top:16px;">
+  <canvas id="canvas-freq-demo" width="700" height="200" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">动态演示：图像分解为低频（大色块）与高频（细节边缘）——点击暂停/继续</div>
+</div>
+</div></div>
 <div class="kg-section" id="kg-s2">
 <div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>二、陷波滤波器 & 带阻滤波器——频域里的"精准手术刀"</h3><span class="kg-acc-icon">▼</span></div>
 <div class="kg-accordion-body">
@@ -6324,7 +6340,12 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <p>它们的原理很简单：在频谱图上，把你不想要的频率对应的亮度直接设为0（或接近0），然后做逆变换回图像。被"挖掉"的那些频率所对应的图像信息就消失了。</p>
 
 <p><b>打个比方</b>：陷波滤波器像"消音一个特定音高的噪音"，带阻滤波器像"关闭一个频段的均衡器"。前者精准但窄，后者粗糙但覆盖面大。</p>
-</div></div>
+
+<div class="kg-card" style="margin-top:16px;">
+  <canvas id="canvas-notch-demo" width="700" height="220" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">动态演示：陷波滤波器（精准挖点）vs 带阻滤波器（整段挡掉）——点击暂停/继续</div>
+</div>
+</div>
 <div class="kg-section" id="kg-s3">
 <div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>三、为什么纯频域方法容易模糊边缘？为什么对复杂场景不鲁棒？</h3><span class="kg-acc-icon">▼</span></div>
 <div class="kg-accordion-body">
@@ -6406,7 +6427,12 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </table>
 
 <p>所以你看到论文里很多去雨方法（如DAWN+、MFFDNet、SCGN）都用了小波——因为小波既能"看到雨纹在哪个频段"，又能"看到雨纹在图像的哪个位置"。</p>
-</div></div>
+
+<div class="kg-card" style="margin-top:16px;">
+  <canvas id="canvas-wavelet-demo" width="700" height="260" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">动态演示：小波多级分解——原图→LL/LH/HL/HH→LL继续分解，子带逐步亮起</div>
+</div>
+</div>
 <div class="kg-section" id="kg-s5">
 <div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>五、小波家族——不同的"眼睛"看不同的世界</h3><span class="kg-acc-icon">▼</span></div>
 <div class="kg-accordion-body">
@@ -6461,6 +6487,11 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </div>
 
 <p><b>一句话总结</b>：Contourlet像用<b>棱镜分光</b>的方式分解方向，Shearlet像用<b>数学剪刀剪纸</b>的方式切割方向。Shearlet是Contourlet的"理论升级版"。</p>
+
+<div class="kg-card" style="margin-top:12px;">
+  <canvas id="canvas-contourlet-demo" width="500" height="140" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">小概念演示：小波（正方形方块）vs Contourlet（细长条带）逼近曲线边缘的效果差异</div>
+</div>
 </div></div>
 <div class="kg-section" id="kg-s7">
 <div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>七、前沿方法大盘点——频域、小波、CNN如何"组队打怪"？</h3><span class="kg-acc-icon">▼</span></div>
@@ -6593,6 +6624,11 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </tbody>
 </table>
 
+<div class="kg-card" style="margin-top:16px;">
+  <canvas id="canvas-sparse-demo" width="700" height="220" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">动态演示：稀疏编码——从过完备字典中选取少量原子（亮起），线性组合重构信号</div>
+</div>
+
 </div></div>
 
 <div class="kg-module-guide kg-guide-dl">
@@ -6617,6 +6653,11 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </div>
 
 <p><b>公式</b>：<code>y = σ(w₁x₁ + w₂x₂ + ... + wₙxₙ + b)</code></p>
+
+<div class="kg-card" style="margin-top:12px;">
+  <canvas id="canvas-perceptron-demo" width="500" height="140" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">小概念演示：感知机——输入×权重→求和→激活函数→输出</div>
+</div>
 
 <p>但是感知机有个致命缺陷——它只能解决<b>线性可分</b>的问题（能用一条直线分开的），遇到"异或"这种非线性问题就彻底傻眼了。这就是著名的"AI寒冬"导火索。</p>
 
@@ -6769,7 +6810,12 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </div>
 
 <p>反向传播完成后，每个权重都收到了一个"梯度"（gradient），告诉它"你应该往哪个方向调、调多少"。</p>
-</div></div>
+
+<div class="kg-card" style="margin-top:16px;">
+  <canvas id="canvas-backprop-demo" width="700" height="240" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">动态演示：前向传播（蓝→）信号前传，反向传播（红←）梯度回传——链式法则逐层展开</div>
+</div>
+</div>
 <div class="kg-section" id="kg-s11">
 <div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>十一、激活函数——神经网络的"灵魂开关"</h3><span class="kg-acc-icon">▼</span></div>
 <div class="kg-accordion-body">
@@ -6990,6 +7036,11 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
   <h4>📊 损失函数曲面可视化（交互式）</h4>
   <div id="echarts-loss-surface" style="width:100%;height:380px;"></div>
   <div class="kg-caption">图：MSE / Cross-Entropy / Huber Loss 在不同误差下的损失值对比<br>💡 悬停查看具体损失值</div>
+</div>
+
+<div class="kg-card" style="margin-top:12px;">
+  <canvas id="canvas-loss-demo" width="500" height="160" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">小概念演示：MSE损失曲面（碗形）vs 交叉熵损失曲面——小球沿梯度方向滚向最低点</div>
 </div>
 
 <h4>13.2 分类任务用的损失函数</h4>
@@ -7325,6 +7376,12 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </tbody>
 </table>
 
+<h4>自注意力QKV计算动态演示</h4>
+<div class="kg-card" style="margin-top:16px;">
+  <canvas id="canvas-attention-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">动态演示：Q×K<sup>T</sup>→缩放→Softmax→×V 四步计算注意力权重——点击暂停/继续</div>
+</div>
+
 </div></div>
 
 <div class="kg-section" id="kg-s19">
@@ -7385,6 +7442,11 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-step">
   <strong>稀疏性在Transformer中的应用</strong>——除了通道注意力中的Top-K mask，还有结构化稀疏（固定模式的稀疏，如每隔一个位置计算一次）、随机稀疏（随机采样位置）和可学习稀疏（网络自己学习哪些位置该保留）。稀疏性是控制注意力计算成本的关键手段。
+</div>
+
+<div class="kg-card" style="margin-top:16px;">
+  <canvas id="canvas-se-demo" width="700" height="240" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">动态演示：SE模块三步走——Squeeze(压缩)→Excitation(激励)→Scale(缩放)，通道权重实时生成</div>
 </div>
 
 </div></div>
