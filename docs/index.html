@@ -4228,6 +4228,13 @@ function updateStepperUI(stepperId, currentIdx) {
   if (nextBtn) nextBtn.disabled = currentIdx === steps.length - 1;
 }
 
+function showModal(title, bodyHTML) {
+  if (!EL.modal || !EL.modalOverlay) return;
+  EL.modal.innerHTML = '<button class="modal-close" onclick="closeModal()">✕</button><h2>' + title + '</h2>' + bodyHTML;
+  EL.modalOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
 function closeModal() {
   EL.modalOverlay.classList.remove('open');
   document.body.style.overflow = '';
@@ -5202,6 +5209,7 @@ openKnowledge = function() {
     kgInitTracking();
     setTimeout(initKgImageLazyLoad, 100);
     setTimeout(initAllECharts, 300);
+    setTimeout(initKgECharts, 400);
     // Stagger-animate knowledge sections
     tweenStaggerSections();
     // 初始化Canvas动态演示
@@ -6422,17 +6430,8 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <div class="kg-card" style="margin-top:16px;">
     <div id="echarts-freq-demo-div" style="width:100%;max-width:700px;height:350px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
   <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">频域分解热力图 · 鼠标悬停查看频率分量强度</div>
-
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-freq-demo')">重置</button>
-    <span class="demo-info-badge" id="info-canvas-freq-demo">点击画面暂停/继续</span>
-  </div>
-  <div class="kg-caption">动态演示：图像分解为低频（大色块）与高频（细节边缘）——点击暂停/继续</div>
 </div>
 </div></div>
-
-<div class="kg-card" style="margin-top:16px;">
-  <div style="font-weight:bold; font-size:13px; color:#4A4A4A; margin-bottom:8px; font-family:'Microsoft YaHei',sans-serif;">🎲 Three.js 3D 频谱可视化——拖拽旋转、滚轮缩放</div>
-</div>
 
 <div class="kg-section" id="kg-s2">
 <div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>二、陷波滤波器 & 带阻滤波器——频域里的"精准手术刀"</h3><span class="kg-acc-icon">▼</span></div>
@@ -6460,11 +6459,6 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <div class="kg-card" style="margin-top:16px;">
     <div id="echarts-notch-demo-div" style="width:100%;max-width:700px;height:300px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
   <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">陷波滤波器频率响应 · 悬停查看衰减值</div>
-
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-notch-demo')">重置</button>
-    <span class="demo-info-badge" id="info-canvas-notch-demo">点击画面暂停/继续</span>
-  </div>
-  <div class="kg-caption">动态演示：陷波滤波器（精准挖点）vs 带阻滤波器（整段挡掉）——点击暂停/继续</div>
 </div>
 </div>
 <div class="kg-section" id="kg-s3">
@@ -6552,12 +6546,6 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <div class="kg-card" style="margin-top:16px;">
     <div id="echarts-wavelet-demo-div" style="width:100%;max-width:700px;height:320px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
   <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">小波分解子带能量分布 · 对比各级子带</div>
-
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-wavelet-demo')">重置</button>
-    <div class="demo-step-bar" id="step-bar-canvas-wavelet-demo"><div class="demo-step-seg" id="step-canvas-wavelet-demo-0" title="原图"></div><div class="demo-step-seg" id="step-canvas-wavelet-demo-1" title="一级分解"></div><div class="demo-step-seg" id="step-canvas-wavelet-demo-2" title="LL继续分解"></div><div class="demo-step-seg" id="step-canvas-wavelet-demo-3" title="金字塔完成"></div></div>
-    <span class="demo-info-badge" id="info-canvas-wavelet-demo">点击画面暂停/继续</span>
-  </div>
-  <div class="kg-caption">动态演示：小波多级分解——原图→LL/LH/HL/HH→LL继续分解，子带逐步亮起</div>
 </div>
 </div>
 <div class="kg-section" id="kg-s5">
@@ -6764,12 +6752,6 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <div class="kg-card" style="margin-top:16px;">
     <div id="echarts-sparse-demo-div" style="width:100%;max-width:700px;height:300px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
   <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">稀疏表示系数分布 · 高亮显示非零系数</div>
-
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-sparse-demo')">重置</button>
-    <div class="demo-step-bar" id="step-bar-canvas-sparse-demo"><div class="demo-step-seg" id="step-canvas-sparse-demo-0" title="选择原子"></div><div class="demo-step-seg" id="step-canvas-sparse-demo-1" title="加权组合"></div><div class="demo-step-seg" id="step-canvas-sparse-demo-2" title="稀疏重构"></div></div>
-    <span class="demo-info-badge" id="info-canvas-sparse-demo">点击画面暂停/继续</span>
-  </div>
-  <div class="kg-caption">动态演示：稀疏编码——从过完备字典中选取少量原子（亮起），线性组合重构信号</div>
 </div>
 
 </div></div>
@@ -6967,12 +6949,6 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <div class="kg-card" style="margin-top:16px;">
     <div id="echarts-backprop-demo-div" style="width:100%;max-width:700px;height:320px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
   <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">反向传播梯度流 · 各层梯度范数对比</div>
-
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-backprop-demo')">重置</button>
-    <div class="demo-step-bar" id="step-bar-canvas-backprop-demo"><div class="demo-step-seg" id="step-canvas-backprop-demo-0" title="前向传播"></div><div class="demo-step-seg" id="step-canvas-backprop-demo-1" title="反向传播"></div></div>
-    <span class="demo-info-badge" id="info-canvas-backprop-demo">点击画面暂停/继续</span>
-  </div>
-  <div class="kg-caption">动态演示：前向传播（蓝→）信号前传，反向传播（红←）梯度回传——链式法则逐层展开</div>
 </div>
 </div>
 <div class="kg-section" id="kg-s11">
@@ -7984,11 +7960,6 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-card" style="margin-top:16px;">
     <div id="echarts-init-demo-div" style="width:100%;max-width:700px;height:350px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
   <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">参数初始化策略对比 · Xavier/He/随机</div>
-
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-init-demo')">重置</button>
-    <span class="demo-info-badge" id="info-canvas-init-demo">点击画面暂停/继续</span>
-  </div>
-  <div class="kg-caption">动态演示：不同初始化下梯度在10层网络中的传播情况——健康传播 vs 消失 vs 爆炸（Canvas实时绘制）</div>
 </div>
 
 <div class="kg-step">
@@ -8048,11 +8019,6 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-card" style="margin-top:16px;">
     <div id="echarts-lr-demo-div" style="width:100%;max-width:700px;height:350px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
   <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">学习率调度策略 · Step/Cosine/Warmup</div>
-
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-lr-demo')">重置</button>
-    <span class="demo-info-badge" id="info-canvas-lr-demo">点击画面暂停/继续</span>
-  </div>
-  <div class="kg-caption">动态演示：不同调度策略下学习率随epoch的变化曲线（Canvas实时绘制）</div>
 </div>
 
 <div class="kg-step">
@@ -8105,11 +8071,6 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-card" style="margin-top:16px;">
     <div id="echarts-bn-demo-div" style="width:100%;max-width:700px;height:350px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
   <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">BatchNorm效果对比 · 有/无BN的损失曲线</div>
-
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-bn-demo')">重置</button>
-    <span class="demo-info-badge" id="info-canvas-bn-demo">点击画面暂停/继续</span>
-  </div>
-  <div class="kg-caption">动态演示：BatchNorm前后数据分布的变化——从漂移混乱到稳定标准正态（Canvas实时绘制）</div>
 </div>
 
 <div class="kg-step">
@@ -8254,16 +8215,6 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-card" style="margin-top:16px;">
     <div id="echarts-attention-demo-div" style="width:100%;max-width:700px;height:350px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
   <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">自注意力权重矩阵 · Token间注意力分布</div>
-
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-attention-demo')">重置</button>
-    <div class="demo-step-bar" id="step-bar-canvas-attention-demo"><div class="demo-step-seg" id="step-canvas-attention-demo-0" title="Q×Kᵀ"></div><div class="demo-step-seg" id="step-canvas-attention-demo-1" title="÷√dk"></div><div class="demo-step-seg" id="step-canvas-attention-demo-2" title="Softmax"></div><div class="demo-step-seg" id="step-canvas-attention-demo-3" title="×V"></div></div>
-    <span class="demo-info-badge" id="info-canvas-attention-demo">点击画面暂停/继续</span>
-  </div>
-  <div class="kg-caption">动态演示：Q×K<sup>T</sup>→缩放→Softmax→×V 四步计算注意力权重——点击暂停/继续</div>
-</div>
-
-<div class="kg-card" style="margin-top:16px;">
-  <div style="font-weight:bold; font-size:13px; color:#4A4A4A; margin-bottom:8px; font-family:'Microsoft YaHei',sans-serif;">🎲 Three.js 3D 注意力矩阵——Q/K/V 三个立方体的空间关系</div>
 </div>
 
 </div></div>
@@ -8331,16 +8282,6 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-card" style="margin-top:16px;">
     <div id="echarts-se-demo-div" style="width:100%;max-width:700px;height:320px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
   <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">SE通道权重分布 · 各通道重要性对比</div>
-
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-se-demo')">重置</button>
-    <div class="demo-step-bar" id="step-bar-canvas-se-demo"><div class="demo-step-seg" id="step-canvas-se-demo-0" title="Squeeze"></div><div class="demo-step-seg" id="step-canvas-se-demo-1" title="Excitation"></div><div class="demo-step-seg" id="step-canvas-se-demo-2" title="Scale"></div></div>
-    <span class="demo-info-badge" id="info-canvas-se-demo">点击画面暂停/继续</span>
-  </div>
-  <div class="kg-caption">动态演示：SE模块三步走——Squeeze(压缩)→Excitation(激励)→Scale(缩放)，通道权重实时生成</div>
-</div>
-
-<div class="kg-card" style="margin-top:16px;">
-  <div style="font-weight:bold; font-size:13px; color:#4A4A4A; margin-bottom:8px; font-family:'Microsoft YaHei',sans-serif;">🎲 Three.js 3D 通道权重——SE 模块的通道重要性空间分布</div>
 </div>
 
 </div></div>
@@ -9467,13 +9408,16 @@ init();
 </script>
 <script>
 // ===== ECharts Interactive Charts =====
-(function(){
+function initKgECharts(){
 function waitForEcharts(cb){
   var t=setInterval(function(){
     if(typeof echarts!=='undefined'){clearInterval(t);cb();}
   },300);
 }
 waitForEcharts(function(){
+  // Dispose existing instances to prevent duplicates
+  var ids=['echarts-freq-demo-div','echarts-notch-demo-div','echarts-wavelet-demo-div','echarts-sparse-demo-div','echarts-backprop-demo-div','echarts-init-demo-div','echarts-lr-demo-div','echarts-bn-demo-div','echarts-attention-demo-div','echarts-se-demo-div'];
+  ids.forEach(function(id){var el=document.getElementById(id);if(el){var inst=echarts.getInstanceByDom(el);if(inst)inst.dispose();}});
   // -- Theme colors --
   var C={
     bg:'#0f172a',card:'#1e293b',border:'#334155',text:'#e2e8f0',
@@ -9676,7 +9620,9 @@ waitForEcharts(function(){
 
   console.log('[ECharts] All 10 interactive charts initialized');
 });
-})();
+}
+// Initialize on page load
+initKgECharts();
 </script>
 
 </body>
