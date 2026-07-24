@@ -8072,7 +8072,7 @@ function initLRDemo() {
       ctx.fillStyle = colors[c];
       ctx.fillRect(400 + (c%2)*150, 35 + Math.floor(c/2)*18, 12, 3);
       ctx.fillStyle = '#4A4A4A';
-      ctx.font = '10px Microsoft YaHei';
+      ctx.font = '12px Microsoft YaHei';
       ctx.textAlign = 'left';
       ctx.fillText(names[c], 416 + (c%2)*150, 40 + Math.floor(c/2)*18);
     }
@@ -8135,7 +8135,7 @@ function initInitDemo() {
 
       // 标签
       ctx.fillStyle = mode.color;
-      ctx.font = 'bold 10px Microsoft YaHei';
+      ctx.font = 'bold 12px Microsoft YaHei';
       ctx.textAlign = 'right';
       ctx.fillText(mode.name, startX - 8, baseY + yOffset + 3);
 
@@ -8184,7 +8184,7 @@ function initInitDemo() {
 
     // 底部说明
     ctx.fillStyle = '#6C7A89';
-    ctx.font = '10px Microsoft YaHei';
+    ctx.font = '12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('Layer 0 (Input) → Layer 10 (Output)   圆大小 = 梯度相对强度   线粗细 = 信号强度', W/2, H - 12);
 
@@ -8257,11 +8257,11 @@ function initBNDemo() {
 
     // 标题
     ctx.fillStyle = '#2D3436';
-    ctx.font = 'bold 13px Microsoft YaHei';
+    ctx.font = 'bold 15px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('BatchNorm 实时演示', W/2, 22);
     ctx.fillStyle = '#6C7A89';
-    ctx.font = '10px Microsoft YaHei';
+    ctx.font = '12px Microsoft YaHei';
     ctx.fillText('Epoch ' + Math.floor(t/3) + '  |  原始分布 μ=' + mu.toFixed(2) + ' σ=' + sigma.toFixed(2), W/2, 40);
 
     // 左侧：原始分布
@@ -8272,7 +8272,7 @@ function initBNDemo() {
     ctx.font = 'bold 14px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('→', 350, 165);
-    ctx.font = '9px Microsoft YaHei';
+    ctx.font = '11px Microsoft YaHei';
     ctx.fillText('μ_B, σ_B', 350, 180);
     ctx.fillText('x̂=(x-μ)/σ', 350, 195);
 
@@ -8317,7 +8317,7 @@ function initFreqDemo() {
       ctx.lineWidth = 2;
       ctx.strokeRect(x0 + 5, 15, cellW - 15, cellH);
       ctx.fillStyle = colors[i];
-      ctx.font = 'bold 11px Microsoft YaHei';
+      ctx.font = 'bold 13px Microsoft YaHei';
       ctx.textAlign = 'center';
       ctx.fillText(labels[i], x0 + (cellW - 5) / 2 + 5, H - 20);
       var cx = x0 + (cellW - 5) / 2 + 5;
@@ -8343,7 +8343,7 @@ function initFreqDemo() {
         ctx.fillStyle = '#C0A878';
         ctx.fillRect(x0 + 25, 30, 30, 25);
         ctx.fillStyle = 'rgba(200,180,140,0.8)';
-        ctx.font = '10px Microsoft YaHei';
+        ctx.font = '12px Microsoft YaHei';
         ctx.textAlign = 'center';
         ctx.fillText('平滑区域', cx, cy + 5);
       } else {
@@ -8378,7 +8378,7 @@ function initFreqDemo() {
       }
     }
     ctx.fillStyle = '#8B7E74';
-    ctx.font = '10px Microsoft YaHei';
+    ctx.font = '12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('FFT分解：原图 = 低频（背景色块）+ 高频（边缘纹理）', W / 2, H - 5);
     t++;
@@ -8416,7 +8416,7 @@ function initNotchDemo() {
       ctx.lineWidth = 2;
       ctx.strokeRect(px, 15, cellW, cellH);
       ctx.fillStyle = pnl.color;
-      ctx.font = 'bold 11px Microsoft YaHei';
+      ctx.font = 'bold 13px Microsoft YaHei';
       ctx.textAlign = 'center';
       ctx.fillText(pnl.title, px + cellW / 2, 12);
       var cx = px + cellW / 2;
@@ -8446,7 +8446,7 @@ function initNotchDemo() {
           ctx.stroke();
         }
         ctx.fillStyle = '#4A4A4A';
-        ctx.font = '9px Microsoft YaHei';
+        ctx.font = '11px Microsoft YaHei';
         ctx.textAlign = 'center';
         ctx.fillText('精准挖掉特定频率点', cx, cy + maxR + 15);
       } else {
@@ -8468,7 +8468,7 @@ function initNotchDemo() {
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.fillStyle = '#4A4A4A';
-        ctx.font = '9px Microsoft YaHei';
+        ctx.font = '11px Microsoft YaHei';
         ctx.textAlign = 'center';
         ctx.fillText('挡掉一整段频率范围', cx, cy + maxR + 15);
       }
@@ -8478,7 +8478,7 @@ function initNotchDemo() {
       ctx.fill();
     }
     ctx.fillStyle = '#8B7E74';
-    ctx.font = '10px Microsoft YaHei';
+    ctx.font = '12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('频谱中心=低频，边缘=高频。红色=被滤除的频率', W / 2, H - 5);
     t++;
@@ -8511,7 +8511,7 @@ function initWaveletDemo() {
     ctx.lineWidth = 2;
     ctx.strokeRect(x0, y0, s0, s0);
     ctx.fillStyle = '#6366f1';
-    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.font = 'bold 13px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('原图', x0 + s0 / 2, y0 - 5);
     ctx.globalAlpha = 1;
@@ -8533,10 +8533,10 @@ function initWaveletDemo() {
         ctx.lineWidth = 1;
         ctx.strokeRect(sb.x, sb.y, s1, s1);
         ctx.fillStyle = '#fff';
-        ctx.font = 'bold 12px Microsoft YaHei';
+        ctx.font = 'bold 14px Microsoft YaHei';
         ctx.textAlign = 'center';
         ctx.fillText(sb.name, sb.x + s1 / 2, sb.y + s1 / 2 + 4);
-        ctx.font = '9px Microsoft YaHei';
+        ctx.font = '11px Microsoft YaHei';
         ctx.fillText(sb.desc, sb.x + s1 / 2, sb.y + s1 - 5);
       }
       ctx.globalAlpha = 1;
@@ -8567,7 +8567,7 @@ function initWaveletDemo() {
         ctx.lineWidth = 1;
         ctx.strokeRect(sb.x, sb.y, s2, s2);
         ctx.fillStyle = '#fff';
-        ctx.font = 'bold 10px Microsoft YaHei';
+        ctx.font = 'bold 12px Microsoft YaHei';
         ctx.textAlign = 'center';
         ctx.fillText(sb.name, sb.x + s2 / 2, sb.y + s2 / 2 + 3);
       }
@@ -8581,7 +8581,7 @@ function initWaveletDemo() {
     }
     var phaseLabels = ['Step 1: 原图', 'Step 2: 一级分解 -> 4子带', 'Step 3: LL继续分解', 'Step 4: 多分辨率金字塔完成'];
     ctx.fillStyle = '#D4A574';
-    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.font = 'bold 13px Microsoft YaHei';
     ctx.textAlign = 'left';
     ctx.fillText(phaseLabels[phase], 30, H - 15);
     var progressW = 200;
@@ -8633,7 +8633,7 @@ function initSparseDemo() {
     var atomStartX = 30;
     var atomStartY = 30;
     ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.font = 'bold 12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('过完备字典 D', atomStartX + atomCols * atomSize / 2, 20);
     for (var i = 0; i < atoms.length; i++) {
@@ -8647,7 +8647,7 @@ function initSparseDemo() {
       ctx.lineWidth = atoms[i].weight > 0.05 ? 2 : 1;
       ctx.strokeRect(ax, ay, atomSize, atomSize);
       ctx.fillStyle = atoms[i].weight > 0.05 ? '#fff' : '#aaa';
-      ctx.font = '8px Microsoft YaHei';
+      ctx.font = '11px Microsoft YaHei';
       ctx.fillText('d' + (i + 1), ax + atomSize / 2, ay + atomSize / 2 + 3);
       if (atoms[i].weight > 0.05) {
         ctx.fillStyle = '#10b981';
@@ -8658,7 +8658,7 @@ function initSparseDemo() {
     var coefY = 30;
     var coefH = 18;
     ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.font = 'bold 12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('稀疏系数 \u03b1', coefX + 30, 20);
     for (var i = 0; i < atoms.length; i++) {
@@ -8673,7 +8673,7 @@ function initSparseDemo() {
       ctx.lineWidth = 1;
       ctx.strokeRect(coefX, cy, 60, coefH);
       ctx.fillStyle = '#4A4A4A';
-      ctx.font = '8px Microsoft YaHei';
+      ctx.font = '11px Microsoft YaHei';
       ctx.textAlign = 'left';
       ctx.fillText('\u03b1' + (i + 1) + '=' + atoms[i].weight.toFixed(2), coefX + 4, cy + 12);
     }
@@ -8681,7 +8681,7 @@ function initSparseDemo() {
     var resultY = 30;
     var resultSize = 80;
     ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.font = 'bold 12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('重构信号 y=D\u03b1', resultX + resultSize / 2, 20);
     ctx.fillStyle = '#f5f0eb';
@@ -8714,7 +8714,7 @@ function initSparseDemo() {
     ctx.stroke();
     var phaseLabels = ['选择少量原子（大多数\u03b1=0）', '非零系数加权组合', '稀疏重构完成'];
     ctx.fillStyle = '#D4A574';
-    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.font = 'bold 12px Microsoft YaHei';
     ctx.textAlign = 'left';
     ctx.fillText(phaseLabels[cycle], 30, H - 10);
     var nonzero = 0;
@@ -8790,14 +8790,14 @@ function initBackpropDemo() {
         ctx.stroke();
       }
       ctx.fillStyle = '#4A4A4A';
-      ctx.font = 'bold 10px Microsoft YaHei';
+      ctx.font = 'bold 12px Microsoft YaHei';
       ctx.textAlign = 'center';
       ctx.fillText(layerNames[L], x, H - 30);
     }
     var arrowY = 20;
     if (phase === 0) {
       ctx.fillStyle = '#6366f1';
-      ctx.font = 'bold 11px Microsoft YaHei';
+      ctx.font = 'bold 13px Microsoft YaHei';
       ctx.textAlign = 'center';
       ctx.fillText('前向传播 ->', W / 2, arrowY);
       var ax = startX + progress * (W - 120);
@@ -8811,7 +8811,7 @@ function initBackpropDemo() {
       ctx.stroke();
     } else {
       ctx.fillStyle = '#CC5050';
-      ctx.font = 'bold 11px Microsoft YaHei';
+      ctx.font = 'bold 13px Microsoft YaHei';
       ctx.textAlign = 'center';
       ctx.fillText('<- 反向传播（链式法则）', W / 2, arrowY);
       var ax = W - 60 - progress * (W - 120);
@@ -8825,7 +8825,7 @@ function initBackpropDemo() {
       ctx.stroke();
     }
     ctx.fillStyle = '#8B7E74';
-    ctx.font = '10px Microsoft YaHei';
+    ctx.font = '12px Microsoft YaHei';
     ctx.textAlign = 'center';
     if (phase === 0) { ctx.fillText('前向: z=wx+b -> a=\u03c3(z) -> 逐层传递到输出', W / 2, H - 10); }
     else { ctx.fillText('反向: \u2202L/\u2202w = \u2202L/\u2202a \u00d7 \u2202a/\u2202z \u00d7 \u2202z/\u2202w（链式法则逐层回传）', W / 2, H - 10); }
@@ -8882,10 +8882,10 @@ function initAttentionDemo() {
       var alpha = mat.showFade !== undefined ? mat.showFade : 1;
       ctx.fillStyle = mat.color;
       ctx.globalAlpha = alpha;
-      ctx.font = 'bold 12px Microsoft YaHei';
+      ctx.font = 'bold 14px Microsoft YaHei';
       ctx.textAlign = 'center';
       ctx.fillText(mat.label, mx + scaledMat / 2, my - 12);
-      ctx.font = '9px Microsoft YaHei';
+      ctx.font = '11px Microsoft YaHei';
       ctx.fillStyle = '#8B7E74';
       ctx.fillText(mat.name, mx + scaledMat / 2, my - 2);
       for (var i = 0; i < n; i++) {
@@ -8917,7 +8917,7 @@ function initAttentionDemo() {
     }
     var stepLabels = ['Step 1: Q \u00d7 K\u1d40 -> 注意力分数矩阵', 'Step 2: \u00f7 \u221adk -> 缩放（防止梯度消失）', 'Step 3: softmax -> 归一化（每行和=1）', 'Step 4: 权重 \u00d7 V -> 加权提取信息'];
     ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 13px Microsoft YaHei';
+    ctx.font = 'bold 15px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText(stepLabels[step], W / 2, 25);
     var stepW = 100;
@@ -8963,10 +8963,10 @@ function initSEDemo() {
     var startY = 50;
     var sqX = startX, sqY = startY;
     ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.font = 'bold 13px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('Squeeze', sqX + channelW / 2, sqY - 8);
-    ctx.font = '9px Microsoft YaHei';
+    ctx.font = '11px Microsoft YaHei';
     ctx.fillStyle = '#8B7E74';
     ctx.fillText('全局平均池化', sqX + channelW / 2, sqY - 22);
     for (var c = 0; c < numChannels; c++) {
@@ -8979,7 +8979,7 @@ function initSEDemo() {
       ctx.lineWidth = 1;
       ctx.strokeRect(sqX, cy, channelW, channelH);
       ctx.fillStyle = '#fff';
-      ctx.font = '8px Microsoft YaHei';
+      ctx.font = '11px Microsoft YaHei';
       ctx.fillText('C' + (c + 1), sqX + channelW / 2, cy + channelH / 2 + 3);
     }
     var arrow1X = sqX + channelW + 5;
@@ -8999,10 +8999,10 @@ function initSEDemo() {
     ctx.globalAlpha = 1;
     var exX = sqX + channelW + 35, exY = sqY;
     ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.font = 'bold 13px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('Excitation', exX + channelW / 2, exY - 8);
-    ctx.font = '9px Microsoft YaHei';
+    ctx.font = '11px Microsoft YaHei';
     ctx.fillStyle = '#8B7E74';
     ctx.fillText('FC->ReLU->FC->\u03c3', exX + channelW / 2, exY - 22);
     for (var c = 0; c < numChannels; c++) {
@@ -9018,7 +9018,7 @@ function initSEDemo() {
       ctx.lineWidth = 1;
       ctx.strokeRect(exX, cy, channelW, channelH);
       ctx.fillStyle = '#4A4A4A';
-      ctx.font = '8px Microsoft YaHei';
+      ctx.font = '11px Microsoft YaHei';
       ctx.textAlign = 'left';
       ctx.fillText('w=' + weight.toFixed(2), exX + 4, cy + channelH / 2 + 3);
     }
@@ -9039,10 +9039,10 @@ function initSEDemo() {
     ctx.globalAlpha = 1;
     var scX = exX + channelW + 35, scY = sqY;
     ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.font = 'bold 13px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('Scale', scX + channelW / 2, scY - 8);
-    ctx.font = '9px Microsoft YaHei';
+    ctx.font = '11px Microsoft YaHei';
     ctx.fillStyle = '#8B7E74';
     ctx.fillText('通道加权', scX + channelW / 2, scY - 22);
     for (var c = 0; c < numChannels; c++) {
@@ -9056,13 +9056,13 @@ function initSEDemo() {
       ctx.lineWidth = 1;
       ctx.strokeRect(scX, cy, channelW, channelH);
       ctx.fillStyle = '#fff';
-      ctx.font = '8px Microsoft YaHei';
+      ctx.font = '11px Microsoft YaHei';
       ctx.textAlign = 'center';
       ctx.fillText('\u00d7' + weight.toFixed(1), scX + channelW / 2, cy + channelH / 2 + 3);
     }
     var outX = scX + channelW + 35, outY = sqY;
     ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 11px Microsoft YaHei';
+    ctx.font = 'bold 13px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('输出', outX + channelW / 2, outY - 8);
     for (var c = 0; c < numChannels; c++) {
@@ -9101,7 +9101,7 @@ function initSEDemo() {
         ctx.fillRect(stepStartX + s * stepW, H - 25, (stepW - 4) * fade, 8);
       }
       ctx.fillStyle = s === phase ? stepColors[s] : '#8B7E74';
-      ctx.font = 'bold 10px Microsoft YaHei';
+      ctx.font = 'bold 12px Microsoft YaHei';
       ctx.textAlign = 'center';
       ctx.fillText(stepNames[s], stepStartX + s * stepW + (stepW - 4) / 2, H - 8);
     }
@@ -9141,7 +9141,7 @@ function initPerceptronDemo() {
       ctx.lineWidth = 1.5;
       ctx.stroke();
       ctx.fillStyle = '#fff';
-      ctx.font = 'bold 10px Microsoft YaHei';
+      ctx.font = 'bold 12px Microsoft YaHei';
       ctx.textAlign = 'center';
       ctx.fillText(inputs[i].label, inX, iy + 4);
       var lineProgress = Math.max(0, Math.min(1, pulseT * 3 - i * 0.3));
@@ -9157,7 +9157,7 @@ function initPerceptronDemo() {
       var midX = (inX + neuronX) / 2;
       var midY = (iy + neuronY) / 2;
       ctx.fillStyle = weightColor;
-      ctx.font = '9px Microsoft YaHei';
+      ctx.font = '11px Microsoft YaHei';
       ctx.fillText('w=' + inputs[i].w, midX, midY - 5);
       if (lineProgress > 0 && lineProgress < 1) {
         var px = inX + 12 + (neuronX - 18 - inX - 12) * lineProgress;
@@ -9181,14 +9181,14 @@ function initPerceptronDemo() {
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 9px Microsoft YaHei';
+    ctx.font = 'bold 11px Microsoft YaHei';
     ctx.fillText('\u03a3->\u03c3', neuronX, neuronY + 3);
     ctx.fillStyle = '#8FB996';
-    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.font = 'bold 12px Microsoft YaHei';
     ctx.textAlign = 'left';
     ctx.fillText('y=' + activated.toFixed(3), neuronX + 25, neuronY + 3);
     ctx.fillStyle = '#8B7E74';
-    ctx.font = '9px Microsoft YaHei';
+    ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('y = \u03c3(\u03a3 w\u1d62x\u1d62 + b)', W / 2, H - 5);
     t++;
@@ -9224,7 +9224,7 @@ function initLossDemo() {
       ctx.lineWidth = 1.5;
       ctx.strokeRect(px, py, pw, ph);
       ctx.fillStyle = colors[p];
-      ctx.font = 'bold 10px Microsoft YaHei';
+      ctx.font = 'bold 12px Microsoft YaHei';
       ctx.textAlign = 'center';
       ctx.fillText(labels[p], px + pw / 2, py - 3);
       var cx = px + pw / 2;
@@ -9271,12 +9271,12 @@ function initLossDemo() {
       ctx.lineWidth = 1.5;
       ctx.stroke();
       ctx.fillStyle = '#10b981';
-      ctx.font = '8px Microsoft YaHei';
+      ctx.font = '11px Microsoft YaHei';
       ctx.textAlign = 'center';
       ctx.fillText('min', cx, cy + 15);
     }
     ctx.fillStyle = '#8B7E74';
-    ctx.font = '9px Microsoft YaHei';
+    ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('小球沿梯度方向滚向最低点（最优解）', W / 2, H - 5);
     t++;
@@ -9307,7 +9307,7 @@ function initContourletDemo() {
     ctx.lineWidth = 1.5;
     ctx.strokeRect(lx, ly, cellW - 5, cellH);
     ctx.fillStyle = '#7BA7CC';
-    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.font = 'bold 12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('小波（正方形）', lx + (cellW - 5) / 2, ly - 3);
     ctx.strokeStyle = '#333';
@@ -9341,7 +9341,7 @@ function initContourletDemo() {
     ctx.lineWidth = 1.5;
     ctx.strokeRect(rx, ry, cellW - 5, cellH);
     ctx.fillStyle = '#D4A574';
-    ctx.font = 'bold 10px Microsoft YaHei';
+    ctx.font = 'bold 12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('Contourlet（细长条）', rx + (cellW - 5) / 2, ry - 3);
     ctx.strokeStyle = '#333';
@@ -9368,7 +9368,7 @@ function initContourletDemo() {
       ctx.restore();
     }
     ctx.fillStyle = '#8B7E74';
-    ctx.font = '9px Microsoft YaHei';
+    ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('同一条曲线：正方形方块多且碎，细长条带少且贴合', W / 2, H - 5);
     t++;
