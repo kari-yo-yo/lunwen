@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -2584,6 +2584,7 @@ canvas[id^="canvas-"]:hover {
 }
 
 </style>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
 </head>
 <body>
 
@@ -5204,23 +5205,10 @@ openKnowledge = function() {
     // Stagger-animate knowledge sections
     tweenStaggerSections();
     // 初始化Canvas动态演示
-    setTimeout(function() {
-      initLRDemo();
-      initInitDemo();
-      initBNDemo();
-      initFreqDemo();
-      initNotchDemo();
-      initWaveletDemo();
-      initSparseDemo();
-      initBackpropDemo();
-      initAttentionDemo();
-      initSEDemo();
-      initPerceptronDemo();
+    setTimeout(function() {initPerceptronDemo();
       initLossDemo();
       initContourletDemo();
     }, 500);
-    // 初始化 Three.js 3D 可视化
-    setTimeout(initAllThreeViz, 800);
   });
   
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6432,14 +6420,9 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </div>
 
 <div class="kg-card" style="margin-top:16px;">
-  <canvas id="canvas-freq-demo" width="700" height="200" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-freq-demo">
-    <button class="demo-btn" id="btn-play-canvas-freq-demo" onclick="toggleDemo('canvas-freq-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-freq-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-freq-demo', this.value)">
-      <span id="speed-label-canvas-freq-demo">1.0x</span>
-    </div>
+    <div id="echarts-freq-demo-div" style="width:100%;max-width:700px;height:350px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
+  <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">频域分解热力图 · 鼠标悬停查看频率分量强度</div>
+
     <button class="demo-btn secondary" onclick="resetDemo('canvas-freq-demo')">重置</button>
     <span class="demo-info-badge" id="info-canvas-freq-demo">点击画面暂停/继续</span>
   </div>
@@ -6449,14 +6432,6 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:16px;">
   <div style="font-weight:bold; font-size:13px; color:#4A4A4A; margin-bottom:8px; font-family:'Microsoft YaHei',sans-serif;">🎲 Three.js 3D 频谱可视化——拖拽旋转、滚轮缩放</div>
-  <div id="three-freq-container" style="width:100%;max-width:700px;height:320px;margin:0 auto;background:#faf8f5;border-radius:10px;position:relative;overflow:hidden;">
-    <canvas id="three-freq-canvas" style="width:100%;height:100%;display:block;"></canvas>
-    <div class="demo-controls" style="position:absolute;bottom:0;left:0;right:0;background:rgba(250,248,245,0.95);">
-      <button class="demo-btn" onclick="toggleThreeAnim('freq')">暂停</button>
-      <div class="demo-slider-wrap"><span>旋转速度</span><input type="range" class="demo-slider" id="three-freq-speed" min="0" max="2" step="0.1" value="0.5" oninput="setThreeSpeed('freq',this.value)"><span id="three-freq-speed-lbl">0.5</span></div>
-      <span class="demo-info-badge">拖拽旋转 · 滚轮缩放</span>
-    </div>
-  </div>
 </div>
 
 <div class="kg-section" id="kg-s2">
@@ -6483,14 +6458,9 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <p><b>打个比方</b>：陷波滤波器像"消音一个特定音高的噪音"，带阻滤波器像"关闭一个频段的均衡器"。前者精准但窄，后者粗糙但覆盖面大。</p>
 
 <div class="kg-card" style="margin-top:16px;">
-  <canvas id="canvas-notch-demo" width="700" height="220" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-notch-demo">
-    <button class="demo-btn" id="btn-play-canvas-notch-demo" onclick="toggleDemo('canvas-notch-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-notch-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-notch-demo', this.value)">
-      <span id="speed-label-canvas-notch-demo">1.0x</span>
-    </div>
+    <div id="echarts-notch-demo-div" style="width:100%;max-width:700px;height:300px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
+  <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">陷波滤波器频率响应 · 悬停查看衰减值</div>
+
     <button class="demo-btn secondary" onclick="resetDemo('canvas-notch-demo')">重置</button>
     <span class="demo-info-badge" id="info-canvas-notch-demo">点击画面暂停/继续</span>
   </div>
@@ -6580,14 +6550,9 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <p>所以你看到论文里很多去雨方法（如DAWN+、MFFDNet、SCGN）都用了小波——因为小波既能"看到雨纹在哪个频段"，又能"看到雨纹在图像的哪个位置"。</p>
 
 <div class="kg-card" style="margin-top:16px;">
-  <canvas id="canvas-wavelet-demo" width="700" height="260" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-wavelet-demo">
-    <button class="demo-btn" id="btn-play-canvas-wavelet-demo" onclick="toggleDemo('canvas-wavelet-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-wavelet-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-wavelet-demo', this.value)">
-      <span id="speed-label-canvas-wavelet-demo">1.0x</span>
-    </div>
+    <div id="echarts-wavelet-demo-div" style="width:100%;max-width:700px;height:320px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
+  <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">小波分解子带能量分布 · 对比各级子带</div>
+
     <button class="demo-btn secondary" onclick="resetDemo('canvas-wavelet-demo')">重置</button>
     <div class="demo-step-bar" id="step-bar-canvas-wavelet-demo"><div class="demo-step-seg" id="step-canvas-wavelet-demo-0" title="原图"></div><div class="demo-step-seg" id="step-canvas-wavelet-demo-1" title="一级分解"></div><div class="demo-step-seg" id="step-canvas-wavelet-demo-2" title="LL继续分解"></div><div class="demo-step-seg" id="step-canvas-wavelet-demo-3" title="金字塔完成"></div></div>
     <span class="demo-info-badge" id="info-canvas-wavelet-demo">点击画面暂停/继续</span>
@@ -6651,7 +6616,7 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <p><b>一句话总结</b>：Contourlet像用<b>棱镜分光</b>的方式分解方向，Shearlet像用<b>数学剪刀剪纸</b>的方式切割方向。Shearlet是Contourlet的"理论升级版"。</p>
 
 <div class="kg-card" style="margin-top:12px;">
-  <canvas id="canvas-contourlet-demo" width="500" height="140" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <canvas id="canvas-contourlet-demo" width="500" height="140" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:transparent;border-radius:8px;"></canvas>
   <div class="demo-controls" id="controls-canvas-contourlet-demo">
     <button class="demo-btn" id="btn-play-canvas-contourlet-demo" onclick="toggleDemo('canvas-contourlet-demo')">暂停</button>
     <div class="demo-slider-wrap">
@@ -6797,14 +6762,9 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </table>
 
 <div class="kg-card" style="margin-top:16px;">
-  <canvas id="canvas-sparse-demo" width="700" height="220" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-sparse-demo">
-    <button class="demo-btn" id="btn-play-canvas-sparse-demo" onclick="toggleDemo('canvas-sparse-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-sparse-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-sparse-demo', this.value)">
-      <span id="speed-label-canvas-sparse-demo">1.0x</span>
-    </div>
+    <div id="echarts-sparse-demo-div" style="width:100%;max-width:700px;height:300px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
+  <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">稀疏表示系数分布 · 高亮显示非零系数</div>
+
     <button class="demo-btn secondary" onclick="resetDemo('canvas-sparse-demo')">重置</button>
     <div class="demo-step-bar" id="step-bar-canvas-sparse-demo"><div class="demo-step-seg" id="step-canvas-sparse-demo-0" title="选择原子"></div><div class="demo-step-seg" id="step-canvas-sparse-demo-1" title="加权组合"></div><div class="demo-step-seg" id="step-canvas-sparse-demo-2" title="稀疏重构"></div></div>
     <span class="demo-info-badge" id="info-canvas-sparse-demo">点击画面暂停/继续</span>
@@ -6838,7 +6798,7 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <p><b>公式</b>：<code>y = σ(w₁x₁ + w₂x₂ + ... + wₙxₙ + b)</code></p>
 
 <div class="kg-card" style="margin-top:12px;">
-  <canvas id="canvas-perceptron-demo" width="500" height="140" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <canvas id="canvas-perceptron-demo" width="500" height="140" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:transparent;border-radius:8px;"></canvas>
   <div class="demo-controls" id="controls-canvas-perceptron-demo">
     <button class="demo-btn" id="btn-play-canvas-perceptron-demo" onclick="toggleDemo('canvas-perceptron-demo')">暂停</button>
     <div class="demo-slider-wrap">
@@ -7005,14 +6965,9 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <p>反向传播完成后，每个权重都收到了一个"梯度"（gradient），告诉它"你应该往哪个方向调、调多少"。</p>
 
 <div class="kg-card" style="margin-top:16px;">
-  <canvas id="canvas-backprop-demo" width="700" height="240" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-backprop-demo">
-    <button class="demo-btn" id="btn-play-canvas-backprop-demo" onclick="toggleDemo('canvas-backprop-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-backprop-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-backprop-demo', this.value)">
-      <span id="speed-label-canvas-backprop-demo">1.0x</span>
-    </div>
+    <div id="echarts-backprop-demo-div" style="width:100%;max-width:700px;height:320px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
+  <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">反向传播梯度流 · 各层梯度范数对比</div>
+
     <button class="demo-btn secondary" onclick="resetDemo('canvas-backprop-demo')">重置</button>
     <div class="demo-step-bar" id="step-bar-canvas-backprop-demo"><div class="demo-step-seg" id="step-canvas-backprop-demo-0" title="前向传播"></div><div class="demo-step-seg" id="step-canvas-backprop-demo-1" title="反向传播"></div></div>
     <span class="demo-info-badge" id="info-canvas-backprop-demo">点击画面暂停/继续</span>
@@ -7933,7 +7888,7 @@ canvas[id^="canvas-"]:hover {
 </div>
 
 <div class="kg-card" style="margin-top:12px;">
-  <canvas id="canvas-loss-demo" width="500" height="160" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <canvas id="canvas-loss-demo" width="500" height="160" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:transparent;border-radius:8px;"></canvas>
   <div class="demo-controls" id="controls-canvas-loss-demo">
     <button class="demo-btn" id="btn-play-canvas-loss-demo" onclick="toggleDemo('canvas-loss-demo')">暂停</button>
     <div class="demo-slider-wrap">
@@ -8027,14 +7982,9 @@ canvas[id^="canvas-"]:hover {
 
 <h4>14.3 动态演示：梯度传播的"健康检查"</h4>
 <div class="kg-card" style="margin-top:16px;">
-  <canvas id="canvas-init-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-init-demo">
-    <button class="demo-btn" id="btn-play-canvas-init-demo" onclick="toggleDemo('canvas-init-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-init-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-init-demo', this.value)">
-      <span id="speed-label-canvas-init-demo">1.0x</span>
-    </div>
+    <div id="echarts-init-demo-div" style="width:100%;max-width:700px;height:350px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
+  <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">参数初始化策略对比 · Xavier/He/随机</div>
+
     <button class="demo-btn secondary" onclick="resetDemo('canvas-init-demo')">重置</button>
     <span class="demo-info-badge" id="info-canvas-init-demo">点击画面暂停/继续</span>
   </div>
@@ -8096,14 +8046,9 @@ canvas[id^="canvas-"]:hover {
 
 <h4>15.3 动态演示：学习率随训练变化</h4>
 <div class="kg-card" style="margin-top:16px;">
-  <canvas id="canvas-lr-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-lr-demo">
-    <button class="demo-btn" id="btn-play-canvas-lr-demo" onclick="toggleDemo('canvas-lr-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-lr-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-lr-demo', this.value)">
-      <span id="speed-label-canvas-lr-demo">1.0x</span>
-    </div>
+    <div id="echarts-lr-demo-div" style="width:100%;max-width:700px;height:350px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
+  <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">学习率调度策略 · Step/Cosine/Warmup</div>
+
     <button class="demo-btn secondary" onclick="resetDemo('canvas-lr-demo')">重置</button>
     <span class="demo-info-badge" id="info-canvas-lr-demo">点击画面暂停/继续</span>
   </div>
@@ -8158,14 +8103,9 @@ canvas[id^="canvas-"]:hover {
 
 <h4>16.4 动态演示：BatchNorm如何稳定分布</h4>
 <div class="kg-card" style="margin-top:16px;">
-  <canvas id="canvas-bn-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-bn-demo">
-    <button class="demo-btn" id="btn-play-canvas-bn-demo" onclick="toggleDemo('canvas-bn-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-bn-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-bn-demo', this.value)">
-      <span id="speed-label-canvas-bn-demo">1.0x</span>
-    </div>
+    <div id="echarts-bn-demo-div" style="width:100%;max-width:700px;height:350px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
+  <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">BatchNorm效果对比 · 有/无BN的损失曲线</div>
+
     <button class="demo-btn secondary" onclick="resetDemo('canvas-bn-demo')">重置</button>
     <span class="demo-info-badge" id="info-canvas-bn-demo">点击画面暂停/继续</span>
   </div>
@@ -8312,14 +8252,9 @@ canvas[id^="canvas-"]:hover {
 
 <h4>自注意力QKV计算动态演示</h4>
 <div class="kg-card" style="margin-top:16px;">
-  <canvas id="canvas-attention-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-attention-demo">
-    <button class="demo-btn" id="btn-play-canvas-attention-demo" onclick="toggleDemo('canvas-attention-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-attention-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-attention-demo', this.value)">
-      <span id="speed-label-canvas-attention-demo">1.0x</span>
-    </div>
+    <div id="echarts-attention-demo-div" style="width:100%;max-width:700px;height:350px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
+  <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">自注意力权重矩阵 · Token间注意力分布</div>
+
     <button class="demo-btn secondary" onclick="resetDemo('canvas-attention-demo')">重置</button>
     <div class="demo-step-bar" id="step-bar-canvas-attention-demo"><div class="demo-step-seg" id="step-canvas-attention-demo-0" title="Q×Kᵀ"></div><div class="demo-step-seg" id="step-canvas-attention-demo-1" title="÷√dk"></div><div class="demo-step-seg" id="step-canvas-attention-demo-2" title="Softmax"></div><div class="demo-step-seg" id="step-canvas-attention-demo-3" title="×V"></div></div>
     <span class="demo-info-badge" id="info-canvas-attention-demo">点击画面暂停/继续</span>
@@ -8329,14 +8264,6 @@ canvas[id^="canvas-"]:hover {
 
 <div class="kg-card" style="margin-top:16px;">
   <div style="font-weight:bold; font-size:13px; color:#4A4A4A; margin-bottom:8px; font-family:'Microsoft YaHei',sans-serif;">🎲 Three.js 3D 注意力矩阵——Q/K/V 三个立方体的空间关系</div>
-  <div id="three-attn-container" style="width:100%;max-width:700px;height:340px;margin:0 auto;background:#faf8f5;border-radius:10px;position:relative;overflow:hidden;">
-    <canvas id="three-attn-canvas" style="width:100%;height:100%;display:block;"></canvas>
-    <div class="demo-controls" style="position:absolute;bottom:0;left:0;right:0;background:rgba(250,248,245,0.95);">
-      <button class="demo-btn" onclick="toggleThreeAnim('attn')">暂停</button>
-      <div class="demo-slider-wrap"><span>旋转速度</span><input type="range" class="demo-slider" id="three-attn-speed" min="0" max="2" step="0.1" value="0.3" oninput="setThreeSpeed('attn',this.value)"><span id="three-attn-speed-lbl">0.3</span></div>
-      <span class="demo-info-badge">拖拽旋转 · 滚轮缩放</span>
-    </div>
-  </div>
 </div>
 
 </div></div>
@@ -8402,14 +8329,9 @@ canvas[id^="canvas-"]:hover {
 </div>
 
 <div class="kg-card" style="margin-top:16px;">
-  <canvas id="canvas-se-demo" width="700" height="240" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-se-demo">
-    <button class="demo-btn" id="btn-play-canvas-se-demo" onclick="toggleDemo('canvas-se-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-se-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-se-demo', this.value)">
-      <span id="speed-label-canvas-se-demo">1.0x</span>
-    </div>
+    <div id="echarts-se-demo-div" style="width:100%;max-width:700px;height:320px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
+  <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">SE通道权重分布 · 各通道重要性对比</div>
+
     <button class="demo-btn secondary" onclick="resetDemo('canvas-se-demo')">重置</button>
     <div class="demo-step-bar" id="step-bar-canvas-se-demo"><div class="demo-step-seg" id="step-canvas-se-demo-0" title="Squeeze"></div><div class="demo-step-seg" id="step-canvas-se-demo-1" title="Excitation"></div><div class="demo-step-seg" id="step-canvas-se-demo-2" title="Scale"></div></div>
     <span class="demo-info-badge" id="info-canvas-se-demo">点击画面暂停/继续</span>
@@ -8419,14 +8341,6 @@ canvas[id^="canvas-"]:hover {
 
 <div class="kg-card" style="margin-top:16px;">
   <div style="font-weight:bold; font-size:13px; color:#4A4A4A; margin-bottom:8px; font-family:'Microsoft YaHei',sans-serif;">🎲 Three.js 3D 通道权重——SE 模块的通道重要性空间分布</div>
-  <div id="three-se-container" style="width:100%;max-width:700px;height:320px;margin:0 auto;background:#faf8f5;border-radius:10px;position:relative;overflow:hidden;">
-    <canvas id="three-se-canvas" style="width:100%;height:100%;display:block;"></canvas>
-    <div class="demo-controls" style="position:absolute;bottom:0;left:0;right:0;background:rgba(250,248,245,0.95);">
-      <button class="demo-btn" onclick="toggleThreeAnim('se')">暂停</button>
-      <div class="demo-slider-wrap"><span>旋转速度</span><input type="range" class="demo-slider" id="three-se-speed" min="0" max="2" step="0.1" value="0.4" oninput="setThreeSpeed('se',this.value)"><span id="three-se-speed-lbl">0.4</span></div>
-      <span class="demo-info-badge">拖拽旋转 · 滚轮缩放</span>
-    </div>
-  </div>
 </div>
 
 </div></div>
@@ -8975,309 +8889,6 @@ function closeKnowledge() {
 document.getElementById('btnKnowledge').addEventListener('click', openKnowledge);
 document.getElementById('knowledgeCloseBtn').addEventListener('click', closeKnowledge);
 
-// ================================================================
-// 动态演示：学习率调度 (Canvas 2D + requestAnimationFrame)
-// ================================================================
-function initLRDemo() {
-  var canvas = document.getElementById('canvas-lr-demo');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.width, H = canvas.height;
-  var epoch = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-lr-demo', _state);
-
-  function draw() {
-    if (!running) return;
-    ctx.clearRect(0, 0, W, H);
-
-    // 背景网格
-    ctx.strokeStyle = '#e8e4df';
-    ctx.lineWidth = 1;
-    for (var i = 0; i <= 10; i++) {
-      var x = 60 + i * 64;
-      ctx.beginPath(); ctx.moveTo(x, 20); ctx.lineTo(x, H-40); ctx.stroke();
-    }
-    for (var i = 0; i <= 5; i++) {
-      var y = 20 + i * 44;
-      ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W-20, y); ctx.stroke();
-    }
-
-    // 坐标轴标签
-    ctx.fillStyle = '#6C7A89';
-    ctx.font = '11px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    for (var i = 0; i <= 10; i++) {
-      ctx.fillText((i*10).toString(), 60 + i * 64, H - 20);
-    }
-    ctx.textAlign = 'right';
-    for (var i = 0; i <= 5; i++) {
-      ctx.fillText((0.1 - i*0.02).toFixed(2), 55, 25 + i * 44);
-    }
-    ctx.save();
-    ctx.translate(20, H/2);
-    ctx.rotate(-Math.PI/2);
-    ctx.textAlign = 'center';
-    ctx.fillText('学习率 LR', 0, 0);
-    ctx.restore();
-    ctx.textAlign = 'center';
-    ctx.fillText('Epoch', W/2 + 20, H - 5);
-
-    // 绘制曲线
-    var colors = ['#CC8888', '#7BA7CC', '#8FB996', '#A890C0'];
-    var names = ['Step Decay', 'Exponential', 'Cosine', 'Warmup+Cosine'];
-
-    for (var c = 0; c < 4; c++) {
-      ctx.beginPath();
-      ctx.strokeStyle = colors[c];
-      ctx.lineWidth = 2.5;
-      for (var e = 0; e <= epoch; e++) {
-        var lr;
-        if (c === 0) lr = 0.1 * Math.pow(0.5, Math.floor(e / 25));
-        else if (c === 1) lr = 0.1 * Math.exp(-e / 40);
-        else if (c === 2) lr = 0.05 * (1 + Math.cos(Math.PI * e / 100)) + 0.005;
-        else {
-          var w = Math.min(e / 10, 1.0);
-          lr = 0.05 * w * (1 + Math.cos(Math.PI * e / 100)) + 0.005;
-        }
-        var x = 60 + e / 100 * 640;
-        var y = 20 + (0.1 - lr) / 0.1 * 220;
-        if (e === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    }
-
-    // 图例
-    for (var c = 0; c < 4; c++) {
-      ctx.fillStyle = colors[c];
-      ctx.fillRect(400 + (c%2)*150, 35 + Math.floor(c/2)*18, 12, 3);
-      ctx.fillStyle = '#4A4A4A';
-      ctx.font = '12px Microsoft YaHei';
-      ctx.textAlign = 'left';
-      ctx.fillText(names[c], 416 + (c%2)*150, 40 + Math.floor(c/2)*18);
-    }
-
-    // 当前epoch指示线
-    if (epoch > 0) {
-      var cx = 60 + epoch / 100 * 640;
-      ctx.strokeStyle = '#D4A574';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath(); ctx.moveTo(cx, 20); ctx.lineTo(cx, H-40); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = '#D4A574';
-      ctx.textAlign = 'center';
-      ctx.fillText('epoch=' + epoch, cx, 15);
-    }
-
-    epoch = (epoch + (_state && _state.speed > 0 ? _state.speed : 1)) % 101;
-    if (epoch === 0) {
-      setTimeout(function() { requestAnimationFrame(draw); }, 800);
-      return;
-    }
-    requestAnimationFrame(draw);
-  }
-  draw();
-
-  // 暂停/恢复
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
-}
-
-// ================================================================
-// 动态演示：参数初始化 (Canvas 2D)
-// ================================================================
-function initInitDemo() {
-  var canvas = document.getElementById('canvas-init-demo');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-init-demo', _state);
-  var modes = [
-    {name: 'Zero (w=0)',  color: '#B0B0B0', scale: 0,   type: 'flat'},
-    {name: 'Small (w=0.3)', color: '#7BA7CC', scale: 0.3, type: 'vanish'},
-    {name: 'Large (w=2)',   color: '#CC8888', scale: 2,   type: 'explode'},
-    {name: 'He (w~0.7)',    color: '#8FB996', scale: 0.7, type: 'healthy'}
-  ];
-
-  function draw() {
-    if (!running) return;
-    ctx.clearRect(0, 0, W, H);
-
-    var layers = 10;
-    var layerW = 55;
-    var startX = 40;
-    var baseY = H / 2;
-
-    // 画层
-    for (var m = 0; m < 4; m++) {
-      var yOffset = (m - 1.5) * 60;
-      var mode = modes[m];
-
-      // 标签
-      ctx.fillStyle = mode.color;
-      ctx.font = 'bold 12px Microsoft YaHei';
-      ctx.textAlign = 'right';
-      ctx.fillText(mode.name, startX - 8, baseY + yOffset + 3);
-
-      // 画神经元和梯度
-      for (var L = 0; L <= layers; L++) {
-        var x = startX + L * layerW;
-        var grad = Math.pow(mode.scale, L);
-        if (mode.type === 'flat') grad = (L === 0) ? 1 : 0;
-        if (mode.type === 'explode') grad = Math.min(grad, 8);
-        if (mode.type === 'vanish') grad = Math.max(grad, 0.001);
-
-        var r = Math.max(3, Math.min(18, 6 + grad * 4));
-        ctx.beginPath();
-        ctx.arc(x, baseY + yOffset, r, 0, Math.PI * 2);
-        ctx.fillStyle = mode.color;
-        ctx.globalAlpha = 0.3 + Math.min(0.7, grad / 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = mode.color;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // 连接线
-        if (L < layers) {
-          ctx.beginPath();
-          ctx.moveTo(x + r, baseY + yOffset);
-          ctx.lineTo(x + layerW - r, baseY + yOffset);
-          ctx.strokeStyle = mode.color;
-          ctx.lineWidth = Math.max(0.5, grad * 1.5);
-          ctx.globalAlpha = 0.3 + Math.min(0.5, grad);
-          ctx.stroke();
-          ctx.globalAlpha = 1;
-        }
-
-        // 脉冲动画
-        var pulse = Math.sin(t * 0.05 + L * 0.5 + m) * 0.3 + 0.7;
-        if (mode.type === 'healthy') {
-          ctx.beginPath();
-          ctx.arc(x, baseY + yOffset, r * pulse, 0, Math.PI * 2);
-          ctx.strokeStyle = mode.color;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
-      }
-    }
-
-    // 底部说明
-    ctx.fillStyle = '#6C7A89';
-    ctx.font = '12px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('Layer 0 (Input) → Layer 10 (Output)   圆大小 = 梯度相对强度   线粗细 = 信号强度', W/2, H - 12);
-
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
-    requestAnimationFrame(draw);
-  }
-  draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
-}
-
-// ================================================================
-// 动态演示：BatchNorm (Canvas 2D)
-// ================================================================
-function initBNDemo() {
-  var canvas = document.getElementById('canvas-bn-demo');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-bn-demo', _state);
-
-  function generateData(mu, sigma, n) {
-    var arr = [];
-    for (var i = 0; i < n; i++) {
-      var u = 0, v = 0;
-      while(u === 0) u = Math.random();
-      while(v === 0) v = Math.random();
-      arr.push(mu + sigma * Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v));
-    }
-    return arr;
-  }
-
-  function drawHist(data, x0, y0, w, h, color, title) {
-    var bins = 20;
-    var min = -3, max = 3;
-    var counts = new Array(bins).fill(0);
-    for (var i = 0; i < data.length; i++) {
-      var idx = Math.floor((data[i] - min) / (max - min) * bins);
-      if (idx >= 0 && idx < bins) counts[idx]++;
-    }
-    var maxCount = Math.max.apply(null, counts);
-
-    ctx.fillStyle = '#4A4A4A';
-    ctx.font = '11px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText(title, x0 + w/2, y0 - 5);
-
-    for (var i = 0; i < bins; i++) {
-      var bh = (counts[i] / maxCount) * h * 0.85;
-      ctx.fillStyle = color;
-      ctx.globalAlpha = 0.7;
-      ctx.fillRect(x0 + i * (w/bins), y0 + h - bh, w/bins - 1, bh);
-      ctx.globalAlpha = 1;
-    }
-    // 轴线
-    ctx.strokeStyle = '#B0B0B0';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x0, y0 + h); ctx.lineTo(x0 + w, y0 + h); ctx.stroke();
-  }
-
-  function draw() {
-    if (!running) return;
-    ctx.clearRect(0, 0, W, H);
-
-    // 漂移的mu
-    var mu = Math.sin(t * 0.02) * 1.5;
-    var sigma = 0.8 + Math.sin(t * 0.03) * 0.3;
-
-    var raw = generateData(mu, sigma, 500);
-    var normalized = raw.map(function(v) { return (v - mu) / (sigma + 0.01); });
-
-    // 标题
-    ctx.fillStyle = '#2D3436';
-    ctx.font = 'bold 15px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('BatchNorm 实时演示', W/2, 22);
-    ctx.fillStyle = '#6C7A89';
-    ctx.font = '12px Microsoft YaHei';
-    ctx.fillText('Epoch ' + Math.floor(t/3) + '  |  原始分布 μ=' + mu.toFixed(2) + ' σ=' + sigma.toFixed(2), W/2, 40);
-
-    // 左侧：原始分布
-    drawHist(raw, 60, 60, 260, 180, '#CC8888', '原始分布 (漂移中)');
-
-    // 箭头
-    ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 14px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('→', 350, 165);
-    ctx.font = '11px Microsoft YaHei';
-    ctx.fillText('μ_B, σ_B', 350, 180);
-    ctx.fillText('x̂=(x-μ)/σ', 350, 195);
-
-    // 右侧：归一化后
-    drawHist(normalized, 390, 60, 260, 180, '#8FB996', 'BatchNorm后 (稳定)');
-
-    // 底部公式
-    ctx.fillStyle = '#4A4A4A';
-    ctx.font = '11px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('y = γ · x̂ + β    (γ, β 可学习，让网络决定恢复多少原始分布)', W/2, H - 18);
-
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
-    requestAnimationFrame(draw);
-  }
-  draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
-}
-
-
 
 // ================================================================
 // Interactive Canvas Demo Framework
@@ -9365,1068 +8976,6 @@ function updateDemoInfo(cid, text) {
   if (info) info.textContent = text;
 }
 
-
-// ================================================================
-// Three.js 3D Visualization Components
-// ================================================================
-var _threeScenes = {};
-
-function initThreeViz(containerId, canvasId, setupFn) {
-  var container = document.getElementById(containerId);
-  var canvas = document.getElementById(canvasId);
-  if (!container || !canvas || typeof THREE === 'undefined') return;
-  
-  var W = container.clientWidth;
-  var H = container.clientHeight;
-  
-  var scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xfaf8f5);
-  
-  var camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 1000);
-  camera.position.set(5, 4, 6);
-  camera.lookAt(0, 0, 0);
-  
-  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-  renderer.setSize(W, H);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  
-  var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-  scene.add(ambientLight);
-  var dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-  dirLight.position.set(5, 8, 5);
-  scene.add(dirLight);
-  
-  var state = { running: true, speed: 0.5, rotY: 0, mouseDown: false, mouseX: 0, mouseY: 0, camAngle: 0.8, camHeight: 3, camRadius: 7 };
-  
-  // 鼠标交互
-  canvas.addEventListener('mousedown', function(e) { state.mouseDown = true; state.mouseX = e.clientX; state.mouseY = e.clientY; });
-  window.addEventListener('mouseup', function() { state.mouseDown = false; });
-  canvas.addEventListener('mousemove', function(e) {
-    if (!state.mouseDown) return;
-    var dx = e.clientX - state.mouseX;
-    var dy = e.clientY - state.mouseY;
-    state.camAngle -= dx * 0.01;
-    state.camHeight = Math.max(0.5, Math.min(8, state.camHeight + dy * 0.02));
-    state.mouseX = e.clientX;
-    state.mouseY = e.clientY;
-  });
-  canvas.addEventListener('wheel', function(e) {
-    e.preventDefault();
-    state.camRadius = Math.max(3, Math.min(15, state.camRadius + e.deltaY * 0.01));
-  });
-  
-  setupFn(scene, state);
-  
-  function animate() {
-    requestAnimationFrame(animate);
-    if (!state.running) return;
-    state.rotY += state.speed * 0.01;
-    camera.position.x = Math.cos(state.camAngle) * state.camRadius;
-    camera.position.z = Math.sin(state.camAngle) * state.camRadius;
-    camera.position.y = state.camHeight;
-    camera.lookAt(0, 0, 0);
-    if (state.onAnimate) state.onAnimate(scene, state);
-    renderer.render(scene, camera);
-  }
-  animate();
-  
-  _threeScenes[containerId] = state;
-  
-  window.addEventListener('resize', function() {
-    var w = container.clientWidth, h = container.clientHeight;
-    camera.aspect = w/h;
-    camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
-  });
-}
-
-function toggleThreeAnim(key) {
-  var st = _threeScenes['three-' + key + '-container'];
-  if (st) { st.running = !st.running; }
-}
-function setThreeSpeed(key, val) {
-  var st = _threeScenes['three-' + key + '-container'];
-  if (st) { st.speed = parseFloat(val); }
-  var lbl = document.getElementById('three-' + key + '-speed-lbl');
-  if (lbl) lbl.textContent = parseFloat(val).toFixed(1);
-}
-
-// --- 3D 频谱表面 ---
-function setupFreq3D(scene, state) {
-  var geometry = new THREE.PlaneGeometry(6, 6, 32, 32);
-  var material = new THREE.MeshPhongMaterial({
-    color: 0x8B7E74, side: THREE.DoubleSide, flatShading: true,
-    shininess: 30, transparent: true, opacity: 0.85
-  });
-  var mesh = new THREE.Mesh(geometry, material);
-  mesh.rotation.x = -Math.PI/2;
-  scene.add(mesh);
-  
-  // 低频区域（中心高台）
-  var lowFreqGeo = new THREE.CylinderGeometry(1.2, 1.4, 0.8, 32);
-  var lowFreqMat = new THREE.MeshPhongMaterial({ color: 0x7BA7CC, transparent: true, opacity: 0.7 });
-  var lowFreq = new THREE.Mesh(lowFreqGeo, lowFreqMat);
-  lowFreq.position.set(0, 0.4, 0);
-  scene.add(lowFreq);
-  
-  // 高频区域（周围尖峰）
-  for (var i = 0; i < 12; i++) {
-    var angle = (i / 12) * Math.PI * 2;
-    var h = 0.3 + Math.random() * 0.8;
-    var spikeGeo = new THREE.ConeGeometry(0.15, h, 8);
-    var spikeMat = new THREE.MeshPhongMaterial({ color: 0xCC8888, transparent: true, opacity: 0.7 });
-    var spike = new THREE.Mesh(spikeGeo, spikeMat);
-    spike.position.set(Math.cos(angle) * 2.2, h/2, Math.sin(angle) * 2.2);
-    scene.add(spike);
-  }
-  
-  // 网格线
-  var grid = new THREE.GridHelper(8, 16, 0xccc8c3, 0xe8e4df);
-  grid.position.y = -0.01;
-  scene.add(grid);
-  
-  state.onAnimate = function(s, st) {
-    // 低频区域脉动
-    var pulse = 1 + Math.sin(Date.now() * 0.002) * 0.1;
-    lowFreq.scale.set(pulse, 1, pulse);
-  };
-}
-
-// --- 3D 注意力矩阵 Q/K/V ---
-function setupAttn3D(scene, state) {
-  var boxSize = 0.6;
-  var gap = 0.15;
-  var colors = [0x6366f1, 0x7BA7CC, 0xCC8888];
-  var labels = ['Q (Query)', 'K (Key)', 'V (Value)'];
-  
-  for (var m = 0; m < 3; m++) {
-    var group = new THREE.Group();
-    for (var i = 0; i < 4; i++) {
-      for (var j = 0; j < 4; j++) {
-        var h = 0.1 + Math.random() * 0.6;
-        var geo = new THREE.BoxGeometry(boxSize, h, boxSize);
-        var mat = new THREE.MeshPhongMaterial({ color: colors[m], transparent: true, opacity: 0.75 });
-        var cube = new THREE.Mesh(geo, mat);
-        cube.position.set((i - 1.5) * (boxSize + gap), h/2, (j - 1.5) * (boxSize + gap));
-        group.add(cube);
-      }
-    }
-    group.position.set((m - 1) * 3.5, 0, 0);
-    scene.add(group);
-    
-    // 标签（简单小球表示）
-    var labelGeo = new THREE.SphereGeometry(0.15, 16, 16);
-    var labelMat = new THREE.MeshBasicMaterial({ color: colors[m] });
-    var labelSphere = new THREE.Mesh(labelGeo, labelMat);
-    labelSphere.position.set((m - 1) * 3.5, 1.2, 0);
-    scene.add(labelSphere);
-  }
-  
-  // 连接线
-  var lineMat = new THREE.LineBasicMaterial({ color: 0xD4A574, transparent: true, opacity: 0.4 });
-  for (var m = 0; m < 2; m++) {
-    var pts = [new THREE.Vector3((m - 1) * 3.5 + 1.2, 0.5, 0), new THREE.Vector3((m) * 3.5 - 1.2, 0.5, 0)];
-    var lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
-    scene.add(new THREE.Line(lineGeo, lineMat));
-  }
-  
-  state.onAnimate = function(s, st) {
-    // 矩阵块高度脉动
-    s.traverse(function(obj) {
-      if (obj.isMesh && obj.geometry.type === 'BoxGeometry') {
-        var origH = obj.userData.origH || obj.geometry.parameters.height;
-        obj.userData.origH = origH;
-        var newH = origH * (0.85 + 0.15 * Math.sin(Date.now() * 0.003 + obj.position.x));
-        obj.scale.y = newH / origH;
-        obj.position.y = newH / 2;
-      }
-    });
-  };
-}
-
-// --- 3D SE 通道权重柱状图 ---
-function setupSE3D(scene, state) {
-  var numChannels = 8;
-  var barW = 0.5;
-  var gap = 0.2;
-  var colors = [0x6366f1, 0x8FB996, 0xCC8888, 0xD4A574, 0x7BA7CC, 0xA890C0, 0xB0B0B0, 0x6366f1];
-  
-  for (var i = 0; i < numChannels; i++) {
-    var h = 0.3 + Math.random() * 1.5;
-    var geo = new THREE.BoxGeometry(barW, h, barW);
-    var mat = new THREE.MeshPhongMaterial({ color: colors[i], transparent: true, opacity: 0.8 });
-    var bar = new THREE.Mesh(geo, mat);
-    bar.position.set((i - numChannels/2 + 0.5) * (barW + gap), h/2, 0);
-    bar.userData = { channel: i, origH: h };
-    scene.add(bar);
-  }
-  
-  // 基座
-  var baseGeo = new THREE.BoxGeometry(numChannels * (barW + gap) + 0.5, 0.05, barW + 0.5);
-  var baseMat = new THREE.MeshPhongMaterial({ color: 0xe8e4df });
-  var base = new THREE.Mesh(baseGeo, baseMat);
-  base.position.set(0, 0.025, 0);
-  scene.add(base);
-  
-  state.onAnimate = function(s, st) {
-    s.traverse(function(obj) {
-      if (obj.isMesh && obj.userData.channel !== undefined) {
-        var ch = obj.userData.channel;
-        var w = 0.3 + 0.5 * Math.abs(Math.sin(Date.now() * 0.002 + ch * 0.8));
-        var newH = obj.userData.origH * (0.5 + 0.5 * w);
-        obj.scale.y = newH / obj.userData.origH;
-        obj.position.y = newH / 2;
-      }
-    });
-  };
-}
-
-// 初始化所有 Three.js 可视化
-function initAllThreeViz() {
-  setTimeout(function() {
-    initThreeViz('three-freq-container', 'three-freq-canvas', setupFreq3D);
-  }, 600);
-  setTimeout(function() {
-    initThreeViz('three-attn-container', 'three-attn-canvas', setupAttn3D);
-  }, 900);
-  setTimeout(function() {
-    initThreeViz('three-se-container', 'three-se-canvas', setupSE3D);
-  }, 1200);
-}
-
-// ================================================================
-// 动态演示：频域分解 (Canvas 2D + requestAnimationFrame)
-// ================================================================
-function initFreqDemo() {
-  var canvas = document.getElementById('canvas-freq-demo');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-freq-demo', _state);
-
-  function draw() {
-    if (!running) return;
-    ctx.clearRect(0, 0, W, H);
-    var cellW = (W - 40) / 3;
-    var cellH = H - 50;
-    var labels = ['原图（空间域）', '低频分量（大色块）', '高频分量（细节）'];
-    var colors = ['#6366f1', '#7BA7CC', '#CC8888'];
-
-    for (var i = 0; i < 3; i++) {
-      var x0 = 20 + i * cellW;
-      ctx.strokeStyle = colors[i];
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x0 + 5, 15, cellW - 15, cellH);
-      ctx.fillStyle = colors[i];
-      ctx.font = 'bold 13px Microsoft YaHei';
-      ctx.textAlign = 'center';
-      ctx.fillText(labels[i], x0 + (cellW - 5) / 2 + 5, H - 20);
-      var cx = x0 + (cellW - 5) / 2 + 5;
-      var cy = 15 + cellH / 2;
-      if (i === 0) {
-        ctx.fillStyle = '#D4C5A0';
-        ctx.fillRect(x0 + 15, 25, cellW - 25, cellH - 20);
-        for (var s = 0; s < 8; s++) {
-          var sy = 30 + s * (cellH - 30) / 8;
-          ctx.strokeStyle = 'rgba(100,80,60,' + (0.3 + 0.1 * Math.sin(t * 0.05 + s)) + ')';
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.moveTo(x0 + 15, sy);
-          ctx.lineTo(x0 + cellW - 15, sy);
-          ctx.stroke();
-        }
-        ctx.strokeStyle = '#5A4030';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x0 + 25, 30, 30, 25);
-      } else if (i === 1) {
-        ctx.fillStyle = '#D4C5A0';
-        ctx.fillRect(x0 + 15, 25, cellW - 25, cellH - 20);
-        ctx.fillStyle = '#C0A878';
-        ctx.fillRect(x0 + 25, 30, 30, 25);
-        ctx.fillStyle = 'rgba(200,180,140,0.8)';
-        ctx.font = '12px Microsoft YaHei';
-        ctx.textAlign = 'center';
-        ctx.fillText('平滑区域', cx, cy + 5);
-      } else {
-        ctx.fillStyle = '#f5f0eb';
-        ctx.fillRect(x0 + 15, 25, cellW - 25, cellH - 20);
-        ctx.strokeStyle = '#CC8888';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x0 + 25, 30, 30, 25);
-        for (var s = 0; s < 6; s++) {
-          var sy = 55 + s * 12;
-          var alpha = 0.4 + 0.3 * Math.sin(t * 0.08 + s * 0.5);
-          ctx.strokeStyle = 'rgba(200,100,80,' + alpha + ')';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(x0 + 15, sy);
-          ctx.lineTo(x0 + cellW - 15, sy);
-          ctx.stroke();
-        }
-      }
-      if (i < 2) {
-        ctx.strokeStyle = '#D4A574';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x0 + cellW - 12, cy);
-        ctx.lineTo(x0 + cellW - 2, cy);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x0 + cellW - 6, cy - 4);
-        ctx.lineTo(x0 + cellW - 2, cy);
-        ctx.lineTo(x0 + cellW - 6, cy + 4);
-        ctx.stroke();
-      }
-    }
-    ctx.fillStyle = '#8B7E74';
-    ctx.font = '12px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('FFT分解：原图 = 低频（背景色块）+ 高频（边缘纹理）', W / 2, H - 5);
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
-    requestAnimationFrame(draw);
-  }
-  draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
-}
-
-// ================================================================
-// 动态演示：陷波/带阻滤波器 (Canvas 2D)
-// ================================================================
-function initNotchDemo() {
-  var canvas = document.getElementById('canvas-notch-demo');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-notch-demo', _state);
-
-  function draw() {
-    if (!running) return;
-    ctx.clearRect(0, 0, W, H);
-    var cellW = (W - 40) / 2;
-    var cellH = H - 60;
-    var panels = [
-      { title: '陷波滤波器 (Notch)', x: 20, type: 'notch', color: '#CC8888' },
-      { title: '带阻滤波器 (Band-Stop)', x: 20 + cellW + 10, type: 'band', color: '#7BA7CC' }
-    ];
-    for (var p = 0; p < 2; p++) {
-      var pnl = panels[p];
-      var px = pnl.x;
-      ctx.fillStyle = '#f5f0eb';
-      ctx.fillRect(px, 15, cellW, cellH);
-      ctx.strokeStyle = pnl.color;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(px, 15, cellW, cellH);
-      ctx.fillStyle = pnl.color;
-      ctx.font = 'bold 13px Microsoft YaHei';
-      ctx.textAlign = 'center';
-      ctx.fillText(pnl.title, px + cellW / 2, 12);
-      var cx = px + cellW / 2;
-      var cy = 15 + cellH / 2;
-      var maxR = Math.min(cellW, cellH) / 2 - 10;
-      for (var r = maxR; r > 0; r -= 2) {
-        var brightness = 180 - r * 1.5;
-        ctx.fillStyle = 'rgb(' + brightness + ',' + (brightness + 10) + ',' + (brightness + 20) + ')';
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      var pulse = 0.7 + 0.3 * Math.sin(t * 0.05);
-      if (pnl.type === 'notch') {
-        var notchAngle = t * 0.02;
-        for (var n = 0; n < 2; n++) {
-          var nx = cx + Math.cos(notchAngle + n * Math.PI) * maxR * 0.6;
-          var ny = cy + Math.sin(notchAngle + n * Math.PI) * maxR * 0.6;
-          ctx.fillStyle = 'rgba(200,80,80,' + pulse + ')';
-          ctx.beginPath();
-          ctx.arc(nx, ny, 8, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = '#CC4444';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(nx, ny, 8, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        ctx.fillStyle = '#4A4A4A';
-        ctx.font = '11px Microsoft YaHei';
-        ctx.textAlign = 'center';
-        ctx.fillText('精准挖掉特定频率点', cx, cy + maxR + 15);
-      } else {
-        var bandR = maxR * 0.5;
-        var bandW = 15 + 5 * Math.sin(t * 0.03);
-        ctx.strokeStyle = 'rgba(80,120,200,' + pulse + ')';
-        ctx.lineWidth = bandW;
-        ctx.beginPath();
-        ctx.arc(cx, cy, bandR, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.strokeStyle = '#3B6BA5';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([4, 3]);
-        ctx.beginPath();
-        ctx.arc(cx, cy, bandR + bandW / 2, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(cx, cy, bandR - bandW / 2, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = '#4A4A4A';
-        ctx.font = '11px Microsoft YaHei';
-        ctx.textAlign = 'center';
-        ctx.fillText('挡掉一整段频率范围', cx, cy + maxR + 15);
-      }
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(cx, cy, 3, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.fillStyle = '#8B7E74';
-    ctx.font = '12px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('频谱中心=低频，边缘=高频。红色=被滤除的频率', W / 2, H - 5);
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
-    requestAnimationFrame(draw);
-  }
-  draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
-}
-
-// ================================================================
-// 动态演示：小波多级分解 (Canvas 2D)
-// ================================================================
-function initWaveletDemo() {
-  var canvas = document.getElementById('canvas-wavelet-demo');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-wavelet-demo', _state);
-
-  function draw() {
-    if (!running) return;
-    ctx.clearRect(0, 0, W, H);
-    var phase = Math.floor(t / 80) % 4;
-    var fade = (t % 80) / 80;
-    var x0 = 30, y0 = 20, s0 = 180;
-    if (phase === 0) { ctx.globalAlpha = 1; } else { ctx.globalAlpha = 0.3; }
-    ctx.fillStyle = '#D4C5A0';
-    ctx.fillRect(x0, y0, s0, s0);
-    ctx.strokeStyle = '#6366f1';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x0, y0, s0, s0);
-    ctx.fillStyle = '#6366f1';
-    ctx.font = 'bold 13px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('原图', x0 + s0 / 2, y0 - 5);
-    ctx.globalAlpha = 1;
-    if (phase >= 1) {
-      var x1 = x0 + s0 + 30, y1 = y0, s1 = s0 / 2;
-      var alpha1 = phase === 1 ? Math.min(fade * 2, 1) : 1;
-      var subbands1 = [
-        { name: 'LL', x: x1, y: y1, color: '#8FB996', desc: '低频近似' },
-        { name: 'LH', x: x1 + s1, y: y1, color: '#7BA7CC', desc: '水平细节' },
-        { name: 'HL', x: x1, y: y1 + s1, color: '#D4A574', desc: '垂直细节' },
-        { name: 'HH', x: x1 + s1, y: y1 + s1, color: '#CC8888', desc: '对角细节' }
-      ];
-      for (var i = 0; i < 4; i++) {
-        var sb = subbands1[i];
-        ctx.globalAlpha = alpha1;
-        ctx.fillStyle = sb.color;
-        ctx.fillRect(sb.x, sb.y, s1, s1);
-        ctx.strokeStyle = '#555';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(sb.x, sb.y, s1, s1);
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 14px Microsoft YaHei';
-        ctx.textAlign = 'center';
-        ctx.fillText(sb.name, sb.x + s1 / 2, sb.y + s1 / 2 + 4);
-        ctx.font = '11px Microsoft YaHei';
-        ctx.fillText(sb.desc, sb.x + s1 / 2, sb.y + s1 - 5);
-      }
-      ctx.globalAlpha = 1;
-      if (phase === 1) {
-        ctx.strokeStyle = 'rgba(212,165,116,' + alpha1 + ')';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x0 + s0 + 5, y0 + s0 / 2);
-        ctx.lineTo(x1 - 5, y0 + s0 / 2);
-        ctx.stroke();
-      }
-    }
-    if (phase >= 2) {
-      var x2 = x1 + s0 + 30, y2 = y1, s2 = s1 / 2;
-      var alpha2 = phase === 2 ? Math.min(fade * 2, 1) : 1;
-      var subbands2 = [
-        { name: 'LL\u2082', x: x2, y: y2, color: '#6B9E72', desc: '更低频' },
-        { name: 'LH\u2082', x: x2 + s2, y: y2, color: '#6B97B8', desc: '水平\u2082' },
-        { name: 'HL\u2082', x: x2, y: y2 + s2, color: '#C49560', desc: '垂直\u2082' },
-        { name: 'HH\u2082', x: x2 + s2, y: y2 + s2, color: '#B87878', desc: '对角\u2082' }
-      ];
-      for (var i = 0; i < 4; i++) {
-        var sb = subbands2[i];
-        ctx.globalAlpha = alpha2;
-        ctx.fillStyle = sb.color;
-        ctx.fillRect(sb.x, sb.y, s2, s2);
-        ctx.strokeStyle = '#555';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(sb.x, sb.y, s2, s2);
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 12px Microsoft YaHei';
-        ctx.textAlign = 'center';
-        ctx.fillText(sb.name, sb.x + s2 / 2, sb.y + s2 / 2 + 3);
-      }
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = 'rgba(212,165,116,' + alpha2 + ')';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(x1 + s1 + 5, y1 + s1 / 2);
-      ctx.lineTo(x2 - 5, y1 + s1 / 2);
-      ctx.stroke();
-    }
-    var phaseLabels = ['Step 1: 原图', 'Step 2: 一级分解 -> 4子带', 'Step 3: LL继续分解', 'Step 4: 多分辨率金字塔完成'];
-    ctx.fillStyle = '#D4A574';
-    ctx.font = 'bold 13px Microsoft YaHei';
-    ctx.textAlign = 'left';
-    ctx.fillText(phaseLabels[phase], 30, H - 15);
-    var progressW = 200;
-    var progressX = W - progressW - 30;
-    ctx.fillStyle = '#e8e4df';
-    ctx.fillRect(progressX, H - 22, progressW, 6);
-    ctx.fillStyle = '#D4A574';
-    ctx.fillRect(progressX, H - 22, progressW * ((t % 320) / 320), 6);
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
-    requestAnimationFrame(draw);
-  }
-  draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
-}
-
-// ================================================================
-// 动态演示：稀疏编码 (Canvas 2D)
-// ================================================================
-function initSparseDemo() {
-  var canvas = document.getElementById('canvas-sparse-demo');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-sparse-demo', _state);
-  var atoms = [];
-  for (var i = 0; i < 8; i++) {
-    atoms.push({ active: false, weight: 0, targetWeight: 0 });
-  }
-  function draw() {
-    if (!running) return;
-    ctx.clearRect(0, 0, W, H);
-    var cycle = Math.floor(t / 120) % 3;
-    if (t % 120 === 0) {
-      for (var i = 0; i < atoms.length; i++) {
-        if (Math.random() < 0.35) {
-          atoms[i].active = true;
-          atoms[i].targetWeight = 0.3 + Math.random() * 0.7;
-        } else {
-          atoms[i].active = false;
-          atoms[i].targetWeight = 0;
-        }
-      }
-    }
-    for (var i = 0; i < atoms.length; i++) {
-      atoms[i].weight += (atoms[i].targetWeight - atoms[i].weight) * 0.08;
-    }
-    var atomSize = 36;
-    var atomCols = 4;
-    var atomStartX = 30;
-    var atomStartY = 30;
-    ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 12px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('过完备字典 D', atomStartX + atomCols * atomSize / 2, 20);
-    for (var i = 0; i < atoms.length; i++) {
-      var col = i % atomCols;
-      var row = Math.floor(i / atomCols);
-      var ax = atomStartX + col * (atomSize + 4);
-      var ay = atomStartY + row * (atomSize + 4);
-      ctx.fillStyle = atoms[i].weight > 0.05 ? 'rgba(143,185,150,' + atoms[i].weight + ')' : '#e8e4df';
-      ctx.fillRect(ax, ay, atomSize, atomSize);
-      ctx.strokeStyle = atoms[i].weight > 0.05 ? '#10b981' : '#ccc';
-      ctx.lineWidth = atoms[i].weight > 0.05 ? 2 : 1;
-      ctx.strokeRect(ax, ay, atomSize, atomSize);
-      ctx.fillStyle = atoms[i].weight > 0.05 ? '#fff' : '#aaa';
-      ctx.font = '11px Microsoft YaHei';
-      ctx.fillText('d' + (i + 1), ax + atomSize / 2, ay + atomSize / 2 + 3);
-      if (atoms[i].weight > 0.05) {
-        ctx.fillStyle = '#10b981';
-        ctx.fillRect(ax, ay + atomSize - 3, atomSize * atoms[i].weight, 3);
-      }
-    }
-    var coefX = atomStartX + atomCols * (atomSize + 4) + 30;
-    var coefY = 30;
-    var coefH = 18;
-    ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 12px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('稀疏系数 \u03b1', coefX + 30, 20);
-    for (var i = 0; i < atoms.length; i++) {
-      var cy = coefY + i * (coefH + 2);
-      ctx.fillStyle = '#e8e4df';
-      ctx.fillRect(coefX, cy, 60, coefH);
-      if (atoms[i].weight > 0.05) {
-        ctx.fillStyle = 'rgba(99,102,241,' + atoms[i].weight + ')';
-        ctx.fillRect(coefX, cy, 60 * atoms[i].weight, coefH);
-      }
-      ctx.strokeStyle = '#ccc';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(coefX, cy, 60, coefH);
-      ctx.fillStyle = '#4A4A4A';
-      ctx.font = '11px Microsoft YaHei';
-      ctx.textAlign = 'left';
-      ctx.fillText('\u03b1' + (i + 1) + '=' + atoms[i].weight.toFixed(2), coefX + 4, cy + 12);
-    }
-    var resultX = coefX + 90;
-    var resultY = 30;
-    var resultSize = 80;
-    ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 12px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('重构信号 y=D\u03b1', resultX + resultSize / 2, 20);
-    ctx.fillStyle = '#f5f0eb';
-    ctx.fillRect(resultX, resultY, resultSize, resultSize);
-    ctx.strokeStyle = '#6366f1';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(resultX, resultY, resultSize, resultSize);
-    var totalWeight = 0;
-    for (var i = 0; i < atoms.length; i++) totalWeight += atoms[i].weight;
-    if (totalWeight > 0.1) {
-      for (var i = 0; i < atoms.length; i++) {
-        if (atoms[i].weight > 0.05) {
-          var alpha = atoms[i].weight / totalWeight;
-          ctx.fillStyle = 'rgba(99,102,241,' + (alpha * 0.5) + ')';
-          var px = resultX + 10 + (i % 3) * 22;
-          var py = resultY + 10 + Math.floor(i / 3) * 22;
-          ctx.fillRect(px, py, 18, 18);
-        }
-      }
-    }
-    ctx.strokeStyle = '#D4A574';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(coefX - 15, 30 + 4 * (coefH + 2));
-    ctx.lineTo(coefX - 2, 30 + 4 * (coefH + 2));
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(coefX + 62, 30 + 4 * (coefH + 2));
-    ctx.lineTo(resultX - 5, 30 + 4 * (coefH + 2));
-    ctx.stroke();
-    var phaseLabels = ['选择少量原子（大多数\u03b1=0）', '非零系数加权组合', '稀疏重构完成'];
-    ctx.fillStyle = '#D4A574';
-    ctx.font = 'bold 12px Microsoft YaHei';
-    ctx.textAlign = 'left';
-    ctx.fillText(phaseLabels[cycle], 30, H - 10);
-    var nonzero = 0;
-    for (var i = 0; i < atoms.length; i++) { if (atoms[i].weight > 0.05) nonzero++; }
-    ctx.fillStyle = '#8B7E74';
-    ctx.textAlign = 'right';
-    ctx.fillText('稀疏度: ' + nonzero + '/' + atoms.length + ' 非零 (' + Math.round(nonzero / atoms.length * 100) + '%)', W - 30, H - 10);
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
-    requestAnimationFrame(draw);
-  }
-  draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
-}
-
-// ================================================================
-// 动态演示：反向传播链式法则 (Canvas 2D)
-// ================================================================
-function initBackpropDemo() {
-  var canvas = document.getElementById('canvas-backprop-demo');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-backprop-demo', _state);
-
-  function draw() {
-    if (!running) return;
-    ctx.clearRect(0, 0, W, H);
-    var layers = [3, 4, 4, 2];
-    var layerNames = ['输入层', '隐藏层1', '隐藏层2', '输出层'];
-    var layerSpacing = (W - 120) / (layers.length - 1);
-    var startX = 60;
-    var centerY = H / 2 - 10;
-    var phase = Math.floor(t / 100) % 2;
-    var progress = (t % 100) / 100;
-    for (var L = 0; L < layers.length - 1; L++) {
-      var x1 = startX + L * layerSpacing;
-      var x2 = startX + (L + 1) * layerSpacing;
-      for (var i = 0; i < layers[L]; i++) {
-        for (var j = 0; j < layers[L + 1]; j++) {
-          var y1 = centerY - (layers[L] - 1) * 25 + i * 50;
-          var y2 = centerY - (layers[L + 1] - 1) * 25 + j * 50;
-          if (phase === 0) {
-            var lineProgress = Math.max(0, Math.min(1, progress * (layers.length - 1) - L));
-            ctx.strokeStyle = 'rgba(99,102,241,' + (0.1 + lineProgress * 0.5) + ')';
-          } else {
-            var revL = layers.length - 2 - L;
-            var lineProgress = Math.max(0, Math.min(1, progress * (layers.length - 1) - revL));
-            ctx.strokeStyle = 'rgba(204,80,80,' + (0.1 + lineProgress * 0.5) + ')';
-          }
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
-          ctx.stroke();
-        }
-      }
-    }
-    for (var L = 0; L < layers.length; L++) {
-      var x = startX + L * layerSpacing;
-      for (var i = 0; i < layers[L]; i++) {
-        var y = centerY - (layers[L] - 1) * 25 + i * 50;
-        var activation = 0;
-        if (phase === 0) { activation = Math.max(0, Math.min(1, progress * (layers.length) - L)); }
-        else { var revL = layers.length - 1 - L; activation = Math.max(0, Math.min(1, progress * (layers.length) - revL)); }
-        var r = 10 + activation * 4;
-        var color = phase === 0 ? '99,102,241' : '204,80,80';
-        ctx.fillStyle = 'rgba(' + color + ',' + (0.3 + activation * 0.7) + ')';
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = phase === 0 ? '#6366f1' : '#CC5050';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-      ctx.fillStyle = '#4A4A4A';
-      ctx.font = 'bold 12px Microsoft YaHei';
-      ctx.textAlign = 'center';
-      ctx.fillText(layerNames[L], x, H - 30);
-    }
-    var arrowY = 20;
-    if (phase === 0) {
-      ctx.fillStyle = '#6366f1';
-      ctx.font = 'bold 13px Microsoft YaHei';
-      ctx.textAlign = 'center';
-      ctx.fillText('前向传播 ->', W / 2, arrowY);
-      var ax = startX + progress * (W - 120);
-      ctx.strokeStyle = '#6366f1';
-      ctx.beginPath();
-      ctx.moveTo(ax - 10, arrowY + 8);
-      ctx.lineTo(ax, arrowY + 8);
-      ctx.lineTo(ax - 5, arrowY + 4);
-      ctx.moveTo(ax, arrowY + 8);
-      ctx.lineTo(ax - 5, arrowY + 12);
-      ctx.stroke();
-    } else {
-      ctx.fillStyle = '#CC5050';
-      ctx.font = 'bold 13px Microsoft YaHei';
-      ctx.textAlign = 'center';
-      ctx.fillText('<- 反向传播（链式法则）', W / 2, arrowY);
-      var ax = W - 60 - progress * (W - 120);
-      ctx.strokeStyle = '#CC5050';
-      ctx.beginPath();
-      ctx.moveTo(ax + 10, arrowY + 8);
-      ctx.lineTo(ax, arrowY + 8);
-      ctx.lineTo(ax + 5, arrowY + 4);
-      ctx.moveTo(ax, arrowY + 8);
-      ctx.lineTo(ax + 5, arrowY + 12);
-      ctx.stroke();
-    }
-    ctx.fillStyle = '#8B7E74';
-    ctx.font = '12px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    if (phase === 0) { ctx.fillText('前向: z=wx+b -> a=\u03c3(z) -> 逐层传递到输出', W / 2, H - 10); }
-    else { ctx.fillText('反向: \u2202L/\u2202w = \u2202L/\u2202a \u00d7 \u2202a/\u2202z \u00d7 \u2202z/\u2202w（链式法则逐层回传）', W / 2, H - 10); }
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
-    requestAnimationFrame(draw);
-  }
-  draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
-}
-
-// ================================================================
-// 动态演示：自注意力QKV计算 (Canvas 2D)
-// ================================================================
-function initAttentionDemo() {
-  var canvas = document.getElementById('canvas-attention-demo');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-attention-demo', _state);
-
-  function draw() {
-    if (!running) return;
-    ctx.clearRect(0, 0, W, H);
-    var step = Math.floor(t / 90) % 4;
-    var fade = (t % 90) / 90;
-    var n = 4;
-    var cellSize = 28;
-    var matW = n * cellSize;
-    var visibleMats = [];
-    if (step === 0) {
-      visibleMats = [
-        { label: 'Q', color: '#6366f1', name: 'Query', showFade: 1 },
-        { label: 'K\u1d40', color: '#7BA7CC', name: 'Key转置', showFade: 1 },
-        { label: 'QK\u1d40', color: '#D4A574', name: '分数矩阵', showFade: fade }
-      ];
-    } else if (step === 1) {
-      visibleMats = [{ label: 'QK\u1d40/\u221adk', color: '#D4A574', name: '缩放后', showFade: 1 }];
-    } else if (step === 2) {
-      visibleMats = [{ label: 'softmax', color: '#8FB996', name: '归一化权重', showFade: 1 }];
-    } else {
-      visibleMats = [
-        { label: 'Attn', color: '#8FB996', name: '权重', showFade: 1 },
-        { label: 'V', color: '#CC8888', name: 'Value', showFade: 1 },
-        { label: 'Out', color: '#A890C0', name: '输出', showFade: fade }
-      ];
-    }
-    var scaledCell = Math.min(cellSize, (W - 60) / (visibleMats.length * n + visibleMats.length));
-    var scaledMat = n * scaledCell;
-    var startX = (W - (visibleMats.length * scaledMat + (visibleMats.length - 1) * 25)) / 2;
-    for (var m = 0; m < visibleMats.length; m++) {
-      var mat = visibleMats[m];
-      var mx = startX + m * (scaledMat + 25);
-      var my = 70;
-      var alpha = mat.showFade !== undefined ? mat.showFade : 1;
-      ctx.fillStyle = mat.color;
-      ctx.globalAlpha = alpha;
-      ctx.font = 'bold 14px Microsoft YaHei';
-      ctx.textAlign = 'center';
-      ctx.fillText(mat.label, mx + scaledMat / 2, my - 12);
-      ctx.font = '11px Microsoft YaHei';
-      ctx.fillStyle = '#8B7E74';
-      ctx.fillText(mat.name, mx + scaledMat / 2, my - 2);
-      for (var i = 0; i < n; i++) {
-        for (var j = 0; j < n; j++) {
-          var cx = mx + j * scaledCell;
-          var cy = my + i * scaledCell;
-          var val = 0;
-          if (mat.label === 'Q' || mat.label === 'K\u1d40' || mat.label === 'V') {
-            val = (Math.sin(i * 1.3 + j * 0.7 + m * 2) + 1) / 2;
-          } else if (mat.label === 'QK\u1d40' || mat.label === 'QK\u1d40/\u221adk') {
-            val = (Math.cos(i - j) + 1) / 2 * (0.3 + 0.7 * alpha);
-          } else if (mat.label === 'softmax' || mat.label === 'Attn') {
-            var rowSum = 0;
-            for (var k = 0; k < n; k++) { rowSum += Math.exp(Math.cos(i - k)); }
-            val = Math.exp(Math.cos(i - j)) / rowSum;
-          } else if (mat.label === 'Out') {
-            val = (Math.sin(i * 0.5 + j * 1.2) + 1) / 2 * alpha;
-          }
-          ctx.fillStyle = mat.color;
-          ctx.globalAlpha = val * alpha;
-          ctx.fillRect(cx, cy, scaledCell - 1, scaledCell - 1);
-          ctx.globalAlpha = alpha;
-          ctx.strokeStyle = '#ccc';
-          ctx.lineWidth = 0.5;
-          ctx.strokeRect(cx, cy, scaledCell - 1, scaledCell - 1);
-        }
-      }
-      ctx.globalAlpha = 1;
-    }
-    var stepLabels = ['Step 1: Q \u00d7 K\u1d40 -> 注意力分数矩阵', 'Step 2: \u00f7 \u221adk -> 缩放（防止梯度消失）', 'Step 3: softmax -> 归一化（每行和=1）', 'Step 4: 权重 \u00d7 V -> 加权提取信息'];
-    ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 15px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText(stepLabels[step], W / 2, 25);
-    var stepW = 100;
-    var stepStartX = (W - 4 * stepW) / 2;
-    for (var s = 0; s < 4; s++) {
-      ctx.fillStyle = s === step ? '#D4A574' : '#e8e4df';
-      ctx.fillRect(stepStartX + s * stepW, 38, stepW - 4, 6);
-      if (s === step) {
-        ctx.fillStyle = '#D4A574';
-        ctx.fillRect(stepStartX + s * stepW, 38, (stepW - 4) * fade, 6);
-      }
-    }
-    ctx.fillStyle = '#8B7E74';
-    ctx.font = '11px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('Attention(Q,K,V) = softmax(QK\u1d40/\u221adk)\u00b7V', W / 2, H - 15);
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
-    requestAnimationFrame(draw);
-  }
-  draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
-}
-
-// ================================================================
-// 动态演示：SE注意力 Squeeze-Excitation-Scale (Canvas 2D)
-// ================================================================
-function initSEDemo() {
-  var canvas = document.getElementById('canvas-se-demo');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-se-demo', _state);
-
-  function draw() {
-    if (!running) return;
-    ctx.clearRect(0, 0, W, H);
-    var phase = Math.floor(t / 100) % 3;
-    var fade = (t % 100) / 100;
-    var numChannels = 6;
-    var channelH = 20;
-    var channelW = 50;
-    var startX = 30;
-    var startY = 50;
-    var sqX = startX, sqY = startY;
-    ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 13px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('Squeeze', sqX + channelW / 2, sqY - 8);
-    ctx.font = '11px Microsoft YaHei';
-    ctx.fillStyle = '#8B7E74';
-    ctx.fillText('全局平均池化', sqX + channelW / 2, sqY - 22);
-    for (var c = 0; c < numChannels; c++) {
-      var cy = sqY + c * (channelH + 2);
-      var alpha = phase === 0 ? Math.min(1, fade * 2 - c * 0.1) : 1;
-      if (alpha < 0) alpha = 0;
-      ctx.fillStyle = 'rgba(99,102,241,' + (0.3 + alpha * 0.5) + ')';
-      ctx.fillRect(sqX, cy, channelW, channelH);
-      ctx.strokeStyle = '#6366f1';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(sqX, cy, channelW, channelH);
-      ctx.fillStyle = '#fff';
-      ctx.font = '11px Microsoft YaHei';
-      ctx.fillText('C' + (c + 1), sqX + channelW / 2, cy + channelH / 2 + 3);
-    }
-    var arrow1X = sqX + channelW + 5;
-    var arrow1Y = sqY + numChannels * (channelH + 2) / 2;
-    ctx.strokeStyle = '#D4A574';
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = phase >= 0 ? 1 : 0.3;
-    ctx.beginPath();
-    ctx.moveTo(arrow1X, arrow1Y);
-    ctx.lineTo(arrow1X + 25, arrow1Y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(arrow1X + 20, arrow1Y - 4);
-    ctx.lineTo(arrow1X + 25, arrow1Y);
-    ctx.lineTo(arrow1X + 20, arrow1Y + 4);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    var exX = sqX + channelW + 35, exY = sqY;
-    ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 13px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('Excitation', exX + channelW / 2, exY - 8);
-    ctx.font = '11px Microsoft YaHei';
-    ctx.fillStyle = '#8B7E74';
-    ctx.fillText('FC->ReLU->FC->\u03c3', exX + channelW / 2, exY - 22);
-    for (var c = 0; c < numChannels; c++) {
-      var cy = exY + c * (channelH + 2);
-      var weight = 0.3 + 0.5 * Math.abs(Math.sin(t * 0.03 + c * 0.8));
-      var alpha = phase === 1 ? Math.min(1, fade * 2 - c * 0.1) : (phase >= 1 ? 1 : 0.3);
-      if (alpha < 0) alpha = 0;
-      ctx.fillStyle = 'rgba(143,185,150,' + alpha + ')';
-      ctx.fillRect(exX, cy, channelW * weight, channelH);
-      ctx.fillStyle = 'rgba(200,200,200,' + alpha + ')';
-      ctx.fillRect(exX + channelW * weight, cy, channelW * (1 - weight), channelH);
-      ctx.strokeStyle = '#10b981';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(exX, cy, channelW, channelH);
-      ctx.fillStyle = '#4A4A4A';
-      ctx.font = '11px Microsoft YaHei';
-      ctx.textAlign = 'left';
-      ctx.fillText('w=' + weight.toFixed(2), exX + 4, cy + channelH / 2 + 3);
-    }
-    var arrow2X = exX + channelW + 5;
-    var arrow2Y = exY + numChannels * (channelH + 2) / 2;
-    ctx.strokeStyle = '#D4A574';
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = phase >= 1 ? 1 : 0.3;
-    ctx.beginPath();
-    ctx.moveTo(arrow2X, arrow2Y);
-    ctx.lineTo(arrow2X + 25, arrow2Y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(arrow2X + 20, arrow2Y - 4);
-    ctx.lineTo(arrow2X + 25, arrow2Y);
-    ctx.lineTo(arrow2X + 20, arrow2Y + 4);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    var scX = exX + channelW + 35, scY = sqY;
-    ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 13px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('Scale', scX + channelW / 2, scY - 8);
-    ctx.font = '11px Microsoft YaHei';
-    ctx.fillStyle = '#8B7E74';
-    ctx.fillText('通道加权', scX + channelW / 2, scY - 22);
-    for (var c = 0; c < numChannels; c++) {
-      var cy = scY + c * (channelH + 2);
-      var weight = 0.3 + 0.5 * Math.abs(Math.sin(t * 0.03 + c * 0.8));
-      var alpha = phase === 2 ? Math.min(1, fade * 2 - c * 0.1) : (phase >= 2 ? 1 : 0.3);
-      if (alpha < 0) alpha = 0;
-      ctx.fillStyle = 'rgba(204,136,136,' + (weight * alpha) + ')';
-      ctx.fillRect(scX, cy, channelW, channelH);
-      ctx.strokeStyle = '#CC8888';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(scX, cy, channelW, channelH);
-      ctx.fillStyle = '#fff';
-      ctx.font = '11px Microsoft YaHei';
-      ctx.textAlign = 'center';
-      ctx.fillText('\u00d7' + weight.toFixed(1), scX + channelW / 2, cy + channelH / 2 + 3);
-    }
-    var outX = scX + channelW + 35, outY = sqY;
-    ctx.fillStyle = '#4A4A4A';
-    ctx.font = 'bold 13px Microsoft YaHei';
-    ctx.textAlign = 'center';
-    ctx.fillText('输出', outX + channelW / 2, outY - 8);
-    for (var c = 0; c < numChannels; c++) {
-      var cy = outY + c * (channelH + 2);
-      var weight = 0.3 + 0.5 * Math.abs(Math.sin(t * 0.03 + c * 0.8));
-      ctx.fillStyle = 'rgba(168,144,192,' + weight + ')';
-      ctx.fillRect(outX, cy, channelW, channelH);
-      ctx.strokeStyle = '#A890C0';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(outX, cy, channelW, channelH);
-    }
-    var arrow3X = scX + channelW + 5;
-    var arrow3Y = scY + numChannels * (channelH + 2) / 2;
-    ctx.strokeStyle = '#D4A574';
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = phase >= 2 ? 1 : 0.3;
-    ctx.beginPath();
-    ctx.moveTo(arrow3X, arrow3Y);
-    ctx.lineTo(arrow3X + 25, arrow3Y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(arrow3X + 20, arrow3Y - 4);
-    ctx.lineTo(arrow3X + 25, arrow3Y);
-    ctx.lineTo(arrow3X + 20, arrow3Y + 4);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    var stepNames = ['Squeeze', 'Excitation', 'Scale'];
-    var stepColors = ['#6366f1', '#10b981', '#CC8888'];
-    var stepW = 120;
-    var stepStartX = (W - 3 * stepW) / 2;
-    for (var s = 0; s < 3; s++) {
-      ctx.fillStyle = s === phase ? stepColors[s] : '#e8e4df';
-      ctx.fillRect(stepStartX + s * stepW, H - 25, stepW - 4, 8);
-      if (s === phase) {
-        ctx.fillStyle = stepColors[s];
-        ctx.fillRect(stepStartX + s * stepW, H - 25, (stepW - 4) * fade, 8);
-      }
-      ctx.fillStyle = s === phase ? stepColors[s] : '#8B7E74';
-      ctx.font = 'bold 12px Microsoft YaHei';
-      ctx.textAlign = 'center';
-      ctx.fillText(stepNames[s], stepStartX + s * stepW + (stepW - 4) / 2, H - 8);
-    }
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
-    requestAnimationFrame(draw);
-  }
-  draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
-}
-
 // ================================================================
 // 小概念演示：感知机 (Canvas 2D)
 // ================================================================
@@ -10450,7 +8999,7 @@ function initPerceptronDemo() {
     var pulseT = (t % 60) / 60;
     for (var i = 0; i < inputs.length; i++) {
       var iy = 25 + i * 35;
-      ctx.fillStyle = '#7BA7CC';
+      ctx.fillStyle = '#38bdf8';
       ctx.beginPath();
       ctx.arc(inX, iy, 12, 0, Math.PI * 2);
       ctx.fill();
@@ -10479,7 +9028,7 @@ function initPerceptronDemo() {
       if (lineProgress > 0 && lineProgress < 1) {
         var px = inX + 12 + (neuronX - 18 - inX - 12) * lineProgress;
         var py = iy + (neuronY - iy) * lineProgress;
-        ctx.fillStyle = '#D4A574';
+        ctx.fillStyle = '#fbbf24';
         ctx.beginPath();
         ctx.arc(px, py, 3, 0, Math.PI * 2);
         ctx.fill();
@@ -10500,11 +9049,11 @@ function initPerceptronDemo() {
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 11px Microsoft YaHei';
     ctx.fillText('\u03a3->\u03c3', neuronX, neuronY + 3);
-    ctx.fillStyle = '#8FB996';
+    ctx.fillStyle = '#34d399';
     ctx.font = 'bold 12px Microsoft YaHei';
     ctx.textAlign = 'left';
     ctx.fillText('y=' + activated.toFixed(3), neuronX + 25, neuronY + 3);
-    ctx.fillStyle = '#8B7E74';
+    ctx.fillStyle = '#818cf8';
     ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('y = \u03c3(\u03a3 w\u1d62x\u1d62 + b)', W / 2, H - 5);
@@ -10531,13 +9080,13 @@ function initLossDemo() {
     ctx.clearRect(0, 0, W, H);
     var cellW = (W - 40) / 2;
     var labels = ['MSE Loss（碗形曲面）', 'Cross-Entropy Loss'];
-    var colors = ['#7BA7CC', '#CC8888'];
+    var colors = ['#7BA7CC', '#fb7185'];
     for (var p = 0; p < 2; p++) {
       var px = 20 + p * (cellW + 10);
       var py = 15;
       var pw = cellW - 10;
       var ph = H - 40;
-      ctx.fillStyle = '#faf8f5';
+      ctx.fillStyle = 'transparent';
       ctx.fillRect(px, py, pw, ph);
       ctx.strokeStyle = colors[p];
       ctx.lineWidth = 1.5;
@@ -10582,7 +9131,7 @@ function initLossDemo() {
       }
       ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = '#D4A574';
+      ctx.fillStyle = '#fbbf24';
       ctx.beginPath();
       ctx.arc(bx, by, 6, 0, Math.PI * 2);
       ctx.fill();
@@ -10594,7 +9143,7 @@ function initLossDemo() {
       ctx.textAlign = 'center';
       ctx.fillText('min', cx, cy + 15);
     }
-    ctx.fillStyle = '#8B7E74';
+    ctx.fillStyle = '#818cf8';
     ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('小球沿梯度方向滚向最低点（最优解）', W / 2, H - 5);
@@ -10622,12 +9171,12 @@ function initContourletDemo() {
     var cellW = (W - 30) / 2;
     var cellH = H - 35;
     var lx = 10, ly = 15;
-    ctx.fillStyle = '#faf8f5';
+    ctx.fillStyle = 'transparent';
     ctx.fillRect(lx, ly, cellW - 5, cellH);
-    ctx.strokeStyle = '#7BA7CC';
+    ctx.strokeStyle = '#38bdf8';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(lx, ly, cellW - 5, cellH);
-    ctx.fillStyle = '#7BA7CC';
+    ctx.fillStyle = '#38bdf8';
     ctx.font = 'bold 12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('小波（正方形）', lx + (cellW - 5) / 2, ly - 3);
@@ -10656,12 +9205,12 @@ function initContourletDemo() {
       }
     }
     var rx = 10 + cellW + 5, ry = 15;
-    ctx.fillStyle = '#faf8f5';
+    ctx.fillStyle = 'transparent';
     ctx.fillRect(rx, ry, cellW - 5, cellH);
-    ctx.strokeStyle = '#D4A574';
+    ctx.strokeStyle = '#fbbf24';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(rx, ry, cellW - 5, cellH);
-    ctx.fillStyle = '#D4A574';
+    ctx.fillStyle = '#fbbf24';
     ctx.font = 'bold 12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('Contourlet（细长条）', rx + (cellW - 5) / 2, ry - 3);
@@ -10688,7 +9237,7 @@ function initContourletDemo() {
       ctx.strokeRect(-stripW / 2, -stripH / 2, stripW, stripH);
       ctx.restore();
     }
-    ctx.fillStyle = '#8B7E74';
+    ctx.fillStyle = '#818cf8';
     ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('同一条曲线：正方形方块多且碎，细长条带少且贴合', W / 2, H - 5);
@@ -10916,5 +9465,219 @@ document.getElementById('guideCloseBtn').addEventListener('click', closeDrawingG
 initParticles();
 init();
 </script>
+<script>
+// ===== ECharts Interactive Charts =====
+(function(){
+function waitForEcharts(cb){
+  var t=setInterval(function(){
+    if(typeof echarts!=='undefined'){clearInterval(t);cb();}
+  },300);
+}
+waitForEcharts(function(){
+  // -- Theme colors --
+  var C={
+    bg:'#0f172a',card:'#1e293b',border:'#334155',text:'#e2e8f0',
+    muted:'#94a3b8',dim:'#64748b',
+    purple:'#818cf8',blue:'#38bdf8',pink:'#fb7185',
+    green:'#34d399',yellow:'#fbbf24',orange:'#f97316',
+    teal:'#2dd4bf',violet:'#a78bfa',red:'#ef4444'
+  };
+  var base={
+    backgroundColor:'transparent',
+    textStyle:{color:C.muted,fontFamily:'system-ui,sans-serif'}
+  };
+
+  // 1. Freq Domain Heatmap
+  (function(){
+    var d=document.getElementById('echarts-freq-demo-div');if(!d)return;
+    var ch=echarts.init(d);var data=[];
+    for(var i=0;i<64;i++)for(var j=0;j<64;j++){
+      var cx=32,cy=32,dist=Math.sqrt((i-cx)*(i-cx)+(j-cy)*(j-cy));
+      var v=Math.max(0,100-dist*3);
+      if(Math.abs(i-cx)<3||Math.abs(j-cy)<3)v=Math.min(v,25);
+      v+=(Math.random()-0.5)*8;data.push([j,i,Math.round(v)]);
+    }
+    ch.setOption(Object.assign({},base,{
+      tooltip:{formatter:function(p){return 'Freq('+p.data[0]+','+p.data[1]+'): '+p.data[2];}},
+      grid:{left:10,right:10,top:10,bottom:50},
+      xAxis:{type:'category',show:false,data:Array.from({length:64},function(_,i){return i;})},
+      yAxis:{type:'category',show:false,data:Array.from({length:64},function(_,i){return i;})},
+      visualMap:{min:0,max:100,calculable:true,inRange:{color:['#0f172a','#312e81','#4f46e5','#818cf8','#c7d2fe']},orient:'horizontal',left:'center',bottom:0,itemWidth:12,textStyle:{color:C.muted,fontSize:10}},
+      series:[{type:'heatmap',data:data,progressive:5000,animation:false,emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.5)'}}}]
+    }));
+    window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  // 2. Notch Filter Frequency Response
+  (function(){
+    var d=document.getElementById('echarts-notch-demo-div');if(!d)return;
+    var ch=echarts.init(d);var freqs=[],r1=[],r2=[];
+    for(var i=0;i<=200;i++){var f=i/200;freqs.push(f.toFixed(2));
+      var n=1.0;if(Math.abs(f-0.3)<0.02)n=0.01;if(Math.abs(f-0.6)<0.02)n=0.01;r1.push(n);
+      var g1=Math.exp(-Math.pow((f-0.3)/0.03,2)),g2=Math.exp(-Math.pow((f-0.6)/0.03,2));r2.push(1-0.95*g1-0.95*g2);
+    }
+    ch.setOption(Object.assign({},base,{
+      tooltip:{trigger:'axis'},legend:{data:['Ideal Notch','Gaussian Notch'],textStyle:{color:C.muted,fontSize:11},top:5,right:10},
+      grid:{left:50,right:20,top:40,bottom:35},
+      xAxis:{type:'category',data:freqs,axisLabel:{color:C.dim,fontSize:10},name:'Normalized Freq',nameTextStyle:{color:C.muted}},
+      yAxis:{type:'value',min:0,max:1.1,axisLabel:{color:C.dim,fontSize:10},splitLine:{lineStyle:{color:C.border}}},
+      series:[
+        {name:'Ideal Notch',type:'line',data:r1,smooth:true,lineStyle:{color:C.purple,width:2},itemStyle:{color:C.purple},symbol:'none'},
+        {name:'Gaussian Notch',type:'line',data:r2,smooth:true,lineStyle:{color:C.blue,width:2},itemStyle:{color:C.blue},symbol:'none'}
+      ]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  // 3. Wavelet Subband Energy
+  (function(){
+    var d=document.getElementById('echarts-wavelet-demo-div');if(!d)return;
+    var ch=echarts.init(d);
+    ch.setOption(Object.assign({},base,{
+      tooltip:{trigger:'axis'},grid:{left:60,right:40,top:15,bottom:20},
+      xAxis:{type:'value',name:'Energy (%)',nameTextStyle:{color:C.muted},axisLabel:{color:C.dim,fontSize:10},splitLine:{lineStyle:{color:C.border}}},
+      yAxis:{type:'category',data:['HH1','LH1','HL1','HH2','LH2','HL2','LL2'],axisLabel:{color:C.muted,fontSize:11}},
+      series:[{type:'bar',data:[85.2,72.8,68.5,35.1,28.3,22.6,8.9],
+        itemStyle:{borderRadius:[0,4,4,0],color:function(p){var cs=['#f97316','#fbbf24','#34d399','#fb7185','#a78bfa','#38bdf8','#818cf8'];return cs[p.dataIndex];}},
+        label:{show:true,position:'right',color:C.text,fontSize:11,formatter:'{c}%'},barWidth:'55%'}]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  // 4. Sparse Coefficients
+  (function(){
+    var d=document.getElementById('echarts-sparse-demo-div');if(!d)return;
+    var ch=echarts.init(d);var coeffs=[];
+    for(var i=0;i<100;i++){coeffs.push(Math.random()<0.1?Math.round(Math.random()*80+20):Math.round(Math.random()*5));}
+    ch.setOption(Object.assign({},base,{
+      tooltip:{trigger:'axis'},grid:{left:40,right:15,top:15,bottom:25},
+      xAxis:{type:'category',data:coeffs.map(function(_,i){return i;}),show:false},
+      yAxis:{type:'value',axisLabel:{color:C.dim,fontSize:10},splitLine:{lineStyle:{color:C.border}}},
+      series:[{type:'bar',data:coeffs,itemStyle:{borderRadius:[2,2,0,0],color:function(p){return p.data>10?C.purple:C.border;}},barWidth:'65%'}]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  // 5. Backprop Gradient Flow
+  (function(){
+    var d=document.getElementById('echarts-backprop-demo-div');if(!d)return;
+    var ch=echarts.init(d);
+    ch.setOption(Object.assign({},base,{
+      tooltip:{trigger:'axis'},grid:{left:80,right:40,top:15,bottom:20},
+      xAxis:{type:'value',name:'Gradient Norm',nameTextStyle:{color:C.muted},axisLabel:{color:C.dim,fontSize:10},splitLine:{lineStyle:{color:C.border}}},
+      yAxis:{type:'category',data:['Output','Hidden4','Hidden3','Hidden2','Hidden1','Input'],axisLabel:{color:C.muted,fontSize:11}},
+      series:[{type:'bar',data:[0.01,0.05,0.18,0.42,0.85,1.2],
+        itemStyle:{borderRadius:[0,4,4,0],color:function(p){return new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#4f46e5'},{offset:1,color:C.purple}]);}},
+        label:{show:true,position:'right',color:C.text,fontSize:11},barWidth:'50%'}]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  // 6. Weight Initialization Comparison
+  (function(){
+    var d=document.getElementById('echarts-init-demo-div');if(!d)return;
+    var ch=echarts.init(d);var epochs=[];
+    for(var i=0;i<=100;i++)epochs.push(i);
+    var xv=[],he=[],rnd=[];
+    for(var i=0;i<=100;i++){
+      xv.push(Math.max(0.02,2.5*Math.exp(-i*0.04)+(Math.random()-0.5)*0.1));
+      he.push(Math.max(0.01,2.0*Math.exp(-i*0.05)+(Math.random()-0.5)*0.08));
+      rnd.push(Math.max(0.05,3.0*Math.exp(-i*0.015)+(Math.random()-0.5)*0.3));
+    }
+    ch.setOption(Object.assign({},base,{
+      tooltip:{trigger:'axis'},legend:{data:['Xavier','He','Random'],textStyle:{color:C.muted,fontSize:11},top:5},
+      grid:{left:50,right:20,top:40,bottom:35},
+      xAxis:{type:'category',data:epochs,axisLabel:{color:C.dim,fontSize:10,interval:19},name:'Epoch',nameTextStyle:{color:C.muted}},
+      yAxis:{type:'value',name:'Loss',nameTextStyle:{color:C.muted},axisLabel:{color:C.dim,fontSize:10},splitLine:{lineStyle:{color:C.border}}},
+      series:[
+        {name:'Xavier',type:'line',data:xv,smooth:true,lineStyle:{color:C.purple,width:2},itemStyle:{color:C.purple},symbol:'none'},
+        {name:'He',type:'line',data:he,smooth:true,lineStyle:{color:C.blue,width:2},itemStyle:{color:C.blue},symbol:'none'},
+        {name:'Random',type:'line',data:rnd,smooth:true,lineStyle:{color:C.orange,width:2,type:'dashed'},itemStyle:{color:C.orange},symbol:'none'}
+      ]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  // 7. LR Schedule
+  (function(){
+    var d=document.getElementById('echarts-lr-demo-div');if(!d)return;
+    var ch=echarts.init(d);var epochs=[];
+    for(var i=0;i<=200;i++)epochs.push(i);
+    var step=[],cosine=[],warmup=[];
+    for(var i=0;i<=200;i++){
+      step.push(i<100?0.01:0.001);
+      cosine.push(0.005*(1+Math.cos(Math.PI*i/200)));
+      var wl=i<10?i*0.001:0.01*Math.cos(Math.PI*(i-10)/190)*0.5+0.005;
+      warmup.push(Math.max(0.0001,wl));
+    }
+    ch.setOption(Object.assign({},base,{
+      tooltip:{trigger:'axis'},legend:{data:['StepLR','CosineAnnealing','WarmupCosine'],textStyle:{color:C.muted,fontSize:11},top:5},
+      grid:{left:55,right:20,top:40,bottom:35},
+      xAxis:{type:'category',data:epochs,axisLabel:{color:C.dim,fontSize:10,interval:39},name:'Epoch',nameTextStyle:{color:C.muted}},
+      yAxis:{type:'value',name:'LR',nameTextStyle:{color:C.muted},axisLabel:{color:C.dim,fontSize:10},splitLine:{lineStyle:{color:C.border}}},
+      series:[
+        {name:'StepLR',type:'line',data:step,smooth:false,lineStyle:{color:C.orange,width:2},itemStyle:{color:C.orange},symbol:'none',step:'middle'},
+        {name:'CosineAnnealing',type:'line',data:cosine,smooth:true,lineStyle:{color:C.purple,width:2},itemStyle:{color:C.purple},symbol:'none'},
+        {name:'WarmupCosine',type:'line',data:warmup,smooth:true,lineStyle:{color:C.green,width:2},itemStyle:{color:C.green},symbol:'none'}
+      ]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  // 8. BatchNorm Effect
+  (function(){
+    var d=document.getElementById('echarts-bn-demo-div');if(!d)return;
+    var ch=echarts.init(d);var epochs=[];
+    for(var i=0;i<=100;i++)epochs.push(i);
+    var bn=[],nobn=[];
+    for(var i=0;i<=100;i++){
+      bn.push(Math.max(0.05,2.5*Math.exp(-i*0.045)+(Math.random()-0.5)*0.08));
+      nobn.push(Math.max(0.3,3.0*Math.exp(-i*0.025)+(Math.random()-0.5)*0.25));
+    }
+    ch.setOption(Object.assign({},base,{
+      tooltip:{trigger:'axis'},legend:{data:['With BN','Without BN'],textStyle:{color:C.muted,fontSize:11},top:5},
+      grid:{left:50,right:20,top:40,bottom:35},
+      xAxis:{type:'category',data:epochs,axisLabel:{color:C.dim,fontSize:10,interval:19},name:'Epoch',nameTextStyle:{color:C.muted}},
+      yAxis:{type:'value',name:'Loss',nameTextStyle:{color:C.muted},axisLabel:{color:C.dim,fontSize:10},splitLine:{lineStyle:{color:C.border}}},
+      series:[
+        {name:'With BN',type:'line',data:bn,smooth:true,lineStyle:{color:C.purple,width:2},itemStyle:{color:C.purple},symbol:'none',areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(129,140,248,0.25)'},{offset:1,color:'rgba(129,140,248,0)'}])}},
+        {name:'Without BN',type:'line',data:nobn,smooth:true,lineStyle:{color:C.orange,width:2},itemStyle:{color:C.orange},symbol:'none'}
+      ]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  // 9. Self-Attention Heatmap
+  (function(){
+    var d=document.getElementById('echarts-attention-demo-div');if(!d)return;
+    var ch=echarts.init(d);
+    var tokens=['Cat','Sit','On','Mat','Up'];
+    var raw=[[0,0.6,0.15,0.1,0.15],[0.2,0,0.25,0.15,0.4],[0.1,0.2,0,0.3,0.4],[0.05,0.1,0.25,0,0.6],[0.15,0.35,0.2,0.3,0]];
+    var data=[];
+    for(var r=0;r<raw.length;r++)for(var c=0;c<raw[r].length;c++)data.push([c,r,raw[r][c]]);
+    ch.setOption(Object.assign({},base,{
+      tooltip:{},grid:{left:50,right:40,top:10,bottom:50},
+      xAxis:{type:'category',data:tokens,axisLabel:{color:C.muted,fontSize:12}},
+      yAxis:{type:'category',data:tokens,axisLabel:{color:C.muted,fontSize:12}},
+      visualMap:{min:0,max:0.7,calculable:true,inRange:{color:['#0f172a','#312e81','#6366f1','#818cf8','#c7d2fe']},orient:'horizontal',left:'center',bottom:0,itemWidth:12,textStyle:{color:C.muted,fontSize:10}},
+      series:[{type:'heatmap',data:data,label:{show:true,color:C.text,fontSize:11,formatter:function(p){return p.data[2];}},emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.5)'}}}]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  // 10. SE Channel Weights
+  (function(){
+    var d=document.getElementById('echarts-se-demo-div');if(!d)return;
+    var ch=echarts.init(d);
+    var names=['Edge','Texture','Color','Noise','Rain','BG','Contrast','Detail'];
+    var w=[0.85,0.72,0.45,0.15,0.92,0.88,0.60,0.78];
+    var cs=['#38bdf8','#818cf8','#fbbf24','#64748b','#fb7185','#34d399','#2dd4bf','#a78bfa'];
+    ch.setOption(Object.assign({},base,{
+      tooltip:{trigger:'axis',formatter:function(p){return p[0].name+': '+p[0].value;}},
+      grid:{left:60,right:20,top:15,bottom:35},
+      xAxis:{type:'category',data:names,axisLabel:{color:C.muted,fontSize:11,rotate:15}},
+      yAxis:{type:'value',max:1,axisLabel:{color:C.dim,fontSize:10},splitLine:{lineStyle:{color:C.border}}},
+      series:[{type:'bar',data:w.map(function(v,i){return{value:v,itemStyle:{color:cs[i]}};}),
+        itemStyle:{borderRadius:[4,4,0,0]},label:{show:true,position:'top',color:C.text,fontSize:11,formatter:'{c}'},barWidth:'50%'}]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  console.log('[ECharts] All 10 interactive charts initialized');
+});
+})();
+</script>
+
 </body>
 </html>
