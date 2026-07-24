@@ -6426,11 +6426,6 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
   <span class="kg-arrow">→</span>
   <span class="kg-node" style="background:#6366f1;color:#fff;">结果图像</span>
 </div>
-
-<div class="kg-card" style="margin-top:16px;">
-    <div id="echarts-freq-demo-div" style="width:100%;max-width:700px;height:350px;margin:0 auto;border-radius:10px;overflow:hidden;"></div>
-  <div style="text-align:center;padding:4px 0;font-size:12px;color:var(--text-muted);">频域分解热力图 · 鼠标悬停查看频率分量强度</div>
-</div>
 </div></div>
 
 <div class="kg-section" id="kg-s2">
@@ -6475,6 +6470,45 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <h4>3.1 根本原因：雨纹和边缘"住"在同一个频段</h4>
 
 <p>问题出在这里——雨丝的条纹和图像中物体的边缘，<b>它们都是高频信息</b>。</p>
+
+<div style="margin:16px auto;max-width:480px;">
+<svg viewBox="0 0 480 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+  <defs>
+    <linearGradient id="freqGrad3" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.15"/>
+      <stop offset="35%" stop-color="#6366f1" stop-opacity="0.08"/>
+      <stop offset="65%" stop-color="#f59e0b" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.25"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="40" width="480" height="80" fill="url(#freqGrad3)" rx="6"/>
+  <text x="10" y="30" font-size="11" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">频谱分布</text>
+  <text x="60" y="135" font-size="11" fill="#6366f1" font-family="'Microsoft YaHei',sans-serif">低频（背景）</text>
+  <text x="320" y="135" font-size="11" fill="#f59e0b" font-family="'Microsoft YaHei',sans-serif">高频（细节）</text>
+  <line x1="240" y1="35" x2="240" y2="125" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
+  <!-- Rain streaks icon -->
+  <g transform="translate(300,55)">
+    <line x1="0" y1="0" x2="8" y2="20" stroke="#38bdf8" stroke-width="2" opacity="0.8"/>
+    <line x1="12" y1="-5" x2="20" y2="15" stroke="#38bdf8" stroke-width="2" opacity="0.7"/>
+    <line x1="24" y1="2" x2="32" y2="22" stroke="#38bdf8" stroke-width="2" opacity="0.6"/>
+    <line x1="36" y1="-3" x2="44" y2="17" stroke="#38bdf8" stroke-width="2" opacity="0.8"/>
+    <text x="0" y="42" font-size="10" fill="#38bdf8" font-family="'Microsoft YaHei',sans-serif">雨纹</text>
+  </g>
+  <!-- Edge icon -->
+  <g transform="translate(360,55)">
+    <path d="M 0 25 L 15 5 L 30 25" fill="none" stroke="#fb7185" stroke-width="2.5" opacity="0.8"/>
+    <text x="0" y="42" font-size="10" fill="#fb7185" font-family="'Microsoft YaHei',sans-serif">边缘</text>
+  </g>
+  <!-- Overlap zone -->
+  <rect x="280" y="40" width="160" height="80" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,3" rx="4" opacity="0.6"/>
+  <text x="360" y="15" font-size="11" fill="#ef4444" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">⚠ 两者混在同一频段</text>
+  <!-- Arrow showing filter -->
+  <path d="M 280 160 L 440 160" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrowRed3)" opacity="0.5"/>
+  <text x="360" y="175" font-size="10" fill="#ef4444" text-anchor="middle" opacity="0.7" font-family="'Microsoft YaHei',sans-serif">低通滤波 → 雨纹和边缘同时丢失</text>
+  <defs><marker id="arrowRed3" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 7 3, 0 6" fill="#ef4444" opacity="0.5"/></marker></defs>
+</svg>
+<div style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:6px;">图解：频谱中雨纹（蓝）与边缘（红）占据相同的高频区域——无法只去掉一个</div>
+</div>
 
 <p>当你在频域里用低通滤波器压制高频噪声时，<b>边缘也一起被压了</b>，就像你想扔掉垃圾，但垃圾和钱包混在同一个抽屉里——一扔就全扔了。</p>
 
@@ -6625,6 +6659,26 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <h4>7.1 小波 + TV正则化结合</h4>
 
 <p><b>TV（Total Variation，全变分）正则化</b>的核心思想是：假设"好的图像"应该是<b>分段平坦</b>的（一大片天空是均匀的，突然跳到建筑物的边缘有一个急剧变化，但不会在平坦区域里有杂乱的抖动）。</p>
+
+<div style="margin:16px auto;max-width:460px;">
+<svg viewBox="0 0 460 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+  <text x="10" y="20" font-size="11" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">像素值沿一行扫描</text>
+  <line x1="10" y1="130" x2="450" y2="130" stroke="var(--text-muted)" stroke-width="1" opacity="0.3"/>
+  <line x1="10" y1="40" x2="10" y2="130" stroke="var(--text-muted)" stroke-width="1" opacity="0.3"/>
+  <!-- Noisy signal (high TV) -->
+  <path d="M 10 80 L 25 72 L 40 85 L 55 68 L 70 82 L 85 74 L 100 88 L 115 70 L 130 84 L 145 76 L 160 90 L 175 72 L 190 86" fill="none" stroke="#ef4444" stroke-width="1.5" opacity="0.7"/>
+  <text x="100" y="50" font-size="10" fill="#ef4444" font-family="'Microsoft YaHei',sans-serif">含噪信号（TV高，抖动大）</text>
+  <!-- Sharp edge -->
+  <line x1="190" y1="86" x2="210" y2="55" stroke="#f59e0b" stroke-width="2.5" opacity="0.8"/>
+  <!-- Piecewise flat (low TV, TV-regularized) -->
+  <path d="M 210 55 L 280 55 L 300 85 L 380 85 L 400 60 L 450 60" fill="none" stroke="#10b981" stroke-width="2.5"/>
+  <text x="310" y="110" font-size="10" fill="#10b981" font-family="'Microsoft YaHei',sans-serif">TV正则化后（分段平坦，TV低）</text>
+  <!-- Annotations -->
+  <text x="210" y="45" font-size="9" fill="#f59e0b" font-family="'Microsoft YaHei',sans-serif">锐利边缘 ✓</text>
+  <text x="240" y="48" font-size="9" fill="#10b981" font-family="'Microsoft YaHei',sans-serif">平坦区域 ✓</text>
+</svg>
+<div style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:6px;">图解：TV正则化鼓励"分段平坦"——平坦区域不抖动，边缘保持锐利跳跃</div>
+</div>
 
 <div class="kg-flow">
   <span class="kg-node" style="background:#6366f1;color:#fff;">含噪图像</span>
@@ -8045,6 +8099,36 @@ canvas[id^="canvas-"]:hover {
   <strong>类比</strong>：就像教一个学生做数学题，每教一步就把题目改一遍——学生永远在做"新题"，无法积累学习经验。
 </div>
 
+<div style="margin:16px auto;max-width:480px;">
+<svg viewBox="0 0 480 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+  <text x="10" y="18" font-size="11" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">训练过程中，每层输入分布不断漂移</text>
+  <!-- Layer 1 distribution -->
+  <ellipse cx="80" cy="80" rx="35" ry="22" fill="#6366f1" opacity="0.2" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="80" y="84" font-size="10" fill="#6366f1" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">Layer L</text>
+  <text x="80" y="118" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">分布①</text>
+  <!-- Arrow with shift -->
+  <path d="M 120 75 Q 155 60 185 75" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#shiftArrow16)"/>
+  <text x="155" y="50" font-size="9" fill="#f59e0b" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">参数更新</text>
+  <!-- Layer 2 distribution (shifted) -->
+  <ellipse cx="220" cy="85" rx="32" ry="20" fill="#0ea5e9" opacity="0.2" stroke="#0ea5e9" stroke-width="1.5"/>
+  <text x="220" y="89" font-size="10" fill="#0ea5e9" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">Layer L+1</text>
+  <text x="220" y="120" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">分布②（变了！）</text>
+  <!-- Arrow -->
+  <path d="M 260 80 Q 295 65 325 80" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#shiftArrow16)"/>
+  <text x="295" y="55" font-size="9" fill="#f59e0b" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">又更新</text>
+  <!-- Layer 3 distribution (shifted again) -->
+  <ellipse cx="360" cy="75" rx="38" ry="24" fill="#fb7185" opacity="0.2" stroke="#fb7185" stroke-width="1.5"/>
+  <text x="360" y="79" font-size="10" fill="#fb7185" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">Layer L+2</text>
+  <text x="360" y="115" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">分布③（又变了！）</text>
+  <!-- Dashed ghost showing original -->
+  <ellipse cx="80" cy="80" rx="35" ry="22" fill="none" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="3,2" opacity="0.3"/>
+  <ellipse cx="220" cy="85" rx="32" ry="20" fill="none" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="3,2" opacity="0.3"/>
+  <ellipse cx="360" cy="75" rx="38" ry="24" fill="none" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="3,2" opacity="0.3"/>
+  <defs><marker id="shiftArrow16" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 7 3, 0 6" fill="#f59e0b"/></marker></defs>
+</svg>
+<div style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:6px;">图解：Internal Covariate Shift——每层输入分布随上游参数更新而不断漂移</div>
+</div>
+
 <h4>16.2 BatchNorm：最经典的解决方案</h4>
 
 <div class="kg-step">
@@ -8381,6 +8465,42 @@ canvas[id^="canvas-"]:hover {
   <strong>多尺度金字塔结构 (FPN)</strong>——自顶向下上采样 + 横向连接，构建特征金字塔。深层特征（低分辨率但语义强）通过上采样与浅层特征（高分辨率但语义弱）融合。各层级的语义强弱不同，融合后每层都能同时拥有"大局观"和"细节感"。
 </div>
 
+<div style="margin:16px auto;max-width:420px;">
+<svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+  <text x="10" y="18" font-size="11" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">FPN特征金字塔</text>
+  <!-- Bottom-up pathway (encoder) -->
+  <rect x="20" y="150" width="80" height="30" fill="#6366f1" opacity="0.25" stroke="#6366f1" stroke-width="1.5" rx="4"/>
+  <text x="60" y="169" font-size="9" fill="#6366f1" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">C1 (高分辨率)</text>
+  <text x="60" y="195" font-size="8" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">细节强·语义弱</text>
+  <rect x="120" y="115" width="70" height="28" fill="#0ea5e9" opacity="0.25" stroke="#0ea5e9" stroke-width="1.5" rx="4"/>
+  <text x="155" y="133" font-size="9" fill="#0ea5e9" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">C2</text>
+  <rect x="210" y="80" width="60" height="26" fill="#f59e0b" opacity="0.25" stroke="#f59e0b" stroke-width="1.5" rx="4"/>
+  <text x="240" y="97" font-size="9" fill="#f59e0b" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">C3</text>
+  <rect x="290" y="45" width="50" height="24" fill="#fb7185" opacity="0.25" stroke="#fb7185" stroke-width="1.5" rx="4"/>
+  <text x="315" y="61" font-size="9" fill="#fb7185" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">C4 (低分辨率)</text>
+  <text x="315" y="35" font-size="8" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">细节弱·语义强</text>
+  <!-- Bottom-up arrows -->
+  <path d="M 100 160 L 120 130" stroke="var(--text-muted)" stroke-width="1" opacity="0.4" marker-end="url(#fpnUp21)"/>
+  <path d="M 190 125 L 210 95" stroke="var(--text-muted)" stroke-width="1" opacity="0.4" marker-end="url(#fpnUp21)"/>
+  <path d="M 270 90 L 290 60" stroke="var(--text-muted)" stroke-width="1" opacity="0.4" marker-end="url(#fpnUp21)"/>
+  <!-- Lateral connections -->
+  <line x1="100" y1="165" x2="150" y2="165" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,2" opacity="0.6"/>
+  <line x1="190" y1="130" x2="240" y2="130" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,2" opacity="0.6"/>
+  <line x1="270" y1="95" x2="315" y2="95" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,2" opacity="0.6"/>
+  <!-- Top-down pathway -->
+  <path d="M 315 70 L 240 100" stroke="#10b981" stroke-width="2" marker-end="url(#fpnDown21)"/>
+  <path d="M 240 105 L 155 135" stroke="#10b981" stroke-width="2" marker-end="url(#fpnDown21)"/>
+  <path d="M 155 140 L 60 170" stroke="#10b981" stroke-width="2" marker-end="url(#fpnDown21)"/>
+  <text x="280" y="85" font-size="9" fill="#10b981" font-family="'Microsoft YaHei',sans-serif">↑上采样</text>
+  <text x="115" y="180" font-size="9" fill="#10b981" font-family="'Microsoft YaHei',sans-serif">→ 横向融合</text>
+  <defs>
+    <marker id="fpnUp21" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto"><polygon points="0 0, 5 2.5, 0 5" fill="var(--text-muted)" opacity="0.4"/></marker>
+    <marker id="fpnDown21" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#10b981"/></marker>
+  </defs>
+</svg>
+<div style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:6px;">图解：FPN——深层语义（右上）经上采样与浅层细节（左下）横向融合，每层都获得"全局+局部"信息</div>
+</div>
+
 <div class="kg-step">
   <strong>跨尺度跨窗口依赖</strong>：
   <br>· <b>移位窗口 (Swin)</b>：相邻层窗口偏移半个窗口大小，打破窗口边界，实现跨窗口信息交互。
@@ -8440,6 +8560,51 @@ canvas[id^="canvas-"]:hover {
 
 <div class="kg-step">
   <strong>4维：四元数 (Quaternions)</strong>——3D空间中的旋转利器。哈密顿在1843年发明的 i、j、k 三个虚数单位，满足 i的平方=j的平方=k的平方=-1。四元数能优雅地描述三维旋转，是3D游戏引擎和机器人学的核心工具。但有一个致命缺点：<b>乘法不可交换</b>——先乘 i 再乘 j，和先乘 j 再乘 i，结果不一样！
+</div>
+
+<div style="margin:16px auto;max-width:480px;">
+<svg viewBox="0 0 480 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+  <text x="240" y="18" font-size="12" fill="var(--text)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">四元数：乘法顺序影响结果（不可交换）</text>
+  <!-- Left: i then j -->
+  <text x="120" y="40" font-size="11" fill="#f59e0b" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">先旋转i(90°X轴) → 再旋转j(90°Y轴)</text>
+  <g transform="translate(120,100)">
+    <!-- Start box -->
+    <rect x="-30" y="-20" width="20" height="15" fill="#6366f1" opacity="0.4" stroke="#6366f1" stroke-width="1.5" rx="2"/>
+    <text x="-20" y="-25" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">起始</text>
+    <!-- After i rotation -->
+    <rect x="5" y="-25" width="20" height="15" fill="#0ea5e9" opacity="0.4" stroke="#0ea5e9" stroke-width="1.5" rx="2" transform="rotate(30,15,-17)"/>
+    <text x="15" y="-32" font-size="9" fill="#0ea5e9" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">①旋转i后</text>
+    <!-- After j rotation -->
+    <rect x="40" y="-15" width="20" height="15" fill="#fb7185" opacity="0.4" stroke="#fb7185" stroke-width="1.5" rx="2" transform="rotate(-20,50,-7)"/>
+    <text x="50" y="-28" font-size="9" fill="#fb7185" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">②再旋转j</text>
+    <!-- Arrows -->
+    <path d="M -8 -12 L 3 -15" stroke="var(--text-muted)" stroke-width="1" opacity="0.5" marker-end="url(#arr22a)"/>
+    <path d="M 28 -20 L 38 -12" stroke="var(--text-muted)" stroke-width="1" opacity="0.5" marker-end="url(#arr22a)"/>
+    <!-- Result -->
+    <text x="50" y="25" font-size="10" fill="#ef4444" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">结果A</text>
+  </g>
+  <!-- Right: j then i -->
+  <text x="360" y="40" font-size="11" fill="#10b981" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">先旋转j(90°Y轴) → 再旋转i(90°X轴)</text>
+  <g transform="translate(360,100)">
+    <rect x="-30" y="-20" width="20" height="15" fill="#6366f1" opacity="0.4" stroke="#6366f1" stroke-width="1.5" rx="2"/>
+    <text x="-20" y="-25" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">起始</text>
+    <rect x="5" y="-30" width="20" height="15" fill="#fb7185" opacity="0.4" stroke="#fb7185" stroke-width="1.5" rx="2" transform="rotate(-20,15,-22)"/>
+    <text x="15" y="-40" font-size="9" fill="#fb7185" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">①旋转j后</text>
+    <rect x="40" y="-10" width="20" height="15" fill="#0ea5e9" opacity="0.4" stroke="#0ea5e9" stroke-width="1.5" rx="2" transform="rotate(35,50,-2)"/>
+    <text x="50" y="-28" font-size="9" fill="#0ea5e9" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">②再旋转i</text>
+    <path d="M -8 -12 L 3 -20" stroke="var(--text-muted)" stroke-width="1" opacity="0.5" marker-end="url(#arr22a)"/>
+    <path d="M 28 -25 L 38 -10" stroke="var(--text-muted)" stroke-width="1" opacity="0.5" marker-end="url(#arr22a)"/>
+    <text x="50" y="25" font-size="10" fill="#ef4444" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">结果B ≠ A!</text>
+  </g>
+  <!-- Center divider -->
+  <line x1="240" y1="45" x2="240" y2="135" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="3,3" opacity="0.3"/>
+  <!-- Bottom: RQ commutative -->
+  <rect x="60" y="155" width="360" height="50" fill="#10b981" opacity="0.08" stroke="#10b981" stroke-width="1" stroke-dasharray="5,3" rx="6"/>
+  <text x="240" y="175" font-size="11" fill="#10b981" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">RQ（约化双四元数）：乘法可交换</text>
+  <text x="240" y="193" font-size="10" fill="#10b981" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">先乘i再乘j = 先乘j再乘i → 结果始终相同 ✓</text>
+  <defs><marker id="arr22a" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto"><polygon points="0 0, 5 2.5, 0 5" fill="var(--text-muted)" opacity="0.5"/></marker></defs>
+</svg>
+<div style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:6px;">图解：四元数旋转顺序不同→结果不同（不可交换）；RQ修改j²=+1后→乘法可交换</div>
 </div>
 
 <div class="kg-step">
@@ -8518,6 +8683,37 @@ canvas[id^="canvas-"]:hover {
     <h4>j：双曲虚数（平方=+1）</h4>
     <p>对应双曲空间中的指数增长/衰减信号。就像<b>弹弓</b>——拉得越远，弹得越远。e的j次方 = cosh(θ) + j·sinh(θ)，描述的是双曲运动。RGB图像中的G通道编码到 j 上。</p>
   </div>
+</div>
+
+<div style="margin:16px auto;max-width:440px;">
+<svg viewBox="0 0 440 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+  <!-- Left: Circular (elliptic) -->
+  <text x="110" y="18" font-size="11" fill="#6366f1" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">i² = -1 → 椭圆（圆周振荡）</text>
+  <line x1="30" y1="90" x2="190" y2="90" stroke="var(--text-muted)" stroke-width="1" opacity="0.2"/>
+  <line x1="110" y1="25" x2="110" y2="155" stroke="var(--text-muted)" stroke-width="1" opacity="0.2"/>
+  <circle cx="110" cy="90" r="40" fill="none" stroke="#6366f1" stroke-width="2" opacity="0.7"/>
+  <!-- Point on circle -->
+  <circle cx="110" cy="50" r="4" fill="#6366f1"/>
+  <path d="M 110 50 Q 140 60 150 90 Q 140 120 110 130 Q 80 120 70 90 Q 80 60 110 50" fill="none" stroke="#6366f1" stroke-width="1" opacity="0.3" stroke-dasharray="3,2"/>
+  <text x="155" y="55" font-size="9" fill="#6366f1" font-family="'Microsoft YaHei',sans-serif">e^iθ</text>
+  <text x="30" y="170" font-size="9" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">cos θ + i·sin θ → 周期重复</text>
+  <!-- Right: Hyperbolic -->
+  <text x="330" y="18" font-size="11" fill="#f59e0b" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">j² = +1 → 双曲（指数增长）</text>
+  <line x1="250" y1="90" x2="410" y2="90" stroke="var(--text-muted)" stroke-width="1" opacity="0.2"/>
+  <line x1="330" y1="25" x2="330" y2="155" stroke="var(--text-muted)" stroke-width="1" opacity="0.2"/>
+  <!-- Hyperbola branches -->
+  <path d="M 330 50 Q 360 60 380 90 Q 360 120 330 130" fill="none" stroke="#f59e0b" stroke-width="2" opacity="0.7"/>
+  <path d="M 330 50 Q 300 60 280 90 Q 300 120 330 130" fill="none" stroke="#f59e0b" stroke-width="2" opacity="0.7"/>
+  <!-- Growth arrows -->
+  <path d="M 380 90 L 400 70" stroke="#ef4444" stroke-width="1.5" marker-end="url(#hypArrow23)" opacity="0.6"/>
+  <path d="M 280 90 L 260 70" stroke="#ef4444" stroke-width="1.5" marker-end="url(#hypArrow23)" opacity="0.6"/>
+  <text x="375" y="55" font-size="9" fill="#f59e0b" font-family="'Microsoft YaHei',sans-serif">e^jθ</text>
+  <text x="250" y="170" font-size="9" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">cosh θ + j·sinh θ → 无限增长</text>
+  <!-- Center comparison -->
+  <text x="220" y="100" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">vs</text>
+  <defs><marker id="hypArrow23" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#ef4444" opacity="0.6"/></marker></defs>
+</svg>
+<div style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:6px;">图解：i/k 描述圆周振荡（有界），j 描述双曲增长（无界）——RQ同时拥有两种几何</div>
 </div>
 
 <h4>23.2 乘法规则表</h4>
@@ -8618,6 +8814,49 @@ canvas[id^="canvas-"]:hover {
 
 <div class="kg-step">
   <strong>矩阵展开的含义</strong>：RQ卷积核 w = w₀ + w₁i + w₂j + w₃k 只有4个自由参数，但它通过这个4×4矩阵的约束，自动实现了四通道之间的<b>加权耦合</b>。对比实值网络需要16个独立参数才能实现同等耦合效果，RQ网络的参数效率提升了4倍！
+</div>
+
+<div style="margin:16px auto;max-width:480px;">
+<svg viewBox="0 0 480 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+  <text x="240" y="18" font-size="12" fill="var(--text)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">RQ卷积：4个参数 → 自动生成16个矩阵元素</text>
+  <!-- Left: 4 parameters -->
+  <text x="80" y="45" font-size="11" fill="#6366f1" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">RQ卷积核（4个自由参数）</text>
+  <g transform="translate(80,105)">
+    <rect x="-25" y="-12" width="20" height="20" fill="#6366f1" opacity="0.3" stroke="#6366f1" stroke-width="1.5" rx="3"/>
+    <text x="-15" y="2" font-size="11" fill="#6366f1" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">w₀</text>
+    <rect x="-2" y="-12" width="20" height="20" fill="#0ea5e9" opacity="0.3" stroke="#0ea5e9" stroke-width="1.5" rx="3"/>
+    <text x="8" y="2" font-size="11" fill="#0ea5e9" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">w₁</text>
+    <rect x="21" y="-12" width="20" height="20" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="1.5" rx="3"/>
+    <text x="31" y="2" font-size="11" fill="#f59e0b" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">w₂</text>
+    <rect x="44" y="-12" width="20" height="20" fill="#fb7185" opacity="0.3" stroke="#fb7185" stroke-width="1.5" rx="3"/>
+    <text x="54" y="2" font-size="11" fill="#fb7185" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">w₃</text>
+  </g>
+  <text x="80" y="145" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">仅4个值需学习</text>
+  <!-- Arrow -->
+  <path d="M 150 105 L 210 105" stroke="#10b981" stroke-width="2.5" marker-end="url(#expandArrow24)"/>
+  <text x="180" y="95" font-size="10" fill="#10b981" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">展开</text>
+  <text x="180" y="120" font-size="9" fill="#10b981" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">×4效率</text>
+  <!-- Right: 4x4 matrix -->
+  <text x="340" y="45" font-size="11" fill="#10b981" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">等价4×4矩阵（16个元素）</text>
+  <g transform="translate(340,105)">
+    <rect x="-55" y="-35" width="110" height="70" fill="none" stroke="#10b981" stroke-width="1.5" rx="4" opacity="0.5"/>
+    <!-- Matrix cells -->
+    <g font-size="9" font-family="'Microsoft YaHei',sans-serif" text-anchor="middle">
+      <text x="-41" y="-22" fill="#6366f1">+w₀</text><text x="-14" y="-22" fill="#0ea5e9">-w₁</text><text x="14" y="-22" fill="#f59e0b">+w₂</text><text x="41" y="-22" fill="#fb7185">-w₃</text>
+      <text x="-41" y="-3" fill="#0ea5e9">+w₁</text><text x="-14" y="-3" fill="#6366f1">+w₀</text><text x="14" y="-3" fill="#fb7185">-w₃</text><text x="41" y="-3" fill="#f59e0b">+w₂</text>
+      <text x="-41" y="16" fill="#f59e0b">+w₂</text><text x="-14" y="16" fill="#fb7185">+w₃</text><text x="14" y="16" fill="#6366f1">+w₀</text><text x="41" y="16" fill="#0ea5e9">+w₁</text>
+      <text x="-41" y="35" fill="#fb7185">+w₃</text><text x="-14" y="35" fill="#f59e0b">-w₂</text><text x="14" y="35" fill="#0ea5e9">+w₁</text><text x="41" y="35" fill="#6366f1">+w₀</text>
+    </g>
+    <!-- Column dividers -->
+    <line x1="-28" y1="-35" x2="-28" y2="35" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.2"/>
+    <line x1="-1" y1="-35" x2="-1" y2="35" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.2"/>
+    <line x1="28" y1="-35" x2="28" y2="35" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.2"/>
+  </g>
+  <text x="340" y="155" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">16个位置由4个参数约束生成</text>
+  <text x="340" y="172" font-size="10" fill="#10b981" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">实值网络需16个独立参数 → RQ仅需4个</text>
+  <defs><marker id="expandArrow24" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#10b981"/></marker></defs>
+</svg>
+<div style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:6px;">图解：4个RQ参数通过乘法规则自动"填充"16个矩阵位置——天然实现通道间耦合，参数省4倍</div>
 </div>
 
 <h4>24.4 三种网络对比</h4>
