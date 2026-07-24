@@ -2326,9 +2326,10 @@ body {
 body { position: relative; }
 
 /* Ensure main content sits above Three.js canvas */
+/* Note: .fab removed — it must keep position:fixed from its own rule */
 .sidebar-nav, .hero, .toolbar, .ai-tools-section,
 .stats-bar, .progress-section, .heatmap-section, .paper-grid,
-.guide-panel, .fab, .settings-modal, .toast, .paper-modal,
+.guide-panel, .settings-modal, .toast, .paper-modal,
 .sort-dropdown, .mobile-overlay {
   position: relative; z-index: 1;
 }
