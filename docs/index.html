@@ -6639,16 +6639,6 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:12px;">
   <canvas id="canvas-contourlet-demo" width="500" height="140" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:transparent;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-contourlet-demo">
-    <button class="demo-btn" id="btn-play-canvas-contourlet-demo" onclick="toggleDemo('canvas-contourlet-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-contourlet-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-contourlet-demo', this.value)">
-      <span id="speed-label-canvas-contourlet-demo">1.0x</span>
-    </div>
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-contourlet-demo')">重置</button>
-    <span class="demo-info-badge" id="info-canvas-contourlet-demo">点击画面暂停/继续</span>
-  </div>
   <div class="kg-caption">小概念演示：小波（正方形方块）vs Contourlet（细长条带）逼近曲线边缘的效果差异</div>
 </div>
 </div></div>
@@ -6835,16 +6825,6 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:12px;">
   <canvas id="canvas-perceptron-demo" width="500" height="140" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:transparent;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-perceptron-demo">
-    <button class="demo-btn" id="btn-play-canvas-perceptron-demo" onclick="toggleDemo('canvas-perceptron-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-perceptron-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-perceptron-demo', this.value)">
-      <span id="speed-label-canvas-perceptron-demo">1.0x</span>
-    </div>
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-perceptron-demo')">重置</button>
-    <span class="demo-info-badge" id="info-canvas-perceptron-demo">点击画面暂停/继续</span>
-  </div>
   <div class="kg-caption">小概念演示：感知机——输入×权重→求和→激活函数→输出</div>
 </div>
 
@@ -7919,16 +7899,6 @@ canvas[id^="canvas-"]:hover {
 
 <div class="kg-card" style="margin-top:12px;">
   <canvas id="canvas-loss-demo" width="500" height="160" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:transparent;border-radius:8px;"></canvas>
-  <div class="demo-controls" id="controls-canvas-loss-demo">
-    <button class="demo-btn" id="btn-play-canvas-loss-demo" onclick="toggleDemo('canvas-loss-demo')">暂停</button>
-    <div class="demo-slider-wrap">
-      <span>速度</span>
-      <input type="range" class="demo-slider" id="speed-canvas-loss-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-loss-demo', this.value)">
-      <span id="speed-label-canvas-loss-demo">1.0x</span>
-    </div>
-    <button class="demo-btn secondary" onclick="resetDemo('canvas-loss-demo')">重置</button>
-    <span class="demo-info-badge" id="info-canvas-loss-demo">点击画面暂停/继续</span>
-  </div>
   <div class="kg-caption">小概念演示：MSE损失曲面（碗形）vs 交叉熵损失曲面——小球沿梯度方向滚向最低点</div>
 </div>
 
@@ -9157,18 +9127,15 @@ function updateDemoInfo(cid, text) {
 }
 
 // ================================================================
-// 小概念演示：感知机 (Canvas 2D)
+// 小概念演示：感知机 (Canvas 2D) — 非交互循环动画
 // ================================================================
 function initPerceptronDemo() {
   var canvas = document.getElementById('canvas-perceptron-demo');
   if (!canvas) return;
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-perceptron-demo', _state);
+  var t = 0;
   function draw() {
-    if (!running) return;
     ctx.clearRect(0, 0, W, H);
     var inputs = [
       { label: 'x\u2081', val: 0.8, w: 0.5 },
@@ -9237,26 +9204,22 @@ function initPerceptronDemo() {
     ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('y = \u03c3(\u03a3 w\u1d62x\u1d62 + b)', W / 2, H - 5);
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
+    t += 1;
     requestAnimationFrame(draw);
   }
   draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
 }
 
 // ================================================================
-// 小概念演示：损失函数曲面 (Canvas 2D)
+// 小概念演示：损失函数曲面 (Canvas 2D) — 非交互循环动画
 // ================================================================
 function initLossDemo() {
   var canvas = document.getElementById('canvas-loss-demo');
   if (!canvas) return;
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-loss-demo', _state);
+  var t = 0;
   function draw() {
-    if (!running) return;
     ctx.clearRect(0, 0, W, H);
     var cellW = (W - 40) / 2;
     var labels = ['MSE Loss（碗形曲面）', 'Cross-Entropy Loss'];
@@ -9327,26 +9290,22 @@ function initLossDemo() {
     ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('小球沿梯度方向滚向最低点（最优解）', W / 2, H - 5);
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
+    t += 1;
     requestAnimationFrame(draw);
   }
   draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
 }
 
 // ================================================================
-// 小概念演示：Contourlet vs 小波方向性 (Canvas 2D)
+// 小概念演示：Contourlet vs 小波方向性 (Canvas 2D) — 非交互循环动画
 // ================================================================
 function initContourletDemo() {
   var canvas = document.getElementById('canvas-contourlet-demo');
   if (!canvas) return;
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
-  var t = 0, running = true;
-  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
-  registerDemoState('canvas-contourlet-demo', _state);
+  var t = 0;
   function draw() {
-    if (!running) return;
     ctx.clearRect(0, 0, W, H);
     var cellW = (W - 30) / 2;
     var cellH = H - 35;
@@ -9421,11 +9380,10 @@ function initContourletDemo() {
     ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('同一条曲线：正方形方块多且碎，细长条带少且贴合', W / 2, H - 5);
-    t += (_state && _state.speed > 0 ? _state.speed : 1);
+    t += 1;
     requestAnimationFrame(draw);
   }
   draw();
-  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
 }
 
 
