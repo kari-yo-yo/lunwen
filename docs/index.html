@@ -1943,10 +1943,10 @@ body {
   overflow-y: auto; padding: 16px;
   background: rgba(99,102,241,0.04);
   border: 1px solid var(--border); border-radius: var(--radius-sm);
-  font-size: 12px; line-height: 1.6;
+  font-size: 13.5px; line-height: 1.6;
 }
 .kg-toc-title {
-  font-size: 13px; font-weight: 700; color: var(--primary-light);
+  font-size: 15px; font-weight: 700; color: var(--primary-light);
   margin-bottom: 10px; padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
 }
@@ -1964,6 +1964,37 @@ body {
   background: rgba(99,102,241,0.1); font-weight: 600;
 }
 .kg-main { flex: 1; min-width: 0; }
+
+/* ===== Knowledge Framework: Module Guide Cards ===== */
+.kg-module-guide {
+  margin: 24px 0 20px 0;
+  padding: 20px 24px;
+  border-radius: 14px;
+  border-left: 5px solid;
+  background: var(--card-bg);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.kg-module-guide:hover {
+  transform: translateX(5px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+.kg-guide-signal { border-left-color: #7BA7CC; background: linear-gradient(135deg, rgba(123,167,204,0.10) 0%, var(--card-bg) 100%); }
+.kg-guide-dl     { border-left-color: #8FB996; background: linear-gradient(135deg, rgba(143,185,150,0.10) 0%, var(--card-bg) 100%); }
+.kg-guide-arch   { border-left-color: #D4A574; background: linear-gradient(135deg, rgba(212,165,116,0.10) 0%, var(--card-bg) 100%); }
+.kg-guide-rq     { border-left-color: #A890C0; background: linear-gradient(135deg, rgba(168,144,192,0.10) 0%, var(--card-bg) 100%); }
+.kg-guide-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+.kg-guide-desc {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
 
 /* ===== Knowledge Framework: Accordion ===== */
 .kg-accordion-header {
