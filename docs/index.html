@@ -6201,6 +6201,9 @@ const KNOWLEDGE_HTML = `
     <a href="#kg-s20">二十、SE注意力与特征聚合</a>
     <a href="#kg-s21">二十一、低频基+高频细节构造CNN</a>
     <a href="#kg-s22">二十二、多阶段多尺度去噪网络</a>
+    <a href="#kg-s23">二十三、学习率调度</a>
+    <a href="#kg-s24">二十四、参数初始化</a>
+    <a href="#kg-s25">二十五、归一化</a>
   </nav>
   <div class="kg-main" id="kgMain">
 
@@ -7599,6 +7602,172 @@ const KNOWLEDGE_HTML = `
 
 </div></div>
 </div></div>
+<div class="kg-section" id="kg-s23">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>二十三、学习率调度——训练节奏的"指挥棒"</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<p>想象你在下山找最低点：<b>一开始可以大步流星</b>（学习率大），快速接近谷底；<b>接近谷底时要换小碎步</b>（学习率小），避免在最优解附近来回震荡。学习率调度就是控制这个"步伐大小"的策略。</p>
+
+<div class="kg-img-wrap">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-lr-schedule.webp" type="image/webp"><img src="reading-notes/assets/knowledge-lr-schedule-thumb.webp" data-full="reading-notes/assets/knowledge-lr-schedule.webp" alt="学习率调度策略对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
+  <div class="kg-caption">图：四种主流学习率调度策略——StepDecay直降、Exponential平滑、Cosine余弦退火、Warmup预热</div>
+</div>
+
+<h4>23.1 为什么需要学习率调度？</h4>
+
+<table>
+<thead><tr><th>问题</th><th>现象</th><th>调度解决方式</th></tr></thead>
+<tbody>
+<tr><td><b>学习率太大</b></td><td>在最优解附近剧烈震荡，无法收敛</td><td>逐步降低学习率，让参数"沉淀"</td></tr>
+<tr><td><b>学习率太小</b></td><td>收敛极慢，卡在局部最优</td><td>初期大学习率快速探索</td></tr>
+<tr><td><b>不同训练阶段需求不同</b></td><td>前期要"探索"，后期要"精修"</td><td>自适应调整策略</td></tr>
+</tbody>
+</table>
+
+<h4>23.2 四大调度策略详解</h4>
+
+<div class="kg-step">
+  <strong>Step Decay（阶梯衰减）</strong>——每过N个epoch，学习率乘一个系数（如0.1）。<br>
+  公式：lr = lr₀ × γ^(epoch // step_size)<br>
+  优点：简单直观，大多数框架内置。缺点：突变点可能恰好打断收敛过程。
+</div>
+
+<div class="kg-step">
+  <strong>Exponential Decay（指数衰减）</strong>——学习率连续指数下降。<br>
+  公式：lr = lr₀ × e^(-k·epoch)<br>
+  优点：平滑稳定，没有突变点。缺点：衰减速度固定，不够灵活。
+</div>
+
+<div class="kg-step">
+  <strong>Cosine Annealing（余弦退火）</strong>——学习率按余弦曲线从大到小再到大周期性变化。<br>
+  公式：lr = lr_min + 0.5×(lr_max-lr_min)×(1+cos(π·epoch/T_max))<br>
+  优点：无需调参，端到端训练友好。周期性重启还能帮助跳出局部最优。
+</div>
+
+<div class="kg-step">
+  <strong>Warmup + Cosine（预热+余弦）</strong>——训练前N步线性升温，再接入Cosine退火。<br>
+  优点：防止训练初期大学习率导致的梯度爆炸/不稳定。Transformer训练的标配。
+</div>
+
+<h4>23.3 动态演示：学习率随训练变化</h4>
+<div class="kg-card" style="margin-top:16px;">
+  <canvas id="canvas-lr-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">动态演示：不同调度策略下学习率随epoch的变化曲线（Canvas实时绘制）</div>
+</div>
+
+<div class="kg-step">
+  <strong>💡 实战建议</strong>：图像恢复任务常用Cosine + Warmup（预热5%的steps）。学习率峰值一般设1e-4到1e-3，最小值设峰值的1/100。Step Decay适合有明确epoch预算的传统任务。
+</div>
+
+</div></div>
+
+<div class="kg-section" id="kg-s24">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>二十四、参数初始化——神经网络的第一粒种子</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<p>神经网络训练就像种一棵树——<b>初始化的好坏决定了这棵树能不能健康长大</b>。如果权重全设为0，所有神经元输出相同，网络退化为单层；如果权重太大，梯度像滚雪球一样爆炸；如果权重太小，梯度逐层衰减直至消失。</p>
+
+<div class="kg-img-wrap">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-weight-init.webp" type="image/webp"><img src="reading-notes/assets/knowledge-weight-init-thumb.webp" data-full="reading-notes/assets/knowledge-weight-init.webp" alt="参数初始化策略对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
+  <div class="kg-caption">图：参数初始化核心——方差守恒原理，以及Zero/Normal/Xavier/He四种策略对比</div>
+</div>
+
+<h4>24.1 初始化不当的两大灾难</h4>
+
+<table>
+<thead><tr><th>灾难</th><th>原因</th><th>表现</th></tr></thead>
+<tbody>
+<tr><td><b>梯度消失</b></td><td>权重太小（如0.01），每层梯度被不断缩小</td><td>深层参数几乎不更新，loss卡死</td></tr>
+<tr><td><b>梯度爆炸</b></td><td>权重太大（如10），每层梯度被不断放大</td><td>loss突然变成NaN，参数飞散</td></tr>
+</tbody>
+</table>
+
+<h4>24.2 四种初始化策略</h4>
+
+<div class="kg-step">
+  <strong>Zero Initialization（全零初始化）</strong>——全部权重设为0。<br>
+  ❌ 致命问题：所有神经元输出完全相同，反向传播时梯度也完全相同，网络退化为单个神经元，失去多层意义。
+</div>
+
+<div class="kg-step">
+  <strong>Random Normal（随机正态初始化）</strong>——W ~ N(0, σ²)。<br>
+  ⚠️ 问题：σ选多大？太大导致爆炸，太小导致消失。没有理论指导，全靠调参运气。
+</div>
+
+<div class="kg-step">
+  <strong>Xavier Initialization（Glorot初始化）</strong>——W ~ U[-√(6/(n_in+n_out)), √(6/(n_in+n_out))]。<br>
+  ✓ 核心思想：保持前向传播和反向传播时的方差不变。适合tanh、sigmoid等对称激活函数。
+</div>
+
+<div class="kg-step">
+  <strong>He Initialization（Kaiming初始化）</strong>——W ~ N(0, √(2/n_in))。<br>
+  ✓ 核心思想：考虑ReLU"杀死一半神经元"的特性，将方差放大2倍补偿。适合ReLU及变体（LeakyReLU、PReLU等）。
+</div>
+
+<h4>24.3 动态演示：梯度传播的"健康检查"</h4>
+<div class="kg-card" style="margin-top:16px;">
+  <canvas id="canvas-init-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">动态演示：不同初始化下梯度在10层网络中的传播情况——健康传播 vs 消失 vs 爆炸（Canvas实时绘制）</div>
+</div>
+
+<div class="kg-step">
+  <strong>🎯 选型指南</strong>：用ReLU家族 → 选He初始化；用tanh/sigmoid → 选Xavier；绝对不要用Zero；Random Normal不如前两者稳定。BatchNorm能在一定程度上缓解初始化敏感性，但好的初始化仍是成功训练的第一步。
+</div>
+
+</div></div>
+
+<div class="kg-section" id="kg-s25">
+<div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>二十五、归一化——让每一层的"脾气"变稳定</h3><span class="kg-acc-icon">▼</span></div>
+<div class="kg-accordion-body">
+
+<p>深度神经网络训练时，<b>每一层的输入分布都在不断变化</b>——前一层的参数更新了，后一层的输入分布就跟着变了。这就像在跑步机上追一个移动的目标，网络被迫不断适应"新环境"。归一化就是把这个"移动的目标"固定住。</p>
+
+<div class="kg-img-wrap">
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-normalization.webp" type="image/webp"><img src="reading-notes/assets/knowledge-normalization-thumb.webp" data-full="reading-notes/assets/knowledge-normalization.webp" alt="归一化方法对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
+  <div class="kg-caption">图：BatchNorm解决Internal Covariate Shift问题，以及四种归一化方法沿不同维度操作</div>
+</div>
+
+<h4>25.1 Internal Covariate Shift（内部协变量偏移）</h4>
+
+<div class="kg-step">
+  <strong>问题本质</strong>：第L层的参数更新 → 第L+1层的输入分布改变 → 第L+1层被迫重新适应 → 连锁反应导致训练缓慢且不稳定。<br>
+  <strong>类比</strong>：就像教一个学生做数学题，每教一步就把题目改一遍——学生永远在做"新题"，无法积累学习经验。
+</div>
+
+<h4>25.2 BatchNorm：最经典的解决方案</h4>
+
+<div class="kg-step">
+  <strong>核心操作（每个channel独立）</strong>：<br>
+  1. 计算当前batch的均值 μ_B 和方差 σ²_B<br>
+  2. 标准化：x̂ = (x - μ_B) / √(σ²_B + ε)<br>
+  3. 缩放平移：y = γ · x̂ + β（γ和β是可学习参数）<br><br>
+  <strong>关键设计</strong>：γ和β让网络自己决定"归一化到什么程度"——有时完全归一化反而不好，允许网络恢复原始分布。
+</div>
+
+<h4>25.3 四种归一化方法对比</h4>
+
+<table>
+<thead><tr><th>方法</th><th>归一化维度</th><th>适用场景</th><th>特点</th></tr></thead>
+<tbody>
+<tr><td><b>BatchNorm</b></td><td>沿Batch维度（N）</td><td>CNN（batch≥16）</td><td>速度快，效果好，但小batch时统计量不准</td></tr>
+<tr><td><b>LayerNorm</b></td><td>沿Channel维度（C+H+W）</td><td>Transformer、RNN</td><td>不受batch大小影响，序列建模标配</td></tr>
+<tr><td><b>InstanceNorm</b></td><td>每个样本每个通道独立</td><td>风格迁移</td><td>去除内容保留风格，计算简单</td></tr>
+<tr><td><b>GroupNorm</b></td><td>通道分组归一化</td><td>目标检测、小batch</td><td>BatchNorm和LayerNorm的折中，分组灵活</td></tr>
+</tbody>
+</table>
+
+<h4>25.4 动态演示：BatchNorm如何稳定分布</h4>
+<div class="kg-card" style="margin-top:16px;">
+  <canvas id="canvas-bn-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="kg-caption">动态演示：BatchNorm前后数据分布的变化——从漂移混乱到稳定标准正态（Canvas实时绘制）</div>
+</div>
+
+<div class="kg-step">
+  <strong>🎯 选型指南</strong>：CNN + batch够大 → BatchNorm；Transformer/序列 → LayerNorm；风格迁移 → InstanceNorm；小batch检测 → GroupNorm。BatchNorm训练时用batch统计量，推理时用滑动平均——这也是为什么BN层有train/eval两种模式。
+</div>
+
+</div></div>
+
 `;
 
 const knowledgePanel = document.getElementById('knowledgePanel');
@@ -7680,6 +7849,317 @@ function closeKnowledge() {
 
 document.getElementById('btnKnowledge').addEventListener('click', openKnowledge);
 document.getElementById('knowledgeCloseBtn').addEventListener('click', closeKnowledge);
+
+// ================================================================
+// 动态演示：学习率调度 (Canvas 2D + requestAnimationFrame)
+// ================================================================
+function initLRDemo() {
+  var canvas = document.getElementById('canvas-lr-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var epoch = 0, running = true;
+
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+
+    // 背景网格
+    ctx.strokeStyle = '#e8e4df';
+    ctx.lineWidth = 1;
+    for (var i = 0; i <= 10; i++) {
+      var x = 60 + i * 64;
+      ctx.beginPath(); ctx.moveTo(x, 20); ctx.lineTo(x, H-40); ctx.stroke();
+    }
+    for (var i = 0; i <= 5; i++) {
+      var y = 20 + i * 44;
+      ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W-20, y); ctx.stroke();
+    }
+
+    // 坐标轴标签
+    ctx.fillStyle = '#6C7A89';
+    ctx.font = '11px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    for (var i = 0; i <= 10; i++) {
+      ctx.fillText((i*10).toString(), 60 + i * 64, H - 20);
+    }
+    ctx.textAlign = 'right';
+    for (var i = 0; i <= 5; i++) {
+      ctx.fillText((0.1 - i*0.02).toFixed(2), 55, 25 + i * 44);
+    }
+    ctx.save();
+    ctx.translate(20, H/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign = 'center';
+    ctx.fillText('学习率 LR', 0, 0);
+    ctx.restore();
+    ctx.textAlign = 'center';
+    ctx.fillText('Epoch', W/2 + 20, H - 5);
+
+    // 绘制曲线
+    var colors = ['#CC8888', '#7BA7CC', '#8FB996', '#A890C0'];
+    var names = ['Step Decay', 'Exponential', 'Cosine', 'Warmup+Cosine'];
+
+    for (var c = 0; c < 4; c++) {
+      ctx.beginPath();
+      ctx.strokeStyle = colors[c];
+      ctx.lineWidth = 2.5;
+      for (var e = 0; e <= epoch; e++) {
+        var lr;
+        if (c === 0) lr = 0.1 * Math.pow(0.5, Math.floor(e / 25));
+        else if (c === 1) lr = 0.1 * Math.exp(-e / 40);
+        else if (c === 2) lr = 0.05 * (1 + Math.cos(Math.PI * e / 100)) + 0.005;
+        else {
+          var w = Math.min(e / 10, 1.0);
+          lr = 0.05 * w * (1 + Math.cos(Math.PI * e / 100)) + 0.005;
+        }
+        var x = 60 + e / 100 * 640;
+        var y = 20 + (0.1 - lr) / 0.1 * 220;
+        if (e === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // 图例
+    for (var c = 0; c < 4; c++) {
+      ctx.fillStyle = colors[c];
+      ctx.fillRect(400 + (c%2)*150, 35 + Math.floor(c/2)*18, 12, 3);
+      ctx.fillStyle = '#4A4A4A';
+      ctx.font = '10px Microsoft YaHei';
+      ctx.textAlign = 'left';
+      ctx.fillText(names[c], 416 + (c%2)*150, 40 + Math.floor(c/2)*18);
+    }
+
+    // 当前epoch指示线
+    if (epoch > 0) {
+      var cx = 60 + epoch / 100 * 640;
+      ctx.strokeStyle = '#D4A574';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(cx, 20); ctx.lineTo(cx, H-40); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#D4A574';
+      ctx.textAlign = 'center';
+      ctx.fillText('epoch=' + epoch, cx, 15);
+    }
+
+    epoch = (epoch + 1) % 101;
+    if (epoch === 0) {
+      setTimeout(function() { requestAnimationFrame(draw); }, 800);
+      return;
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  // 暂停/恢复
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 动态演示：参数初始化 (Canvas 2D)
+// ================================================================
+function initInitDemo() {
+  var canvas = document.getElementById('canvas-init-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+  var modes = [
+    {name: 'Zero (w=0)',  color: '#B0B0B0', scale: 0,   type: 'flat'},
+    {name: 'Small (w=0.3)', color: '#7BA7CC', scale: 0.3, type: 'vanish'},
+    {name: 'Large (w=2)',   color: '#CC8888', scale: 2,   type: 'explode'},
+    {name: 'He (w~0.7)',    color: '#8FB996', scale: 0.7, type: 'healthy'}
+  ];
+
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+
+    var layers = 10;
+    var layerW = 55;
+    var startX = 40;
+    var baseY = H / 2;
+
+    // 画层
+    for (var m = 0; m < 4; m++) {
+      var yOffset = (m - 1.5) * 60;
+      var mode = modes[m];
+
+      // 标签
+      ctx.fillStyle = mode.color;
+      ctx.font = 'bold 10px Microsoft YaHei';
+      ctx.textAlign = 'right';
+      ctx.fillText(mode.name, startX - 8, baseY + yOffset + 3);
+
+      // 画神经元和梯度
+      for (var L = 0; L <= layers; L++) {
+        var x = startX + L * layerW;
+        var grad = Math.pow(mode.scale, L);
+        if (mode.type === 'flat') grad = (L === 0) ? 1 : 0;
+        if (mode.type === 'explode') grad = Math.min(grad, 8);
+        if (mode.type === 'vanish') grad = Math.max(grad, 0.001);
+
+        var r = Math.max(3, Math.min(18, 6 + grad * 4));
+        ctx.beginPath();
+        ctx.arc(x, baseY + yOffset, r, 0, Math.PI * 2);
+        ctx.fillStyle = mode.color;
+        ctx.globalAlpha = 0.3 + Math.min(0.7, grad / 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = mode.color;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // 连接线
+        if (L < layers) {
+          ctx.beginPath();
+          ctx.moveTo(x + r, baseY + yOffset);
+          ctx.lineTo(x + layerW - r, baseY + yOffset);
+          ctx.strokeStyle = mode.color;
+          ctx.lineWidth = Math.max(0.5, grad * 1.5);
+          ctx.globalAlpha = 0.3 + Math.min(0.5, grad);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+
+        // 脉冲动画
+        var pulse = Math.sin(t * 0.05 + L * 0.5 + m) * 0.3 + 0.7;
+        if (mode.type === 'healthy') {
+          ctx.beginPath();
+          ctx.arc(x, baseY + yOffset, r * pulse, 0, Math.PI * 2);
+          ctx.strokeStyle = mode.color;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // 底部说明
+    ctx.fillStyle = '#6C7A89';
+    ctx.font = '10px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('Layer 0 (Input) → Layer 10 (Output)   圆大小 = 梯度相对强度   线粗细 = 信号强度', W/2, H - 12);
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 动态演示：BatchNorm (Canvas 2D)
+// ================================================================
+function initBNDemo() {
+  var canvas = document.getElementById('canvas-bn-demo');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var t = 0, running = true;
+
+  function generateData(mu, sigma, n) {
+    var arr = [];
+    for (var i = 0; i < n; i++) {
+      var u = 0, v = 0;
+      while(u === 0) u = Math.random();
+      while(v === 0) v = Math.random();
+      arr.push(mu + sigma * Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v));
+    }
+    return arr;
+  }
+
+  function drawHist(data, x0, y0, w, h, color, title) {
+    var bins = 20;
+    var min = -3, max = 3;
+    var counts = new Array(bins).fill(0);
+    for (var i = 0; i < data.length; i++) {
+      var idx = Math.floor((data[i] - min) / (max - min) * bins);
+      if (idx >= 0 && idx < bins) counts[idx]++;
+    }
+    var maxCount = Math.max.apply(null, counts);
+
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = '11px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText(title, x0 + w/2, y0 - 5);
+
+    for (var i = 0; i < bins; i++) {
+      var bh = (counts[i] / maxCount) * h * 0.85;
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.7;
+      ctx.fillRect(x0 + i * (w/bins), y0 + h - bh, w/bins - 1, bh);
+      ctx.globalAlpha = 1;
+    }
+    // 轴线
+    ctx.strokeStyle = '#B0B0B0';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x0, y0 + h); ctx.lineTo(x0 + w, y0 + h); ctx.stroke();
+  }
+
+  function draw() {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+
+    // 漂移的mu
+    var mu = Math.sin(t * 0.02) * 1.5;
+    var sigma = 0.8 + Math.sin(t * 0.03) * 0.3;
+
+    var raw = generateData(mu, sigma, 500);
+    var normalized = raw.map(function(v) { return (v - mu) / (sigma + 0.01); });
+
+    // 标题
+    ctx.fillStyle = '#2D3436';
+    ctx.font = 'bold 13px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('BatchNorm 实时演示', W/2, 22);
+    ctx.fillStyle = '#6C7A89';
+    ctx.font = '10px Microsoft YaHei';
+    ctx.fillText('Epoch ' + Math.floor(t/3) + '  |  原始分布 μ=' + mu.toFixed(2) + ' σ=' + sigma.toFixed(2), W/2, 40);
+
+    // 左侧：原始分布
+    drawHist(raw, 60, 60, 260, 180, '#CC8888', '原始分布 (漂移中)');
+
+    // 箭头
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = 'bold 14px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('→', 350, 165);
+    ctx.font = '9px Microsoft YaHei';
+    ctx.fillText('μ_B, σ_B', 350, 180);
+    ctx.fillText('x̂=(x-μ)/σ', 350, 195);
+
+    // 右侧：归一化后
+    drawHist(normalized, 390, 60, 260, 180, '#8FB996', 'BatchNorm后 (稳定)');
+
+    // 底部公式
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = '11px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('y = γ · x̂ + β    (γ, β 可学习，让网络决定恢复多少原始分布)', W/2, H - 18);
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
+}
+
+// ================================================================
+// 知识面板打开时初始化所有Canvas演示
+// ================================================================
+var _origOpenKnowledge = openKnowledge;
+openKnowledge = function() {
+  _origOpenKnowledge();
+  // 延迟初始化Canvas，等待DOM渲染
+  setTimeout(function() {
+    initLRDemo();
+    initInitDemo();
+    initBNDemo();
+  }, 500);
+};
+
 
 // Accordion toggle with smooth animation
 function kgToggleAcc(header) {
