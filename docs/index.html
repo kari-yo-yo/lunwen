@@ -2468,6 +2468,121 @@ body { position: relative; }
   will-change: transform, opacity;
 }
 
+
+/* ===== Interactive Canvas Demo Controls ===== */
+.demo-wrap { position: relative; }
+.demo-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(250, 248, 245, 0.98);
+  border-radius: 0 0 10px 10px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  flex-wrap: wrap;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+.demo-btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #8B7E74;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  outline: none;
+}
+.demo-btn:hover { background: #6C5F55; transform: scale(1.05); }
+.demo-btn:active { transform: scale(0.95); }
+.demo-btn.secondary { background: #e8e4df; color: #4A4A4A; }
+.demo-btn.secondary:hover { background: #ddd8d2; }
+.demo-btn.step-btn { padding: 4px 10px; font-size: 11px; }
+
+.demo-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6C7A89;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+.demo-slider {
+  -webkit-appearance: none;
+  width: 90px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  outline: none;
+  cursor: pointer;
+}
+.demo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #8B7E74;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.demo-slider::-webkit-slider-thumb:hover { transform: scale(1.25); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+.demo-tooltip {
+  position: absolute;
+  background: rgba(45, 52, 54, 0.94);
+  color: #fff;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+  max-width: 220px;
+  line-height: 1.6;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(4px);
+}
+.demo-tooltip.visible { opacity: 1; transform: translateY(0); }
+
+.demo-step-bar {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.demo-step-seg {
+  width: 20px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  transition: background 0.4s ease, width 0.3s ease;
+}
+.demo-step-seg.active {
+  background: #8B7E74;
+  width: 28px;
+}
+
+.demo-info-badge {
+  font-size: 11px;
+  color: #8B7E74;
+  background: rgba(139,126,116,0.1);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+
+/* Canvas hover effect */
+canvas[id^="canvas-"] {
+  cursor: crosshair;
+  transition: box-shadow 0.3s ease;
+}
+canvas[id^="canvas-"]:hover {
+  box-shadow: inset 0 0 0 2px rgba(139,126,116,0.2);
+}
+
 </style>
 </head>
 <body>
@@ -5104,6 +5219,8 @@ openKnowledge = function() {
       initLossDemo();
       initContourletDemo();
     }, 500);
+    // 初始化 Three.js 3D 可视化
+    setTimeout(initAllThreeViz, 800);
   });
   
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6316,9 +6433,32 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:16px;">
   <canvas id="canvas-freq-demo" width="700" height="200" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-freq-demo">
+    <button class="demo-btn" id="btn-play-canvas-freq-demo" onclick="toggleDemo('canvas-freq-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-freq-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-freq-demo', this.value)">
+      <span id="speed-label-canvas-freq-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-freq-demo')">重置</button>
+    <span class="demo-info-badge" id="info-canvas-freq-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">动态演示：图像分解为低频（大色块）与高频（细节边缘）——点击暂停/继续</div>
 </div>
 </div></div>
+
+<div class="kg-card" style="margin-top:16px;">
+  <div style="font-weight:bold; font-size:13px; color:#4A4A4A; margin-bottom:8px; font-family:'Microsoft YaHei',sans-serif;">🎲 Three.js 3D 频谱可视化——拖拽旋转、滚轮缩放</div>
+  <div id="three-freq-container" style="width:100%;max-width:700px;height:320px;margin:0 auto;background:#faf8f5;border-radius:10px;position:relative;overflow:hidden;">
+    <canvas id="three-freq-canvas" style="width:100%;height:100%;display:block;"></canvas>
+    <div class="demo-controls" style="position:absolute;bottom:0;left:0;right:0;background:rgba(250,248,245,0.95);">
+      <button class="demo-btn" onclick="toggleThreeAnim('freq')">暂停</button>
+      <div class="demo-slider-wrap"><span>旋转速度</span><input type="range" class="demo-slider" id="three-freq-speed" min="0" max="2" step="0.1" value="0.5" oninput="setThreeSpeed('freq',this.value)"><span id="three-freq-speed-lbl">0.5</span></div>
+      <span class="demo-info-badge">拖拽旋转 · 滚轮缩放</span>
+    </div>
+  </div>
+</div>
+
 <div class="kg-section" id="kg-s2">
 <div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>二、陷波滤波器 & 带阻滤波器——频域里的"精准手术刀"</h3><span class="kg-acc-icon">▼</span></div>
 <div class="kg-accordion-body">
@@ -6344,6 +6484,16 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:16px;">
   <canvas id="canvas-notch-demo" width="700" height="220" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-notch-demo">
+    <button class="demo-btn" id="btn-play-canvas-notch-demo" onclick="toggleDemo('canvas-notch-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-notch-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-notch-demo', this.value)">
+      <span id="speed-label-canvas-notch-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-notch-demo')">重置</button>
+    <span class="demo-info-badge" id="info-canvas-notch-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">动态演示：陷波滤波器（精准挖点）vs 带阻滤波器（整段挡掉）——点击暂停/继续</div>
 </div>
 </div>
@@ -6431,6 +6581,17 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:16px;">
   <canvas id="canvas-wavelet-demo" width="700" height="260" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-wavelet-demo">
+    <button class="demo-btn" id="btn-play-canvas-wavelet-demo" onclick="toggleDemo('canvas-wavelet-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-wavelet-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-wavelet-demo', this.value)">
+      <span id="speed-label-canvas-wavelet-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-wavelet-demo')">重置</button>
+    <div class="demo-step-bar" id="step-bar-canvas-wavelet-demo"><div class="demo-step-seg" id="step-canvas-wavelet-demo-0" title="原图"></div><div class="demo-step-seg" id="step-canvas-wavelet-demo-1" title="一级分解"></div><div class="demo-step-seg" id="step-canvas-wavelet-demo-2" title="LL继续分解"></div><div class="demo-step-seg" id="step-canvas-wavelet-demo-3" title="金字塔完成"></div></div>
+    <span class="demo-info-badge" id="info-canvas-wavelet-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">动态演示：小波多级分解——原图→LL/LH/HL/HH→LL继续分解，子带逐步亮起</div>
 </div>
 </div>
@@ -6491,6 +6652,16 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:12px;">
   <canvas id="canvas-contourlet-demo" width="500" height="140" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-contourlet-demo">
+    <button class="demo-btn" id="btn-play-canvas-contourlet-demo" onclick="toggleDemo('canvas-contourlet-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-contourlet-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-contourlet-demo', this.value)">
+      <span id="speed-label-canvas-contourlet-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-contourlet-demo')">重置</button>
+    <span class="demo-info-badge" id="info-canvas-contourlet-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">小概念演示：小波（正方形方块）vs Contourlet（细长条带）逼近曲线边缘的效果差异</div>
 </div>
 </div></div>
@@ -6627,6 +6798,17 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:16px;">
   <canvas id="canvas-sparse-demo" width="700" height="220" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-sparse-demo">
+    <button class="demo-btn" id="btn-play-canvas-sparse-demo" onclick="toggleDemo('canvas-sparse-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-sparse-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-sparse-demo', this.value)">
+      <span id="speed-label-canvas-sparse-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-sparse-demo')">重置</button>
+    <div class="demo-step-bar" id="step-bar-canvas-sparse-demo"><div class="demo-step-seg" id="step-canvas-sparse-demo-0" title="选择原子"></div><div class="demo-step-seg" id="step-canvas-sparse-demo-1" title="加权组合"></div><div class="demo-step-seg" id="step-canvas-sparse-demo-2" title="稀疏重构"></div></div>
+    <span class="demo-info-badge" id="info-canvas-sparse-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">动态演示：稀疏编码——从过完备字典中选取少量原子（亮起），线性组合重构信号</div>
 </div>
 
@@ -6657,6 +6839,16 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:12px;">
   <canvas id="canvas-perceptron-demo" width="500" height="140" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-perceptron-demo">
+    <button class="demo-btn" id="btn-play-canvas-perceptron-demo" onclick="toggleDemo('canvas-perceptron-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-perceptron-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-perceptron-demo', this.value)">
+      <span id="speed-label-canvas-perceptron-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-perceptron-demo')">重置</button>
+    <span class="demo-info-badge" id="info-canvas-perceptron-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">小概念演示：感知机——输入×权重→求和→激活函数→输出</div>
 </div>
 
@@ -6814,6 +7006,17 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:16px;">
   <canvas id="canvas-backprop-demo" width="700" height="240" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-backprop-demo">
+    <button class="demo-btn" id="btn-play-canvas-backprop-demo" onclick="toggleDemo('canvas-backprop-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-backprop-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-backprop-demo', this.value)">
+      <span id="speed-label-canvas-backprop-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-backprop-demo')">重置</button>
+    <div class="demo-step-bar" id="step-bar-canvas-backprop-demo"><div class="demo-step-seg" id="step-canvas-backprop-demo-0" title="前向传播"></div><div class="demo-step-seg" id="step-canvas-backprop-demo-1" title="反向传播"></div></div>
+    <span class="demo-info-badge" id="info-canvas-backprop-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">动态演示：前向传播（蓝→）信号前传，反向传播（红←）梯度回传——链式法则逐层展开</div>
 </div>
 </div>
@@ -6833,32 +7036,722 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <div class="kg-act-demo">
   <div class="kg-act-grid">
     <div class="kg-act-card">
-      <svg viewBox="0 0 100 80"><defs><style>.c1{fill:none;stroke:#6366f1;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c1" d="M 15 65 Q 30 65 40 55 T 55 35 T 85 15"/></svg>
+      <svg viewBox="0 0 100 80"><defs><style>.c1{fill:none;stroke:#6366f1;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out forwards}
+/* ===== Interactive Canvas Demo Controls ===== */
+.demo-wrap { position: relative; }
+.demo-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(250, 248, 245, 0.98);
+  border-radius: 0 0 10px 10px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  flex-wrap: wrap;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+.demo-btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #8B7E74;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  outline: none;
+}
+.demo-btn:hover { background: #6C5F55; transform: scale(1.05); }
+.demo-btn:active { transform: scale(0.95); }
+.demo-btn.secondary { background: #e8e4df; color: #4A4A4A; }
+.demo-btn.secondary:hover { background: #ddd8d2; }
+.demo-btn.step-btn { padding: 4px 10px; font-size: 11px; }
+
+.demo-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6C7A89;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+.demo-slider {
+  -webkit-appearance: none;
+  width: 90px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  outline: none;
+  cursor: pointer;
+}
+.demo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #8B7E74;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.demo-slider::-webkit-slider-thumb:hover { transform: scale(1.25); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+.demo-tooltip {
+  position: absolute;
+  background: rgba(45, 52, 54, 0.94);
+  color: #fff;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+  max-width: 220px;
+  line-height: 1.6;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(4px);
+}
+.demo-tooltip.visible { opacity: 1; transform: translateY(0); }
+
+.demo-step-bar {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.demo-step-seg {
+  width: 20px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  transition: background 0.4s ease, width 0.3s ease;
+}
+.demo-step-seg.active {
+  background: #8B7E74;
+  width: 28px;
+}
+
+.demo-info-badge {
+  font-size: 11px;
+  color: #8B7E74;
+  background: rgba(139,126,116,0.1);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+
+/* Canvas hover effect */
+canvas[id^="canvas-"] {
+  cursor: crosshair;
+  transition: box-shadow 0.3s ease;
+}
+canvas[id^="canvas-"]:hover {
+  box-shadow: inset 0 0 0 2px rgba(139,126,116,0.2);
+}
+
+</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c1" d="M 15 65 Q 30 65 40 55 T 55 35 T 85 15"/></svg>
       <h5>Sigmoid</h5>
       <p>σ(x)=1/(1+e⁻ˣ)<br>输出0~1，有饱和区</p>
     </div>
     <div class="kg-act-card">
-      <svg viewBox="0 0 100 80"><defs><style>.c2{fill:none;stroke:#10b981;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.2s forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="40" x2="90" y2="40" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c2" d="M 15 65 Q 30 62 40 50 T 55 30 T 85 15"/></svg>
+      <svg viewBox="0 0 100 80"><defs><style>.c2{fill:none;stroke:#10b981;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.2s forwards}
+/* ===== Interactive Canvas Demo Controls ===== */
+.demo-wrap { position: relative; }
+.demo-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(250, 248, 245, 0.98);
+  border-radius: 0 0 10px 10px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  flex-wrap: wrap;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+.demo-btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #8B7E74;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  outline: none;
+}
+.demo-btn:hover { background: #6C5F55; transform: scale(1.05); }
+.demo-btn:active { transform: scale(0.95); }
+.demo-btn.secondary { background: #e8e4df; color: #4A4A4A; }
+.demo-btn.secondary:hover { background: #ddd8d2; }
+.demo-btn.step-btn { padding: 4px 10px; font-size: 11px; }
+
+.demo-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6C7A89;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+.demo-slider {
+  -webkit-appearance: none;
+  width: 90px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  outline: none;
+  cursor: pointer;
+}
+.demo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #8B7E74;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.demo-slider::-webkit-slider-thumb:hover { transform: scale(1.25); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+.demo-tooltip {
+  position: absolute;
+  background: rgba(45, 52, 54, 0.94);
+  color: #fff;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+  max-width: 220px;
+  line-height: 1.6;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(4px);
+}
+.demo-tooltip.visible { opacity: 1; transform: translateY(0); }
+
+.demo-step-bar {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.demo-step-seg {
+  width: 20px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  transition: background 0.4s ease, width 0.3s ease;
+}
+.demo-step-seg.active {
+  background: #8B7E74;
+  width: 28px;
+}
+
+.demo-info-badge {
+  font-size: 11px;
+  color: #8B7E74;
+  background: rgba(139,126,116,0.1);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+
+/* Canvas hover effect */
+canvas[id^="canvas-"] {
+  cursor: crosshair;
+  transition: box-shadow 0.3s ease;
+}
+canvas[id^="canvas-"]:hover {
+  box-shadow: inset 0 0 0 2px rgba(139,126,116,0.2);
+}
+
+</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="40" x2="90" y2="40" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c2" d="M 15 65 Q 30 62 40 50 T 55 30 T 85 15"/></svg>
       <h5>Tanh</h5>
       <p>tanh(x)<br>输出-1~1，零中心</p>
     </div>
     <div class="kg-act-card">
-      <svg viewBox="0 0 100 80"><defs><style>.c3{fill:none;stroke:#f59e0b;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.4s forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c3" d="M 15 65 L 50 65 L 85 15"/></svg>
+      <svg viewBox="0 0 100 80"><defs><style>.c3{fill:none;stroke:#f59e0b;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.4s forwards}
+/* ===== Interactive Canvas Demo Controls ===== */
+.demo-wrap { position: relative; }
+.demo-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(250, 248, 245, 0.98);
+  border-radius: 0 0 10px 10px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  flex-wrap: wrap;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+.demo-btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #8B7E74;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  outline: none;
+}
+.demo-btn:hover { background: #6C5F55; transform: scale(1.05); }
+.demo-btn:active { transform: scale(0.95); }
+.demo-btn.secondary { background: #e8e4df; color: #4A4A4A; }
+.demo-btn.secondary:hover { background: #ddd8d2; }
+.demo-btn.step-btn { padding: 4px 10px; font-size: 11px; }
+
+.demo-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6C7A89;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+.demo-slider {
+  -webkit-appearance: none;
+  width: 90px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  outline: none;
+  cursor: pointer;
+}
+.demo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #8B7E74;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.demo-slider::-webkit-slider-thumb:hover { transform: scale(1.25); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+.demo-tooltip {
+  position: absolute;
+  background: rgba(45, 52, 54, 0.94);
+  color: #fff;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+  max-width: 220px;
+  line-height: 1.6;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(4px);
+}
+.demo-tooltip.visible { opacity: 1; transform: translateY(0); }
+
+.demo-step-bar {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.demo-step-seg {
+  width: 20px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  transition: background 0.4s ease, width 0.3s ease;
+}
+.demo-step-seg.active {
+  background: #8B7E74;
+  width: 28px;
+}
+
+.demo-info-badge {
+  font-size: 11px;
+  color: #8B7E74;
+  background: rgba(139,126,116,0.1);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+
+/* Canvas hover effect */
+canvas[id^="canvas-"] {
+  cursor: crosshair;
+  transition: box-shadow 0.3s ease;
+}
+canvas[id^="canvas-"]:hover {
+  box-shadow: inset 0 0 0 2px rgba(139,126,116,0.2);
+}
+
+</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c3" d="M 15 65 L 50 65 L 85 15"/></svg>
       <h5>ReLU</h5>
       <p>max(0,x)<br>最简单，计算最快</p>
     </div>
     <div class="kg-act-card">
-      <svg viewBox="0 0 100 80"><defs><style>.c4{fill:none;stroke:#ef4444;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.6s forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c4" d="M 15 67 L 50 65 L 85 15"/><path class="c4" d="M 15 67 L 50 65" stroke="#ef4444" stroke-width="2.5" opacity="0.5"/></svg>
+      <svg viewBox="0 0 100 80"><defs><style>.c4{fill:none;stroke:#ef4444;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.6s forwards}
+/* ===== Interactive Canvas Demo Controls ===== */
+.demo-wrap { position: relative; }
+.demo-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(250, 248, 245, 0.98);
+  border-radius: 0 0 10px 10px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  flex-wrap: wrap;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+.demo-btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #8B7E74;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  outline: none;
+}
+.demo-btn:hover { background: #6C5F55; transform: scale(1.05); }
+.demo-btn:active { transform: scale(0.95); }
+.demo-btn.secondary { background: #e8e4df; color: #4A4A4A; }
+.demo-btn.secondary:hover { background: #ddd8d2; }
+.demo-btn.step-btn { padding: 4px 10px; font-size: 11px; }
+
+.demo-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6C7A89;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+.demo-slider {
+  -webkit-appearance: none;
+  width: 90px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  outline: none;
+  cursor: pointer;
+}
+.demo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #8B7E74;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.demo-slider::-webkit-slider-thumb:hover { transform: scale(1.25); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+.demo-tooltip {
+  position: absolute;
+  background: rgba(45, 52, 54, 0.94);
+  color: #fff;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+  max-width: 220px;
+  line-height: 1.6;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(4px);
+}
+.demo-tooltip.visible { opacity: 1; transform: translateY(0); }
+
+.demo-step-bar {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.demo-step-seg {
+  width: 20px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  transition: background 0.4s ease, width 0.3s ease;
+}
+.demo-step-seg.active {
+  background: #8B7E74;
+  width: 28px;
+}
+
+.demo-info-badge {
+  font-size: 11px;
+  color: #8B7E74;
+  background: rgba(139,126,116,0.1);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+
+/* Canvas hover effect */
+canvas[id^="canvas-"] {
+  cursor: crosshair;
+  transition: box-shadow 0.3s ease;
+}
+canvas[id^="canvas-"]:hover {
+  box-shadow: inset 0 0 0 2px rgba(139,126,116,0.2);
+}
+
+</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c4" d="M 15 67 L 50 65 L 85 15"/><path class="c4" d="M 15 67 L 50 65" stroke="#ef4444" stroke-width="2.5" opacity="0.5"/></svg>
       <h5>Leaky ReLU</h5>
       <p>x&lt;0时有微小斜率<br>解决ReLU"死亡"问题</p>
     </div>
     <div class="kg-act-card">
-      <svg viewBox="0 0 100 80"><defs><style>.c5{fill:none;stroke:#a855f7;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.8s forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c5" d="M 15 68 Q 30 66 40 60 Q 50 53 55 40 T 85 15"/></svg>
+      <svg viewBox="0 0 100 80"><defs><style>.c5{fill:none;stroke:#a855f7;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 0.8s forwards}
+/* ===== Interactive Canvas Demo Controls ===== */
+.demo-wrap { position: relative; }
+.demo-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(250, 248, 245, 0.98);
+  border-radius: 0 0 10px 10px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  flex-wrap: wrap;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+.demo-btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #8B7E74;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  outline: none;
+}
+.demo-btn:hover { background: #6C5F55; transform: scale(1.05); }
+.demo-btn:active { transform: scale(0.95); }
+.demo-btn.secondary { background: #e8e4df; color: #4A4A4A; }
+.demo-btn.secondary:hover { background: #ddd8d2; }
+.demo-btn.step-btn { padding: 4px 10px; font-size: 11px; }
+
+.demo-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6C7A89;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+.demo-slider {
+  -webkit-appearance: none;
+  width: 90px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  outline: none;
+  cursor: pointer;
+}
+.demo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #8B7E74;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.demo-slider::-webkit-slider-thumb:hover { transform: scale(1.25); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+.demo-tooltip {
+  position: absolute;
+  background: rgba(45, 52, 54, 0.94);
+  color: #fff;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+  max-width: 220px;
+  line-height: 1.6;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(4px);
+}
+.demo-tooltip.visible { opacity: 1; transform: translateY(0); }
+
+.demo-step-bar {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.demo-step-seg {
+  width: 20px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  transition: background 0.4s ease, width 0.3s ease;
+}
+.demo-step-seg.active {
+  background: #8B7E74;
+  width: 28px;
+}
+
+.demo-info-badge {
+  font-size: 11px;
+  color: #8B7E74;
+  background: rgba(139,126,116,0.1);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+
+/* Canvas hover effect */
+canvas[id^="canvas-"] {
+  cursor: crosshair;
+  transition: box-shadow 0.3s ease;
+}
+canvas[id^="canvas-"]:hover {
+  box-shadow: inset 0 0 0 2px rgba(139,126,116,0.2);
+}
+
+</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c5" d="M 15 68 Q 30 66 40 60 Q 50 53 55 40 T 85 15"/></svg>
       <h5>ELU</h5>
       <p>平滑负值区域<br>减少噪声</p>
     </div>
     <div class="kg-act-card">
-      <svg viewBox="0 0 100 80"><defs><style>.c6{fill:none;stroke:#0ea5e9;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 1.0s forwards}</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c6" d="M 15 67 Q 35 65 45 55 Q 52 45 58 35 T 85 15"/></svg>
+      <svg viewBox="0 0 100 80"><defs><style>.c6{fill:none;stroke:#0ea5e9;stroke-width:2.5;stroke-dasharray:300;stroke-dashoffset:300;animation:kgDraw 2s ease-out 1.0s forwards}
+/* ===== Interactive Canvas Demo Controls ===== */
+.demo-wrap { position: relative; }
+.demo-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(250, 248, 245, 0.98);
+  border-radius: 0 0 10px 10px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  flex-wrap: wrap;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+.demo-btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #8B7E74;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  outline: none;
+}
+.demo-btn:hover { background: #6C5F55; transform: scale(1.05); }
+.demo-btn:active { transform: scale(0.95); }
+.demo-btn.secondary { background: #e8e4df; color: #4A4A4A; }
+.demo-btn.secondary:hover { background: #ddd8d2; }
+.demo-btn.step-btn { padding: 4px 10px; font-size: 11px; }
+
+.demo-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6C7A89;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+.demo-slider {
+  -webkit-appearance: none;
+  width: 90px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  outline: none;
+  cursor: pointer;
+}
+.demo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #8B7E74;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.demo-slider::-webkit-slider-thumb:hover { transform: scale(1.25); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+.demo-tooltip {
+  position: absolute;
+  background: rgba(45, 52, 54, 0.94);
+  color: #fff;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'Microsoft YaHei', sans-serif;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+  max-width: 220px;
+  line-height: 1.6;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(4px);
+}
+.demo-tooltip.visible { opacity: 1; transform: translateY(0); }
+
+.demo-step-bar {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.demo-step-seg {
+  width: 20px;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e4df;
+  transition: background 0.4s ease, width 0.3s ease;
+}
+.demo-step-seg.active {
+  background: #8B7E74;
+  width: 28px;
+}
+
+.demo-info-badge {
+  font-size: 11px;
+  color: #8B7E74;
+  background: rgba(139,126,116,0.1);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+
+/* Canvas hover effect */
+canvas[id^="canvas-"] {
+  cursor: crosshair;
+  transition: box-shadow 0.3s ease;
+}
+canvas[id^="canvas-"]:hover {
+  box-shadow: inset 0 0 0 2px rgba(139,126,116,0.2);
+}
+
+</style></defs><line x1="50" y1="5" x2="50" y2="75" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><line x1="10" y1="65" x2="90" y2="65" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/><path class="c6" d="M 15 67 Q 35 65 45 55 Q 52 45 58 35 T 85 15"/></svg>
       <h5>GELU</h5>
       <p>高斯误差线性单元<br>BERT/GPT标配</p>
     </div>
@@ -7041,6 +7934,16 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:12px;">
   <canvas id="canvas-loss-demo" width="500" height="160" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-loss-demo">
+    <button class="demo-btn" id="btn-play-canvas-loss-demo" onclick="toggleDemo('canvas-loss-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-loss-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-loss-demo', this.value)">
+      <span id="speed-label-canvas-loss-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-loss-demo')">重置</button>
+    <span class="demo-info-badge" id="info-canvas-loss-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">小概念演示：MSE损失曲面（碗形）vs 交叉熵损失曲面——小球沿梯度方向滚向最低点</div>
 </div>
 
@@ -7125,6 +8028,16 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <h4>14.3 动态演示：梯度传播的"健康检查"</h4>
 <div class="kg-card" style="margin-top:16px;">
   <canvas id="canvas-init-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-init-demo">
+    <button class="demo-btn" id="btn-play-canvas-init-demo" onclick="toggleDemo('canvas-init-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-init-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-init-demo', this.value)">
+      <span id="speed-label-canvas-init-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-init-demo')">重置</button>
+    <span class="demo-info-badge" id="info-canvas-init-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">动态演示：不同初始化下梯度在10层网络中的传播情况——健康传播 vs 消失 vs 爆炸（Canvas实时绘制）</div>
 </div>
 
@@ -7184,6 +8097,16 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <h4>15.3 动态演示：学习率随训练变化</h4>
 <div class="kg-card" style="margin-top:16px;">
   <canvas id="canvas-lr-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-lr-demo">
+    <button class="demo-btn" id="btn-play-canvas-lr-demo" onclick="toggleDemo('canvas-lr-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-lr-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-lr-demo', this.value)">
+      <span id="speed-label-canvas-lr-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-lr-demo')">重置</button>
+    <span class="demo-info-badge" id="info-canvas-lr-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">动态演示：不同调度策略下学习率随epoch的变化曲线（Canvas实时绘制）</div>
 </div>
 
@@ -7236,6 +8159,16 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <h4>16.4 动态演示：BatchNorm如何稳定分布</h4>
 <div class="kg-card" style="margin-top:16px;">
   <canvas id="canvas-bn-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-bn-demo">
+    <button class="demo-btn" id="btn-play-canvas-bn-demo" onclick="toggleDemo('canvas-bn-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-bn-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-bn-demo', this.value)">
+      <span id="speed-label-canvas-bn-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-bn-demo')">重置</button>
+    <span class="demo-info-badge" id="info-canvas-bn-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">动态演示：BatchNorm前后数据分布的变化——从漂移混乱到稳定标准正态（Canvas实时绘制）</div>
 </div>
 
@@ -7380,7 +8313,30 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <h4>自注意力QKV计算动态演示</h4>
 <div class="kg-card" style="margin-top:16px;">
   <canvas id="canvas-attention-demo" width="700" height="280" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-attention-demo">
+    <button class="demo-btn" id="btn-play-canvas-attention-demo" onclick="toggleDemo('canvas-attention-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-attention-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-attention-demo', this.value)">
+      <span id="speed-label-canvas-attention-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-attention-demo')">重置</button>
+    <div class="demo-step-bar" id="step-bar-canvas-attention-demo"><div class="demo-step-seg" id="step-canvas-attention-demo-0" title="Q×Kᵀ"></div><div class="demo-step-seg" id="step-canvas-attention-demo-1" title="÷√dk"></div><div class="demo-step-seg" id="step-canvas-attention-demo-2" title="Softmax"></div><div class="demo-step-seg" id="step-canvas-attention-demo-3" title="×V"></div></div>
+    <span class="demo-info-badge" id="info-canvas-attention-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">动态演示：Q×K<sup>T</sup>→缩放→Softmax→×V 四步计算注意力权重——点击暂停/继续</div>
+</div>
+
+<div class="kg-card" style="margin-top:16px;">
+  <div style="font-weight:bold; font-size:13px; color:#4A4A4A; margin-bottom:8px; font-family:'Microsoft YaHei',sans-serif;">🎲 Three.js 3D 注意力矩阵——Q/K/V 三个立方体的空间关系</div>
+  <div id="three-attn-container" style="width:100%;max-width:700px;height:340px;margin:0 auto;background:#faf8f5;border-radius:10px;position:relative;overflow:hidden;">
+    <canvas id="three-attn-canvas" style="width:100%;height:100%;display:block;"></canvas>
+    <div class="demo-controls" style="position:absolute;bottom:0;left:0;right:0;background:rgba(250,248,245,0.95);">
+      <button class="demo-btn" onclick="toggleThreeAnim('attn')">暂停</button>
+      <div class="demo-slider-wrap"><span>旋转速度</span><input type="range" class="demo-slider" id="three-attn-speed" min="0" max="2" step="0.1" value="0.3" oninput="setThreeSpeed('attn',this.value)"><span id="three-attn-speed-lbl">0.3</span></div>
+      <span class="demo-info-badge">拖拽旋转 · 滚轮缩放</span>
+    </div>
+  </div>
 </div>
 
 </div></div>
@@ -7447,7 +8403,30 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-card" style="margin-top:16px;">
   <canvas id="canvas-se-demo" width="700" height="240" style="width:100%;max-width:700px;height:auto;display:block;margin:0 auto;background:#faf8f5;border-radius:8px;"></canvas>
+  <div class="demo-controls" id="controls-canvas-se-demo">
+    <button class="demo-btn" id="btn-play-canvas-se-demo" onclick="toggleDemo('canvas-se-demo')">暂停</button>
+    <div class="demo-slider-wrap">
+      <span>速度</span>
+      <input type="range" class="demo-slider" id="speed-canvas-se-demo" min="0" max="3" step="0.25" value="1" oninput="setDemoSpeed('canvas-se-demo', this.value)">
+      <span id="speed-label-canvas-se-demo">1.0x</span>
+    </div>
+    <button class="demo-btn secondary" onclick="resetDemo('canvas-se-demo')">重置</button>
+    <div class="demo-step-bar" id="step-bar-canvas-se-demo"><div class="demo-step-seg" id="step-canvas-se-demo-0" title="Squeeze"></div><div class="demo-step-seg" id="step-canvas-se-demo-1" title="Excitation"></div><div class="demo-step-seg" id="step-canvas-se-demo-2" title="Scale"></div></div>
+    <span class="demo-info-badge" id="info-canvas-se-demo">点击画面暂停/继续</span>
+  </div>
   <div class="kg-caption">动态演示：SE模块三步走——Squeeze(压缩)→Excitation(激励)→Scale(缩放)，通道权重实时生成</div>
+</div>
+
+<div class="kg-card" style="margin-top:16px;">
+  <div style="font-weight:bold; font-size:13px; color:#4A4A4A; margin-bottom:8px; font-family:'Microsoft YaHei',sans-serif;">🎲 Three.js 3D 通道权重——SE 模块的通道重要性空间分布</div>
+  <div id="three-se-container" style="width:100%;max-width:700px;height:320px;margin:0 auto;background:#faf8f5;border-radius:10px;position:relative;overflow:hidden;">
+    <canvas id="three-se-canvas" style="width:100%;height:100%;display:block;"></canvas>
+    <div class="demo-controls" style="position:absolute;bottom:0;left:0;right:0;background:rgba(250,248,245,0.95);">
+      <button class="demo-btn" onclick="toggleThreeAnim('se')">暂停</button>
+      <div class="demo-slider-wrap"><span>旋转速度</span><input type="range" class="demo-slider" id="three-se-speed" min="0" max="2" step="0.1" value="0.4" oninput="setThreeSpeed('se',this.value)"><span id="three-se-speed-lbl">0.4</span></div>
+      <span class="demo-info-badge">拖拽旋转 · 滚轮缩放</span>
+    </div>
+  </div>
 </div>
 
 </div></div>
@@ -8005,6 +8984,8 @@ function initLRDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var epoch = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-lr-demo', _state);
 
   function draw() {
     if (!running) return;
@@ -8090,7 +9071,7 @@ function initLRDemo() {
       ctx.fillText('epoch=' + epoch, cx, 15);
     }
 
-    epoch = (epoch + 1) % 101;
+    epoch = (epoch + (_state && _state.speed > 0 ? _state.speed : 1)) % 101;
     if (epoch === 0) {
       setTimeout(function() { requestAnimationFrame(draw); }, 800);
       return;
@@ -8112,6 +9093,8 @@ function initInitDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-init-demo', _state);
   var modes = [
     {name: 'Zero (w=0)',  color: '#B0B0B0', scale: 0,   type: 'flat'},
     {name: 'Small (w=0.3)', color: '#7BA7CC', scale: 0.3, type: 'vanish'},
@@ -8188,7 +9171,7 @@ function initInitDemo() {
     ctx.textAlign = 'center';
     ctx.fillText('Layer 0 (Input) → Layer 10 (Output)   圆大小 = 梯度相对强度   线粗细 = 信号强度', W/2, H - 12);
 
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
@@ -8204,6 +9187,8 @@ function initBNDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-bn-demo', _state);
 
   function generateData(mu, sigma, n) {
     var arr = [];
@@ -8285,13 +9270,329 @@ function initBNDemo() {
     ctx.textAlign = 'center';
     ctx.fillText('y = γ · x̂ + β    (γ, β 可学习，让网络决定恢复多少原始分布)', W/2, H - 18);
 
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
   canvas.addEventListener('click', function() { running = !running; if (running) draw(); });
 }
 
+
+
+// ================================================================
+// Interactive Canvas Demo Framework
+// ================================================================
+var _demoStates = {};
+
+function _ensureTooltip(cid) {
+  var wrap = document.getElementById(cid).parentNode;
+  var tip = document.getElementById('tooltip-' + cid);
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'tooltip-' + cid;
+    tip.className = 'demo-tooltip';
+    wrap.appendChild(tip);
+  }
+  return tip;
+}
+
+function showDemoTooltip(cid, text, x, y) {
+  var tip = _ensureTooltip(cid);
+  tip.textContent = text;
+  tip.style.left = Math.min(x + 12, 500) + 'px';
+  tip.style.top = Math.max(y - 40, 5) + 'px';
+  tip.classList.add('visible');
+}
+
+function hideDemoTooltip(cid) {
+  var tip = document.getElementById('tooltip-' + cid);
+  if (tip) tip.classList.remove('visible');
+}
+
+function registerDemoState(cid, state) {
+  _demoStates[cid] = state;
+  // 绑定鼠标事件
+  var canvas = document.getElementById(cid);
+  if (!canvas) return;
+  canvas.addEventListener('mousemove', function(e) {
+    var rect = canvas.getBoundingClientRect();
+    state._mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+    state._my = (e.clientY - rect.top) * (canvas.height / rect.height);
+  });
+  canvas.addEventListener('mouseleave', function() {
+    state._mx = -1; state._my = -1;
+    hideDemoTooltip(cid);
+  });
+}
+
+function toggleDemo(cid) {
+  var st = _demoStates[cid];
+  if (!st) return;
+  st.running = !st.running;
+  var btn = document.getElementById('btn-play-' + cid);
+  if (btn) btn.textContent = st.running ? '暂停' : '播放';
+  if (st.running && st._drawFn) st._drawFn();
+}
+
+function setDemoSpeed(cid, val) {
+  var st = _demoStates[cid];
+  if (st) st.speed = parseFloat(val);
+  var lbl = document.getElementById('speed-label-' + cid);
+  if (lbl) lbl.textContent = parseFloat(val).toFixed(2) + 'x';
+}
+
+function resetDemo(cid) {
+  var st = _demoStates[cid];
+  if (!st) return;
+  st.t = 0;
+  st.running = true;
+  var btn = document.getElementById('btn-play-' + cid);
+  if (btn) btn.textContent = '暂停';
+}
+
+function updateStepBar(cid, stepIndex, totalSteps) {
+  for (var i = 0; i < totalSteps; i++) {
+    var seg = document.getElementById('step-' + cid + '-' + i);
+    if (seg) {
+      if (i === stepIndex) seg.classList.add('active');
+      else seg.classList.remove('active');
+    }
+  }
+}
+
+function updateDemoInfo(cid, text) {
+  var info = document.getElementById('info-' + cid);
+  if (info) info.textContent = text;
+}
+
+
+// ================================================================
+// Three.js 3D Visualization Components
+// ================================================================
+var _threeScenes = {};
+
+function initThreeViz(containerId, canvasId, setupFn) {
+  var container = document.getElementById(containerId);
+  var canvas = document.getElementById(canvasId);
+  if (!container || !canvas || typeof THREE === 'undefined') return;
+  
+  var W = container.clientWidth;
+  var H = container.clientHeight;
+  
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xfaf8f5);
+  
+  var camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 1000);
+  camera.position.set(5, 4, 6);
+  camera.lookAt(0, 0, 0);
+  
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  
+  var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(ambientLight);
+  var dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  dirLight.position.set(5, 8, 5);
+  scene.add(dirLight);
+  
+  var state = { running: true, speed: 0.5, rotY: 0, mouseDown: false, mouseX: 0, mouseY: 0, camAngle: 0.8, camHeight: 3, camRadius: 7 };
+  
+  // 鼠标交互
+  canvas.addEventListener('mousedown', function(e) { state.mouseDown = true; state.mouseX = e.clientX; state.mouseY = e.clientY; });
+  window.addEventListener('mouseup', function() { state.mouseDown = false; });
+  canvas.addEventListener('mousemove', function(e) {
+    if (!state.mouseDown) return;
+    var dx = e.clientX - state.mouseX;
+    var dy = e.clientY - state.mouseY;
+    state.camAngle -= dx * 0.01;
+    state.camHeight = Math.max(0.5, Math.min(8, state.camHeight + dy * 0.02));
+    state.mouseX = e.clientX;
+    state.mouseY = e.clientY;
+  });
+  canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    state.camRadius = Math.max(3, Math.min(15, state.camRadius + e.deltaY * 0.01));
+  });
+  
+  setupFn(scene, state);
+  
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!state.running) return;
+    state.rotY += state.speed * 0.01;
+    camera.position.x = Math.cos(state.camAngle) * state.camRadius;
+    camera.position.z = Math.sin(state.camAngle) * state.camRadius;
+    camera.position.y = state.camHeight;
+    camera.lookAt(0, 0, 0);
+    if (state.onAnimate) state.onAnimate(scene, state);
+    renderer.render(scene, camera);
+  }
+  animate();
+  
+  _threeScenes[containerId] = state;
+  
+  window.addEventListener('resize', function() {
+    var w = container.clientWidth, h = container.clientHeight;
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  });
+}
+
+function toggleThreeAnim(key) {
+  var st = _threeScenes['three-' + key + '-container'];
+  if (st) { st.running = !st.running; }
+}
+function setThreeSpeed(key, val) {
+  var st = _threeScenes['three-' + key + '-container'];
+  if (st) { st.speed = parseFloat(val); }
+  var lbl = document.getElementById('three-' + key + '-speed-lbl');
+  if (lbl) lbl.textContent = parseFloat(val).toFixed(1);
+}
+
+// --- 3D 频谱表面 ---
+function setupFreq3D(scene, state) {
+  var geometry = new THREE.PlaneGeometry(6, 6, 32, 32);
+  var material = new THREE.MeshPhongMaterial({
+    color: 0x8B7E74, side: THREE.DoubleSide, flatShading: true,
+    shininess: 30, transparent: true, opacity: 0.85
+  });
+  var mesh = new THREE.Mesh(geometry, material);
+  mesh.rotation.x = -Math.PI/2;
+  scene.add(mesh);
+  
+  // 低频区域（中心高台）
+  var lowFreqGeo = new THREE.CylinderGeometry(1.2, 1.4, 0.8, 32);
+  var lowFreqMat = new THREE.MeshPhongMaterial({ color: 0x7BA7CC, transparent: true, opacity: 0.7 });
+  var lowFreq = new THREE.Mesh(lowFreqGeo, lowFreqMat);
+  lowFreq.position.set(0, 0.4, 0);
+  scene.add(lowFreq);
+  
+  // 高频区域（周围尖峰）
+  for (var i = 0; i < 12; i++) {
+    var angle = (i / 12) * Math.PI * 2;
+    var h = 0.3 + Math.random() * 0.8;
+    var spikeGeo = new THREE.ConeGeometry(0.15, h, 8);
+    var spikeMat = new THREE.MeshPhongMaterial({ color: 0xCC8888, transparent: true, opacity: 0.7 });
+    var spike = new THREE.Mesh(spikeGeo, spikeMat);
+    spike.position.set(Math.cos(angle) * 2.2, h/2, Math.sin(angle) * 2.2);
+    scene.add(spike);
+  }
+  
+  // 网格线
+  var grid = new THREE.GridHelper(8, 16, 0xccc8c3, 0xe8e4df);
+  grid.position.y = -0.01;
+  scene.add(grid);
+  
+  state.onAnimate = function(s, st) {
+    // 低频区域脉动
+    var pulse = 1 + Math.sin(Date.now() * 0.002) * 0.1;
+    lowFreq.scale.set(pulse, 1, pulse);
+  };
+}
+
+// --- 3D 注意力矩阵 Q/K/V ---
+function setupAttn3D(scene, state) {
+  var boxSize = 0.6;
+  var gap = 0.15;
+  var colors = [0x6366f1, 0x7BA7CC, 0xCC8888];
+  var labels = ['Q (Query)', 'K (Key)', 'V (Value)'];
+  
+  for (var m = 0; m < 3; m++) {
+    var group = new THREE.Group();
+    for (var i = 0; i < 4; i++) {
+      for (var j = 0; j < 4; j++) {
+        var h = 0.1 + Math.random() * 0.6;
+        var geo = new THREE.BoxGeometry(boxSize, h, boxSize);
+        var mat = new THREE.MeshPhongMaterial({ color: colors[m], transparent: true, opacity: 0.75 });
+        var cube = new THREE.Mesh(geo, mat);
+        cube.position.set((i - 1.5) * (boxSize + gap), h/2, (j - 1.5) * (boxSize + gap));
+        group.add(cube);
+      }
+    }
+    group.position.set((m - 1) * 3.5, 0, 0);
+    scene.add(group);
+    
+    // 标签（简单小球表示）
+    var labelGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    var labelMat = new THREE.MeshBasicMaterial({ color: colors[m] });
+    var labelSphere = new THREE.Mesh(labelGeo, labelMat);
+    labelSphere.position.set((m - 1) * 3.5, 1.2, 0);
+    scene.add(labelSphere);
+  }
+  
+  // 连接线
+  var lineMat = new THREE.LineBasicMaterial({ color: 0xD4A574, transparent: true, opacity: 0.4 });
+  for (var m = 0; m < 2; m++) {
+    var pts = [new THREE.Vector3((m - 1) * 3.5 + 1.2, 0.5, 0), new THREE.Vector3((m) * 3.5 - 1.2, 0.5, 0)];
+    var lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
+    scene.add(new THREE.Line(lineGeo, lineMat));
+  }
+  
+  state.onAnimate = function(s, st) {
+    // 矩阵块高度脉动
+    s.traverse(function(obj) {
+      if (obj.isMesh && obj.geometry.type === 'BoxGeometry') {
+        var origH = obj.userData.origH || obj.geometry.parameters.height;
+        obj.userData.origH = origH;
+        var newH = origH * (0.85 + 0.15 * Math.sin(Date.now() * 0.003 + obj.position.x));
+        obj.scale.y = newH / origH;
+        obj.position.y = newH / 2;
+      }
+    });
+  };
+}
+
+// --- 3D SE 通道权重柱状图 ---
+function setupSE3D(scene, state) {
+  var numChannels = 8;
+  var barW = 0.5;
+  var gap = 0.2;
+  var colors = [0x6366f1, 0x8FB996, 0xCC8888, 0xD4A574, 0x7BA7CC, 0xA890C0, 0xB0B0B0, 0x6366f1];
+  
+  for (var i = 0; i < numChannels; i++) {
+    var h = 0.3 + Math.random() * 1.5;
+    var geo = new THREE.BoxGeometry(barW, h, barW);
+    var mat = new THREE.MeshPhongMaterial({ color: colors[i], transparent: true, opacity: 0.8 });
+    var bar = new THREE.Mesh(geo, mat);
+    bar.position.set((i - numChannels/2 + 0.5) * (barW + gap), h/2, 0);
+    bar.userData = { channel: i, origH: h };
+    scene.add(bar);
+  }
+  
+  // 基座
+  var baseGeo = new THREE.BoxGeometry(numChannels * (barW + gap) + 0.5, 0.05, barW + 0.5);
+  var baseMat = new THREE.MeshPhongMaterial({ color: 0xe8e4df });
+  var base = new THREE.Mesh(baseGeo, baseMat);
+  base.position.set(0, 0.025, 0);
+  scene.add(base);
+  
+  state.onAnimate = function(s, st) {
+    s.traverse(function(obj) {
+      if (obj.isMesh && obj.userData.channel !== undefined) {
+        var ch = obj.userData.channel;
+        var w = 0.3 + 0.5 * Math.abs(Math.sin(Date.now() * 0.002 + ch * 0.8));
+        var newH = obj.userData.origH * (0.5 + 0.5 * w);
+        obj.scale.y = newH / obj.userData.origH;
+        obj.position.y = newH / 2;
+      }
+    });
+  };
+}
+
+// 初始化所有 Three.js 可视化
+function initAllThreeViz() {
+  setTimeout(function() {
+    initThreeViz('three-freq-container', 'three-freq-canvas', setupFreq3D);
+  }, 600);
+  setTimeout(function() {
+    initThreeViz('three-attn-container', 'three-attn-canvas', setupAttn3D);
+  }, 900);
+  setTimeout(function() {
+    initThreeViz('three-se-container', 'three-se-canvas', setupSE3D);
+  }, 1200);
+}
 
 // ================================================================
 // 动态演示：频域分解 (Canvas 2D + requestAnimationFrame)
@@ -8302,6 +9603,8 @@ function initFreqDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-freq-demo', _state);
 
   function draw() {
     if (!running) return;
@@ -8381,7 +9684,7 @@ function initFreqDemo() {
     ctx.font = '12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('FFT分解：原图 = 低频（背景色块）+ 高频（边缘纹理）', W / 2, H - 5);
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
@@ -8397,6 +9700,8 @@ function initNotchDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-notch-demo', _state);
 
   function draw() {
     if (!running) return;
@@ -8481,7 +9786,7 @@ function initNotchDemo() {
     ctx.font = '12px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('频谱中心=低频，边缘=高频。红色=被滤除的频率', W / 2, H - 5);
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
@@ -8497,6 +9802,8 @@ function initWaveletDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-wavelet-demo', _state);
 
   function draw() {
     if (!running) return;
@@ -8590,7 +9897,7 @@ function initWaveletDemo() {
     ctx.fillRect(progressX, H - 22, progressW, 6);
     ctx.fillStyle = '#D4A574';
     ctx.fillRect(progressX, H - 22, progressW * ((t % 320) / 320), 6);
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
@@ -8606,6 +9913,8 @@ function initSparseDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-sparse-demo', _state);
   var atoms = [];
   for (var i = 0; i < 8; i++) {
     atoms.push({ active: false, weight: 0, targetWeight: 0 });
@@ -8722,7 +10031,7 @@ function initSparseDemo() {
     ctx.fillStyle = '#8B7E74';
     ctx.textAlign = 'right';
     ctx.fillText('稀疏度: ' + nonzero + '/' + atoms.length + ' 非零 (' + Math.round(nonzero / atoms.length * 100) + '%)', W - 30, H - 10);
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
@@ -8738,6 +10047,8 @@ function initBackpropDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-backprop-demo', _state);
 
   function draw() {
     if (!running) return;
@@ -8829,7 +10140,7 @@ function initBackpropDemo() {
     ctx.textAlign = 'center';
     if (phase === 0) { ctx.fillText('前向: z=wx+b -> a=\u03c3(z) -> 逐层传递到输出', W / 2, H - 10); }
     else { ctx.fillText('反向: \u2202L/\u2202w = \u2202L/\u2202a \u00d7 \u2202a/\u2202z \u00d7 \u2202z/\u2202w（链式法则逐层回传）', W / 2, H - 10); }
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
@@ -8845,6 +10156,8 @@ function initAttentionDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-attention-demo', _state);
 
   function draw() {
     if (!running) return;
@@ -8934,7 +10247,7 @@ function initAttentionDemo() {
     ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('Attention(Q,K,V) = softmax(QK\u1d40/\u221adk)\u00b7V', W / 2, H - 15);
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
@@ -8950,6 +10263,8 @@ function initSEDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-se-demo', _state);
 
   function draw() {
     if (!running) return;
@@ -9105,7 +10420,7 @@ function initSEDemo() {
       ctx.textAlign = 'center';
       ctx.fillText(stepNames[s], stepStartX + s * stepW + (stepW - 4) / 2, H - 8);
     }
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
@@ -9121,6 +10436,8 @@ function initPerceptronDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-perceptron-demo', _state);
   function draw() {
     if (!running) return;
     ctx.clearRect(0, 0, W, H);
@@ -9191,7 +10508,7 @@ function initPerceptronDemo() {
     ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('y = \u03c3(\u03a3 w\u1d62x\u1d62 + b)', W / 2, H - 5);
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
@@ -9207,6 +10524,8 @@ function initLossDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-loss-demo', _state);
   function draw() {
     if (!running) return;
     ctx.clearRect(0, 0, W, H);
@@ -9279,7 +10598,7 @@ function initLossDemo() {
     ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('小球沿梯度方向滚向最低点（最优解）', W / 2, H - 5);
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
@@ -9295,6 +10614,8 @@ function initContourletDemo() {
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   var t = 0, running = true;
+  var _state = { t: t, running: running, speed: 1, _mx: -1, _my: -1 };
+  registerDemoState('canvas-contourlet-demo', _state);
   function draw() {
     if (!running) return;
     ctx.clearRect(0, 0, W, H);
@@ -9371,7 +10692,7 @@ function initContourletDemo() {
     ctx.font = '11px Microsoft YaHei';
     ctx.textAlign = 'center';
     ctx.fillText('同一条曲线：正方形方块多且碎，细长条带少且贴合', W / 2, H - 5);
-    t++;
+    t += (_state && _state.speed > 0 ? _state.speed : 1);
     requestAnimationFrame(draw);
   }
   draw();
