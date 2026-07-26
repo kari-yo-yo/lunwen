@@ -1938,12 +1938,12 @@ body {
   display: flex; gap: 20px; margin-top: 0;
 }
 .kg-toc {
-  width: 200px; min-width: 200px; position: sticky;
+  width: 220px; min-width: 220px; position: sticky;
   top: 20px; height: fit-content; max-height: calc(100vh - 80px);
   overflow-y: auto; padding: 16px;
   background: rgba(99,102,241,0.04);
   border: 1px solid var(--border); border-radius: var(--radius-sm);
-  font-size: 13.5px; line-height: 1.6;
+  font-size: 13px; line-height: 1.5;
 }
 .kg-toc-title {
   font-size: 15px; font-weight: 700; color: var(--primary-light);
@@ -1952,9 +1952,11 @@ body {
 }
 .kg-toc a {
   display: block; color: var(--text-muted);
-  text-decoration: none; padding: 4px 8px;
-  border-radius: 4px; margin: 2px 0;
+  text-decoration: none; padding: 5px 10px;
+  border-radius: 4px; margin: 3px 0;
   transition: all 0.2s; border-left: 2px solid transparent;
+  font-size: 12.5px; line-height: 1.5;
+  word-break: keep-all; overflow-wrap: break-word;
 }
 .kg-toc a:hover {
   color: var(--primary); background: rgba(99,102,241,0.08);
@@ -1967,8 +1969,8 @@ body {
 
 /* ===== Knowledge Framework: Module Guide Cards ===== */
 .kg-module-guide {
-  margin: 24px 0 20px 0;
-  padding: 20px 24px;
+  margin: 28px 0 20px 0;
+  padding: 22px 26px;
   border-radius: 14px;
   border-left: 5px solid;
   background: var(--card-bg);
@@ -1986,14 +1988,14 @@ body {
 .kg-guide-title {
   font-size: 17px;
   font-weight: 700;
-  color: var(--text-main);
-  margin-bottom: 8px;
+  color: var(--text);
+  margin-bottom: 10px;
   letter-spacing: 0.3px;
 }
 .kg-guide-desc {
   font-size: 13.5px;
   color: var(--text-muted);
-  line-height: 1.75;
+  line-height: 1.8;
 }
 
 /* Spark / Insight boxes within sections */
@@ -2224,7 +2226,8 @@ body {
   .kg-toc-title { width: auto; margin-bottom: 0; margin-right: 8px;
     padding-bottom: 0; border-bottom: none; }
   .kg-toc a { display: inline-block; padding: 3px 10px; margin: 0;
-    border-left: none; border-radius: 12px; font-size: 12px; }
+    border-left: none; border-radius: 12px; font-size: 12px;
+    word-break: normal; }
   .kg-toc a.kg-toc-active { border-left: none;
     background: var(--primary); color: #fff; }
 }
@@ -8222,7 +8225,7 @@ TV正则化结合&lt;/h4&gt;</code>、首段文字和现有 SVG（到原 line 66
 <div class="kg-card" style="margin-top:16px;">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 410" width="560" style="max-width:100%;font-family:'Microsoft YaHei',sans-serif;">
     
-    <text x="280" y="26" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#1a202c)">稀疏表示核心概念：y = D · α</text>
+    <text x="280" y="26" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#e2e8f0)">稀疏表示核心概念：y = D · α</text>
 
     
     <text x="150" y="56" text-anchor="middle" font-size="13" font-weight="bold" fill="#6366f1">字典 D (m×n, 过完备)</text>
@@ -8350,12 +8353,12 @@ TV正则化结合&lt;/h4&gt;</code>、首段文字和现有 SVG（到原 line 66
     <line x1="40" y1="232" x2="520" y2="232" stroke="var(--text-muted,#64748b)" stroke-width="0.6" opacity="0.4"/>
 
     
-    <text x="280" y="254" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--text,#1a202c)">K-SVD 交替优化流程</text>
+    <text x="280" y="254" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--text,#e2e8f0)">K-SVD 交替优化流程</text>
 
     
     <rect x="50" y="272" width="200" height="78" rx="8" fill="#0ea5e9" opacity="0.12" stroke="#0ea5e9" stroke-width="1.2"/>
     <text x="150" y="294" text-anchor="middle" font-size="12" font-weight="bold" fill="#0ea5e9">步骤 1：固定字典 D</text>
-    <text x="150" y="314" text-anchor="middle" font-size="11" fill="var(--text,#1a202c)">优化稀疏编码 α</text>
+    <text x="150" y="314" text-anchor="middle" font-size="11" fill="var(--text,#e2e8f0)">优化稀疏编码 α</text>
     <text x="150" y="332" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">(OMP / 匹配追踪)</text>
     <text x="150" y="346" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">min ‖y − Dα‖₀  s.t. ‖α‖₀ ≤ K</text>
 
@@ -8366,7 +8369,7 @@ TV正则化结合&lt;/h4&gt;</code>、首段文字和现有 SVG（到原 line 66
     
     <rect x="300" y="272" width="200" height="78" rx="8" fill="#a855f7" opacity="0.12" stroke="#a855f7" stroke-width="1.2"/>
     <text x="400" y="294" text-anchor="middle" font-size="12" font-weight="bold" fill="#a855f7">步骤 2：固定编码 α</text>
-    <text x="400" y="314" text-anchor="middle" font-size="11" fill="var(--text,#1a202c)">逐列更新字典 D</text>
+    <text x="400" y="314" text-anchor="middle" font-size="11" fill="var(--text,#e2e8f0)">逐列更新字典 D</text>
     <text x="400" y="332" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">(SVD 分解误差矩阵)</text>
     <text x="400" y="346" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">d_k ← 第一左奇异向量</text>
 
@@ -8566,7 +8569,7 @@ TV正则化结合&lt;/h4&gt;</code>、首段文字和现有 SVG（到原 line 66
 <div class="kg-img-wrap">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" width="600" style="max-width:100%;font-family:'Microsoft YaHei',sans-serif;">
     
-    <text x="300" y="24" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#1a202c)">反向传播算法：前向计算与梯度回传</text>
+    <text x="300" y="24" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#e2e8f0)">反向传播算法：前向计算与梯度回传</text>
 
     
     <text x="110" y="52" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-muted,#64748b)">输入层</text>
@@ -8660,7 +8663,7 @@ TV正则化结合&lt;/h4&gt;</code>、首段文字和现有 SVG（到原 line 66
 
     
     <rect x="60" y="324" width="480" height="30" rx="6" fill="#6366f1" opacity="0.08" stroke="#6366f1" stroke-width="0.8"/>
-    <text x="300" y="344" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text,#1a202c)">
+    <text x="300" y="344" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text,#e2e8f0)">
       链式法则： ∂L/∂w = (∂L/∂a) × (∂a/∂z) × (∂z/∂w)
     </text>
   </svg>
@@ -9947,7 +9950,7 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-img-wrap">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 440" width="600" style="max-width:100%;font-family:'Microsoft YaHei',sans-serif;">
     
-    <text x="300" y="24" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#1a202c)">Self-Attention：Q / K / V 计算流程</text>
+    <text x="300" y="24" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#e2e8f0)">Self-Attention：Q / K / V 计算流程</text>
 
     
     
@@ -10007,7 +10010,7 @@ canvas[id^="canvas-"]:hover {
 
     
     <rect x="15" y="388" width="230" height="40" rx="6" fill="#a855f7" opacity="0.08" stroke="#a855f7" stroke-width="0.8"/>
-    <text x="130" y="406" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text,#1a202c)">Scaled Dot-Product Attention</text>
+    <text x="130" y="406" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text,#e2e8f0)">Scaled Dot-Product Attention</text>
     <text x="130" y="422" text-anchor="middle" font-size="11" fill="#a855f7">Attention(Q,K,V) = softmax(QKᵀ/√d_k)·V</text>
 
     
@@ -10062,7 +10065,7 @@ canvas[id^="canvas-"]:hover {
 
     
     <rect x="290" y="320" width="280" height="46" rx="6" fill="#a855f7" opacity="0.08" stroke="#a855f7" stroke-width="0.8"/>
-    <text x="430" y="340" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text,#1a202c)">多头注意力</text>
+    <text x="430" y="340" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text,#e2e8f0)">多头注意力</text>
     <text x="430" y="358" text-anchor="middle" font-size="10" fill="#a855f7">MultiHead = Concat(head₁,...,head_h) W^O</text>
     <text x="430" y="374" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">其中 head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)</text>
   </svg>
@@ -10423,7 +10426,7 @@ canvas[id^="canvas-"]:hover {
 <div style="margin:16px auto;max-width:560px;">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 400" width="560" style="max-width:100%;font-family:'Microsoft YaHei',sans-serif;">
     
-    <text x="280" y="24" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#1a202c)">四元数(RQ)在神经网络中的数据流</text>
+    <text x="280" y="24" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#e2e8f0)">四元数(RQ)在神经网络中的数据流</text>
 
     
     <g font-size="10" fill="var(--text-muted,#64748b)">
@@ -10505,7 +10508,7 @@ canvas[id^="canvas-"]:hover {
     <line x1="30" y1="170" x2="530" y2="170" stroke="var(--text-muted,#64748b)" stroke-width="0.6" opacity="0.4"/>
 
     
-    <text x="280" y="194" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text,#1a202c)">实值网络 vs RQ 网络处理方式对比</text>
+    <text x="280" y="194" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text,#e2e8f0)">实值网络 vs RQ 网络处理方式对比</text>
 
     
     <text x="150" y="218" text-anchor="middle" font-size="12" font-weight="bold" fill="#fb7185">实值网络：3 通道独立处理</text>
@@ -10572,8 +10575,8 @@ canvas[id^="canvas-"]:hover {
 
     
     <rect x="30" y="354" width="500" height="38" rx="6" fill="#10b981" opacity="0.08" stroke="#10b981" stroke-width="0.8"/>
-    <text x="280" y="372" text-anchor="middle" font-size="11" fill="var(--text,#1a202c)">RQ 网络将 RGB 视为四元数虚部, 实部补零, 用 Hamilton 乘积实现卷积,</text>
-    <text x="280" y="387" text-anchor="middle" font-size="11" fill="var(--text,#1a202c)">在保留通道间颜色耦合关系的同时大幅减少参数量。</text>
+    <text x="280" y="372" text-anchor="middle" font-size="11" fill="var(--text,#e2e8f0)">RQ 网络将 RGB 视为四元数虚部, 实部补零, 用 Hamilton 乘积实现卷积,</text>
+    <text x="280" y="387" text-anchor="middle" font-size="11" fill="var(--text,#e2e8f0)">在保留通道间颜色耦合关系的同时大幅减少参数量。</text>
   </svg>
 </div>
 
@@ -10863,7 +10866,7 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-img-wrap">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" width="640" style="max-width:100%;font-family:'Microsoft YaHei',sans-serif;">
     
-    <text x="320" y="22" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#1a202c)">RQ-D²UNet 完整架构</text>
+    <text x="320" y="22" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#e2e8f0)">RQ-D²UNet 完整架构</text>
 
     
     <rect x="20" y="180" width="56" height="36" rx="5" fill="#0ea5e9" opacity="0.18" stroke="#0ea5e9" stroke-width="1.2"/>
