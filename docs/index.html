@@ -2023,10 +2023,146 @@ body {
 .kg-accordion-header.collapsed .kg-acc-icon { transform: rotate(-90deg); }
 .kg-accordion-body {
   overflow: hidden; transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
-  max-height: 8000px; opacity: 1;
+  max-height: 99999px; opacity: 1;
+  padding: 4px 0 16px 0;
 }
 .kg-accordion-body.collapsed {
   max-height: 0; opacity: 0; margin: 0; padding: 0;
+}
+
+/* ===== Knowledge Framework: Concept Cards (新增概念卡片) ===== */
+.kg-concept-card {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-x: auto;
+}
+.kg-concept-card h4 {
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.kg-concept-card p {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* ===== SVG 排版修复 ===== */
+.kg-section svg,
+.kg-concept-card svg,
+.guide-body svg {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+  height: auto;
+}
+.kg-section svg[width],
+.kg-concept-card svg[width],
+.guide-body svg[width] {
+  width: auto;
+  max-width: 100%;
+}
+
+/* ===== 公式块溢出保护 ===== */
+.guide-body div[style*="text-align:center"],
+.guide-body div[style*="font-family:'Cambria'"] {
+  overflow-x: auto;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+.guide-body code,
+.guide-body pre {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* ===== kg-compare 响应式 ===== */
+@media (max-width: 700px) {
+  .guide-body .kg-compare {
+    grid-template-columns: 1fr;
+  }
+  .guide-body .kg-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .guide-body .kg-flow .kg-arrow {
+    text-align: center;
+    transform: rotate(90deg);
+  }
+}
+
+/* ===== 知识框架模板排版修复 ===== */
+/* 确保内联宽度元素不溢出容器 */
+.kg-main > div,
+.kg-main .kg-section > div {
+  max-width: 100%;
+}
+
+/* kg-flow 内联样式响应式 */
+.kg-main .kg-flow[style*="display:flex"] {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.kg-main .kg-flow[style*="display:flex"] > div[style*="flex:"] {
+  min-width: 80px;
+  max-width: 150px;
+}
+
+/* 内联SVG容器响应式 */
+.kg-main div[style*="margin:"] > svg,
+.kg-main div[style*="text-align:center"] > svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 概念卡片内部溢出保护 */
+.kg-concept-card > div[style*="margin:"] {
+  overflow-x: auto;
+}
+
+/* 表格响应式 */
+.guide-body .kg-section table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* ECharts 容器响应式 */
+.kg-card [id^="echarts-"],
+.kg-main [id^="echarts-"] {
+  width: 100% !important;
+  max-width: 700px !important;
+}
+
+/* kg-step 和 kg-card 间距统一 */
+.guide-body .kg-step,
+.guide-body .kg-card {
+  margin: 14px 0;
+}
+
+/* h3/h4 间距统一 */
+.guide-body .kg-section h3 {
+  margin-top: 24px;
+}
+.guide-body .kg-section h4 {
+  margin-top: 20px;
+}
+
+/* 段落间距 */
+.guide-body .kg-section p {
+  margin: 10px 0;
+}
+
+/* 图片容器响应式 */
+.kg-img-wrap {
+  max-width: 100%;
+  overflow: hidden;
+}
+.kg-img {
+  max-width: 100%;
+  height: auto;
 }
 
 /* ===== Knowledge Framework: Concept Quick Cards ===== */
@@ -2091,6 +2227,26 @@ body {
     border-left: none; border-radius: 12px; font-size: 12px; }
   .kg-toc a.kg-toc-active { border-left: none;
     background: var(--primary); color: #fff; }
+}
+
+/* ===== 知识框架小屏幕响应式 ===== */
+@media (max-width: 600px) {
+  .guide-panel { padding: 16px; }
+  .guide-body { font-size: 13px; }
+  .guide-body h3 { font-size: 15px; }
+  .guide-body h4 { font-size: 14px; }
+  .kg-module-guide { padding: 14px 16px; margin: 16px 0 12px 0; }
+  .kg-guide-title { font-size: 15px; }
+  .kg-guide-desc { font-size: 12.5px; }
+  .kg-concept-card { padding: 16px !important; margin: 16px 0 !important; }
+  .kg-concept-card h4 { font-size: 14px; }
+  .kg-spark { padding: 10px 14px; font-size: 12px; }
+  .kg-accordion-header { margin: 16px 0 10px; }
+  .kg-accordion-header h3 { font-size: 14px; }
+  .guide-body .kg-step,
+  .guide-body .kg-card { padding: 10px 14px; margin: 10px 0; }
+  .guide-body .kg-flow { padding: 8px 10px; gap: 4px; }
+  .guide-body .kg-flow .kg-node { font-size: 11px; padding: 4px 8px; }
 }
 
 /* AI Tools Section in Sidebar */
@@ -2352,7 +2508,7 @@ body { position: relative; }
 
 /* ===== Smooth Accordion ===== */
 .kg-section-body {
-  max-height: 8000px; overflow: hidden;
+  max-height: 99999px; overflow: hidden;
   transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.4s ease, padding 0.4s ease;
   opacity: 1; padding-top: 12px;
@@ -2499,6 +2655,8 @@ body { position: relative; }
 /* Knowledge section stagger animation */
 .kg-section {
   will-change: transform, opacity;
+  margin-bottom: 8px;
+  padding: 4px 0;
 }
 
 
