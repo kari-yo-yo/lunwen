@@ -2373,6 +2373,38 @@ body { position: relative; }
 .kg-img.loaded, .kg-img.error { opacity: 1; transform: scale(1); }
 .kg-img:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.12); transform: scale(1.01); }
 
+/* ===== SVG Click-to-Zoom ===== */
+.kg-section svg, .kg-concept-card svg, .guide-body svg {
+  cursor: zoom-in;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+.kg-section svg:hover, .kg-concept-card svg:hover, .guide-body svg:hover {
+  filter: brightness(1.12);
+  opacity: 0.92;
+}
+.kg-img-wrap, .kg-img { cursor: zoom-in; }
+.svg-zoom-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.88); z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px; box-sizing: border-box;
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.svg-zoom-overlay.active { opacity: 1; }
+.svg-zoom-overlay svg, .svg-zoom-overlay img {
+  max-width: 92%; max-height: 90%; border-radius: 8px;
+  box-shadow: 0 0 40px rgba(0,0,0,0.5);
+}
+.svg-zoom-close {
+  position: absolute; top: 20px; right: 30px;
+  font-size: 28px; color: #fff; cursor: pointer;
+  background: rgba(255,255,255,0.12); border-radius: 50%;
+  width: 44px; height: 44px; display: flex;
+  align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.svg-zoom-close:hover { background: rgba(255,255,255,0.25); }
+
 /* ===== Smooth Button Interactions ===== */
 .btn, .toolbar button, .guide-close-btn, .kg-tab {
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
@@ -5854,8 +5886,85 @@ function initKgImageLazyLoad() {
 }
 
 // ============================================================
-//  Init
+// SVG / Image Click-to-Zoom (点击放大)
 // ============================================================
+function initSvgClickZoom() {
+  // 创建遮罩层
+  var overlay = document.createElement('div');
+  overlay.className = 'svg-zoom-overlay';
+  overlay.innerHTML = '<span class="svg-zoom-close">&times;</span><div class="svg-zoom-content"></div>';
+  document.body.appendChild(overlay);
+
+  var contentDiv = overlay.querySelector('.svg-zoom-content');
+  var closeBtn = overlay.querySelector('.svg-zoom-close');
+
+  function closeZoom() {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+    setTimeout(function() { contentDiv.innerHTML = ''; }, 300);
+  }
+
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay || e.target === closeBtn) closeZoom();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.classList.contains('active')) closeZoom();
+  });
+
+  // 为知识框架内的 SVG 添加点击放大
+  function attachSvgClicks(container) {
+    if (!container) container = document;
+    // SVG 元素
+    var svgs = container.querySelectorAll('.kg-section svg, .kg-concept-card svg, .guide-body svg');
+    svgs.forEach(function(svg) {
+      if (svg.dataset.zoomAttached) return;
+      svg.dataset.zoomAttached = '1';
+      svg.addEventListener('click', function() {
+        var clone = svg.cloneNode(true);
+        clone.style.width = 'auto';
+        clone.style.height = 'auto';
+        clone.style.maxWidth = '92%';
+        clone.style.maxHeight = '90%';
+        contentDiv.innerHTML = '';
+        contentDiv.appendChild(clone);
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    // 带有 data-full 的图片也支持点击放大
+    var imgs = container.querySelectorAll('.kg-img[data-full], .kg-img-wrap img[data-full]');
+    imgs.forEach(function(img) {
+      if (img.dataset.zoomAttached) return;
+      img.dataset.zoomAttached = '1';
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function() {
+        var fullSrc = img.dataset.full || img.src;
+        var fullImg = new Image();
+        fullImg.src = fullSrc;
+        contentDiv.innerHTML = '';
+        contentDiv.appendChild(fullImg);
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+  }
+
+  // 初始绑定
+  attachSvgClicks(document);
+
+  // 知识框架面板打开后重新绑定
+  var origOpen = window.openKnowledge;
+  if (typeof origOpen === 'function') {
+    window.openKnowledge = function() {
+      origOpen.apply(this, arguments);
+      setTimeout(function() { attachSvgClicks(document); }, 300);
+    };
+  }
+
+  // 返回 attachSvgClicks 供外部调用
+  return attachSvgClicks;
+}
 function updateGreeting() {
   const hour = new Date().getHours();
   let greeting;
@@ -6467,6 +6576,159 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
   <div class="kg-caption">图：高频分量中同时包含"边缘"和"雨纹"——想去掉雨纹就必然伤到边缘</div>
 </div>
 
+
+<div class="kg-concept-card" style="margin:28px 0; padding:24px; background:var(--bg-card,rgba(30,41,59,0.5)); border-radius:14px; border-left:4px solid #38bdf8;">
+  <h4 style="color:var(--text,#e2e8f0); font-family:'Microsoft YaHei',sans-serif; font-size:16px; margin:0 0 14px 0; display:flex; align-items:center; gap:8px;">
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#38bdf8;flex-shrink:0;"></span>
+    概念补充：频域滤波器（Frequency Domain Filters）
+  </h4>
+  <p style="color:var(--text-muted,#94a3b8); font-family:'Microsoft YaHei',sans-serif; line-height:1.9; font-size:13.5px; margin:0 0 16px 0;">
+    在图像处理中，<strong style="color:var(--text,#e2e8f0);">频域滤波</strong>是指将图像从空间域变换到频域（通常用傅里叶变换），对特定频率成分进行增强或抑制，再逆变换回空间域的过程。图像中<strong style="color:#10b981;">低频</strong>对应平滑区域（大面积灰度变化缓慢），<strong style="color:#fb7185;">高频</strong>对应边缘和细节（灰度突变）以及噪声。根据允许通过的频率范围，频域滤波器分为四类：
+  </p>
+
+  <!-- 四种滤波器说明 -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+    <div style="padding:12px 14px; background:rgba(16,185,129,0.08); border-radius:8px; border-left:3px solid #10b981;">
+      <div style="font-family:'Microsoft YaHei',sans-serif; font-size:13px; font-weight:bold; color:#10b981; margin-bottom:4px;">低通滤波器 (Low-pass)</div>
+      <div style="font-family:'Microsoft YaHei',sans-serif; font-size:11.5px; color:var(--text-muted,#94a3b8); line-height:1.7;">允许低频通过，抑制高频。<strong style="color:var(--text,#e2e8f0);">应用：</strong>图像平滑、去噪（去除高频噪声）、模糊处理。</div>
+    </div>
+    <div style="padding:12px 14px; background:rgba(99,102,241,0.08); border-radius:8px; border-left:3px solid #6366f1;">
+      <div style="font-family:'Microsoft YaHei',sans-serif; font-size:13px; font-weight:bold; color:#6366f1; margin-bottom:4px;">高通滤波器 (High-pass)</div>
+      <div style="font-family:'Microsoft YaHei',sans-serif; font-size:11.5px; color:var(--text-muted,#94a3b8); line-height:1.7;">允许高频通过，抑制低频。<strong style="color:var(--text,#e2e8f0);">应用：</strong>边缘检测、图像锐化、特征提取。</div>
+    </div>
+    <div style="padding:12px 14px; background:rgba(14,165,233,0.08); border-radius:8px; border-left:3px solid #0ea5e9;">
+      <div style="font-family:'Microsoft YaHei',sans-serif; font-size:13px; font-weight:bold; color:#0ea5e9; margin-bottom:4px;">带通滤波器 (Band-pass)</div>
+      <div style="font-family:'Microsoft YaHei',sans-serif; font-size:11.5px; color:var(--text-muted,#94a3b8); line-height:1.7;">仅允许特定频率范围内的分量通过。<strong style="color:var(--text,#e2e8f0);">应用：</strong>提取特定尺度纹理、指纹增强。</div>
+    </div>
+    <div style="padding:12px 14px; background:rgba(251,113,133,0.08); border-radius:8px; border-left:3px solid #fb7185;">
+      <div style="font-family:'Microsoft YaHei',sans-serif; font-size:13px; font-weight:bold; color:#fb7185; margin-bottom:4px;">带阻/陷波滤波器 (Band-stop / Notch)</div>
+      <div style="font-family:'Microsoft YaHei',sans-serif; font-size:11.5px; color:var(--text-muted,#94a3b8); line-height:1.7;">抑制特定频率范围内的分量。<strong style="color:var(--text,#e2e8f0);">应用：</strong>去除周期性噪声（扫描纹、莫尔条纹）。</div>
+    </div>
+  </div>
+
+  <!-- 四种滤波器频率响应曲线 SVG -->
+  <div style="display:flex; justify-content:center; margin-top:10px;">
+    <svg width="480" height="380" viewBox="0 0 480 380" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto;">
+      <!-- 主标题 -->
+      <text x="240" y="18" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="14" font-weight="bold" fill="var(--text,#e2e8f0)">四种频域滤波器频率响应曲线</text>
+
+      <!-- ===== 子图1: 低通滤波器 (左上) ===== -->
+      <text x="140" y="42" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="12" font-weight="bold" fill="#10b981">低通滤波器 (Low-pass)</text>
+      <!-- 通带着色 -->
+      <rect x="70" y="68" width="70" height="92" fill="rgba(16,185,129,0.12)"/>
+      <!-- 阻带着色 -->
+      <rect x="160" y="68" width="50" height="92" fill="rgba(251,113,133,0.08)"/>
+      <!-- 坐标轴 -->
+      <line x1="70" y1="60" x2="70" y2="160" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <line x1="70" y1="160" x2="220" y2="160" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <!-- Y轴刻度 -->
+      <text x="64" y="72" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">1</text>
+      <text x="64" y="164" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">0</text>
+      <!-- 响应曲线 -->
+      <path d="M 70,68 L 140,68 C 148,68 152,160 160,160 L 220,160" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- 截止频率标记 -->
+      <line x1="140" y1="68" x2="140" y2="160" stroke="var(--text-muted,#94a3b8)" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.5"/>
+      <text x="140" y="174" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">ω<tspan font-size="8" baseline-shift="sub">c</tspan></text>
+      <!-- 轴标签 -->
+      <text x="225" y="164" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">ω</text>
+      <text x="55" y="64" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">|H|</text>
+      <!-- 通带/阻带标注 -->
+      <text x="105" y="155" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="#10b981">通带</text>
+      <text x="185" y="155" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="#fb7185">阻带</text>
+
+      <!-- ===== 子图2: 高通滤波器 (右上) ===== -->
+      <text x="350" y="42" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="12" font-weight="bold" fill="#6366f1">高通滤波器 (High-pass)</text>
+      <!-- 阻带着色 -->
+      <rect x="280" y="68" width="60" height="92" fill="rgba(251,113,133,0.08)"/>
+      <!-- 通带着色 -->
+      <rect x="360" y="68" width="60" height="92" fill="rgba(16,185,129,0.12)"/>
+      <!-- 坐标轴 -->
+      <line x1="280" y1="60" x2="280" y2="160" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <line x1="280" y1="160" x2="430" y2="160" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <!-- Y轴刻度 -->
+      <text x="274" y="72" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">1</text>
+      <text x="274" y="164" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">0</text>
+      <!-- 响应曲线 -->
+      <path d="M 280,160 L 340,160 C 348,160 352,68 360,68 L 430,68" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- 截止频率标记 -->
+      <line x1="350" y1="68" x2="350" y2="160" stroke="var(--text-muted,#94a3b8)" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.5"/>
+      <text x="350" y="174" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">ω<tspan font-size="8" baseline-shift="sub">c</tspan></text>
+      <!-- 轴标签 -->
+      <text x="435" y="164" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">ω</text>
+      <text x="265" y="64" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">|H|</text>
+      <!-- 通带/阻带标注 -->
+      <text x="310" y="155" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="#fb7185">阻带</text>
+      <text x="390" y="155" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="#10b981">通带</text>
+
+      <!-- ===== 子图3: 带通滤波器 (左下) ===== -->
+      <text x="140" y="202" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="12" font-weight="bold" fill="#0ea5e9">带通滤波器 (Band-pass)</text>
+      <!-- 通带着色 -->
+      <rect x="105" y="228" width="70" height="92" fill="rgba(16,185,129,0.12)"/>
+      <!-- 阻带着色 -->
+      <rect x="70" y="228" width="35" height="92" fill="rgba(251,113,133,0.08)"/>
+      <rect x="175" y="228" width="45" height="92" fill="rgba(251,113,133,0.08)"/>
+      <!-- 坐标轴 -->
+      <line x1="70" y1="220" x2="70" y2="320" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <line x1="70" y1="320" x2="220" y2="320" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <!-- Y轴刻度 -->
+      <text x="64" y="232" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">1</text>
+      <text x="64" y="324" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">0</text>
+      <!-- 响应曲线 -->
+      <path d="M 70,320 L 85,320 C 93,320 97,228 105,228 L 175,228 C 183,228 187,320 195,320 L 220,320" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- 截止频率标记 -->
+      <line x1="105" y1="228" x2="105" y2="320" stroke="var(--text-muted,#94a3b8)" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.5"/>
+      <line x1="175" y1="228" x2="175" y2="320" stroke="var(--text-muted,#94a3b8)" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.5"/>
+      <text x="105" y="334" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">ω<tspan font-size="8" baseline-shift="sub">c1</tspan></text>
+      <text x="175" y="334" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">ω<tspan font-size="8" baseline-shift="sub">c2</tspan></text>
+      <!-- 轴标签 -->
+      <text x="225" y="324" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">ω</text>
+      <text x="55" y="224" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">|H|</text>
+      <!-- 通带/阻带标注 -->
+      <text x="140" y="315" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="#10b981">通带</text>
+      <text x="87" y="315" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="#fb7185">阻</text>
+      <text x="197" y="315" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="#fb7185">阻</text>
+
+      <!-- ===== 子图4: 带阻/陷波滤波器 (右下) ===== -->
+      <text x="350" y="202" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="12" font-weight="bold" fill="#fb7185">带阻/陷波滤波器 (Band-stop)</text>
+      <!-- 通带着色 -->
+      <rect x="280" y="228" width="35" height="92" fill="rgba(16,185,129,0.12)"/>
+      <rect x="395" y="228" width="35" height="92" fill="rgba(16,185,129,0.12)"/>
+      <!-- 阻带着色 -->
+      <rect x="325" y="228" width="70" height="92" fill="rgba(251,113,133,0.10)"/>
+      <!-- 坐标轴 -->
+      <line x1="280" y1="220" x2="280" y2="320" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <line x1="280" y1="320" x2="430" y2="320" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <!-- Y轴刻度 -->
+      <text x="274" y="232" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">1</text>
+      <text x="274" y="324" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">0</text>
+      <!-- 响应曲线 -->
+      <path d="M 280,228 L 315,228 C 322,228 318,320 325,320 L 395,320 C 402,320 398,228 405,228 L 430,228" fill="none" stroke="#fb7185" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- 截止频率标记 -->
+      <line x1="325" y1="228" x2="325" y2="320" stroke="var(--text-muted,#94a3b8)" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.5"/>
+      <line x1="395" y1="228" x2="395" y2="320" stroke="var(--text-muted,#94a3b8)" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.5"/>
+      <text x="325" y="334" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">ω<tspan font-size="8" baseline-shift="sub">c1</tspan></text>
+      <text x="395" y="334" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">ω<tspan font-size="8" baseline-shift="sub">c2</tspan></text>
+      <!-- 轴标签 -->
+      <text x="435" y="324" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">ω</text>
+      <text x="265" y="224" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">|H|</text>
+      <!-- 通带/阻带标注 -->
+      <text x="297" y="315" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="#10b981">通</text>
+      <text x="360" y="315" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="#fb7185">阻带</text>
+      <text x="412" y="315" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="#10b981">通</text>
+
+      <!-- ===== 底部图例 ===== -->
+      <rect x="100" y="355" width="14" height="12" fill="rgba(16,185,129,0.12)" stroke="#10b981" stroke-width="0.5"/>
+      <text x="120" y="365" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text,#e2e8f0)">通带（允许通过）</text>
+      <rect x="250" y="355" width="14" height="12" fill="rgba(251,113,133,0.10)" stroke="#fb7185" stroke-width="0.5"/>
+      <text x="270" y="365" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text,#e2e8f0)">阻带（被抑制）</text>
+      <text x="370" y="365" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">ω<tspan font-size="8" baseline-shift="sub">c</tspan> = 截止频率</text>
+    </svg>
+  </div>
+
+  <p style="font-family:'Microsoft YaHei',sans-serif; font-size:12px; color:var(--text-muted,#94a3b8); line-height:1.8; margin:16px 0 0 0; padding:10px 12px; background:rgba(56,189,248,0.06); border-radius:6px;">
+    <strong style="color:#38bdf8;">在去雨任务中的应用：</strong>雨纹在频域中主要表现为高频成分，因此<strong style="color:var(--text,#e2e8f0);">低通滤波器</strong>可以直接抑制雨纹，但会同时模糊边缘；<strong style="color:var(--text,#e2e8f0);">带阻滤波器</strong>可用于去除具有特定频率的周期性雨纹（如固定方向的条纹雨）；而现代去雨算法通常结合频域滤波与深度学习，在频域中分离雨纹与背景特征，实现"去雨不糊边"的效果。
+  </p>
+</div>
 <h4>3.1 根本原因：雨纹和边缘"住"在同一个频段</h4>
 
 <p>问题出在这里——雨丝的条纹和图像中物体的边缘，<b>它们都是高频信息</b>。</p>
@@ -6522,6 +6784,77 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </ul>
 
 <p><b>一句话总结</b>：频域方法的盲点在于——<b>它不知道"这段高频是雨还是边缘"，而且它对全图一视同仁</b>。这正是后来小波变换和混合域方法要解决的问题。</p>
+<div class="kg-concept-card" style="margin:28px 0; padding:24px; background:var(--bg-card,rgba(30,41,59,0.5)); border-radius:14px; border-left:4px solid var(--accent-red,#fb7185);">
+  <h4 style="color:var(--text,#e2e8f0); font-family:'Microsoft YaHei',sans-serif; font-size:16px; margin:0 0 14px 0; display:flex; align-items:center; gap:8px;">
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-red,#fb7185);flex-shrink:0;"></span>
+    概念延伸：什么是"鲁棒性"（Robustness）？
+  </h4>
+  <p style="color:var(--text-muted,#94a3b8); font-family:'Microsoft YaHei',sans-serif; line-height:1.9; font-size:13.5px; margin:0 0 10px 0;">
+    <strong style="color:var(--text,#e2e8f0);">通俗类比：</strong>想象你有两把雨伞——一把"加固防风伞"（鲁棒），一把"普通晴雨伞"（脆弱）。蒙蒙细雨时两把伞都能挡雨，看不出区别；但当暴雨倾盆、狂风从侧面袭来时，普通伞可能伞骨断裂、雨水倒灌，而加固伞依然稳稳撑住。鲁棒性，就是"不管风雨怎么变，伞都不塌"的能力。
+  </p>
+  <p style="color:var(--text-muted,#94a3b8); font-family:'Microsoft YaHei',sans-serif; line-height:1.9; font-size:13.5px; margin:0 0 16px 0;">
+    在去雨任务中，<strong style="color:var(--accent-red,#fb7185);">鲁棒性</strong>指模型在面对<strong style="color:var(--text,#e2e8f0);">训练时未覆盖的雨况</strong>（如更密集的暴雨、不同倾角的斜雨、雨雾混合等）时，仍能保持稳定去雨效果的能力。鲁棒性差的算法一旦条件偏离训练分布，便会产生伪影、残留雨纹甚至扭曲背景——如下图所示，雨况越复杂，鲁棒算法与脆弱算法的性能差距越大。
+  </p>
+  <div style="display:flex; justify-content:center; margin-top:18px;">
+    <svg width="480" height="340" viewBox="0 0 480 340" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto;">
+      <defs>
+        <linearGradient id="robustBar" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#10b981" stop-opacity="0.95"/>
+          <stop offset="100%" stop-color="#10b981" stop-opacity="0.35"/>
+        </linearGradient>
+        <linearGradient id="fragileBar" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fb7185" stop-opacity="0.95"/>
+          <stop offset="100%" stop-color="#fb7185" stop-opacity="0.35"/>
+        </linearGradient>
+      </defs>
+      <!-- 标题 -->
+      <text x="240" y="24" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="14" font-weight="bold" fill="var(--text,#e2e8f0)">同一去雨算法在不同雨况下的表现对比</text>
+      <!-- 坐标轴 -->
+      <line x1="75" y1="50" x2="75" y2="280" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <line x1="75" y1="280" x2="455" y2="280" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <!-- Y轴刻度 (0-100, 2.3px/单位) -->
+      <text x="68" y="54" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">100</text>
+      <text x="68" y="112" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">75</text>
+      <text x="68" y="169" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">50</text>
+      <text x="68" y="227" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">25</text>
+      <text x="68" y="284" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">0</text>
+      <!-- 网格线 -->
+      <line x1="75" y1="50" x2="455" y2="50" stroke="var(--text-muted,#94a3b8)" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.2"/>
+      <line x1="75" y1="108" x2="455" y2="108" stroke="var(--text-muted,#94a3b8)" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.2"/>
+      <line x1="75" y1="165" x2="455" y2="165" stroke="var(--text-muted,#94a3b8)" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.2"/>
+      <line x1="75" y1="223" x2="455" y2="223" stroke="var(--text-muted,#94a3b8)" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.2"/>
+      <!-- Y轴标题 -->
+      <text x="22" y="165" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text-muted,#94a3b8)" transform="rotate(-90,22,165)">去雨质量评分 (PSNR ↑)</text>
+      <!-- 组1: 轻度雨 (center x=150) -->
+      <rect x="113" y="68" width="34" height="212" fill="url(#robustBar)" rx="4"/>
+      <text x="130" y="63" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" font-weight="bold" fill="var(--text,#e2e8f0)">92</text>
+      <rect x="153" y="78" width="34" height="202" fill="url(#fragileBar)" rx="4"/>
+      <text x="170" y="73" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" font-weight="bold" fill="var(--text,#e2e8f0)">88</text>
+      <text x="150" y="298" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text-muted,#94a3b8)">轻度雨</text>
+      <text x="150" y="312" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)" opacity="0.6">△4分</text>
+      <!-- 组2: 重度雨 (center x=265) -->
+      <rect x="228" y="84" width="34" height="196" fill="url(#robustBar)" rx="4"/>
+      <text x="245" y="79" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" font-weight="bold" fill="var(--text,#e2e8f0)">85</text>
+      <rect x="268" y="170" width="34" height="110" fill="url(#fragileBar)" rx="4"/>
+      <text x="285" y="165" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" font-weight="bold" fill="var(--text,#e2e8f0)">48</text>
+      <text x="265" y="298" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text-muted,#94a3b8)">重度雨</text>
+      <text x="265" y="312" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="#fb7185" opacity="0.7">△37分</text>
+      <!-- 组3: 方向雨 (center x=380) -->
+      <rect x="343" y="96" width="34" height="184" fill="url(#robustBar)" rx="4"/>
+      <text x="360" y="91" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" font-weight="bold" fill="var(--text,#e2e8f0)">80</text>
+      <rect x="383" y="199" width="34" height="81" fill="url(#fragileBar)" rx="4"/>
+      <text x="400" y="194" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" font-weight="bold" fill="var(--text,#e2e8f0)">35</text>
+      <text x="380" y="298" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text-muted,#94a3b8)">方向雨(斜雨)</text>
+      <text x="380" y="312" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="#fb7185" opacity="0.7">△45分</text>
+      <!-- 图例 -->
+      <rect x="75" y="325" width="12" height="12" fill="url(#robustBar)" rx="2"/>
+      <text x="93" y="335" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">鲁棒算法（稳定）</text>
+      <rect x="215" y="325" width="12" height="12" fill="url(#fragileBar)" rx="2"/>
+      <text x="233" y="335" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">脆弱算法（条件敏感）</text>
+    </svg>
+  </div>
+</div>
+
 </div></div>
 <div class="kg-section" id="kg-s4">
 <div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>四、小波变换——"既能看全貌，又能抠细节"的瑞士军刀</h3><span class="kg-acc-icon">▼</span></div>
@@ -6606,6 +6939,348 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </table>
 
 <p><b>选择建议</b>：去雨/去噪论文中最常用的是 <code>db2</code>、<code>db4</code>（Daubechies）和 <code>sym4</code>（Symlet），因为它们在平滑性和计算效率之间取得了很好的平衡。</p>
+<!-- ===== 2.1 小波变换核心公式推导 ===== -->
+<div style="margin:24px 0; padding:20px; background:var(--bg-card,rgba(30,41,59,0.4)); border-radius:12px; border:1px solid rgba(99,102,241,0.25);">
+  <h4 style="color:var(--text,#e2e8f0); font-family:'Microsoft YaHei',sans-serif; font-size:15px; margin:0 0 16px 0; display:flex; align-items:center; gap:8px;">
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#6366f1;flex-shrink:0;"></span>
+    小波变换核心公式推导
+  </h4>
+
+  <!-- CWT 公式 -->
+  <div style="margin-bottom:18px;">
+    <div style="font-family:'Microsoft YaHei',sans-serif; font-size:12px; color:#6366f1; font-weight:bold; margin-bottom:8px;">① 连续小波变换 (CWT)</div>
+    <div style="text-align:center; padding:16px 12px; background:rgba(99,102,241,0.08); border-radius:8px; border:1px solid rgba(99,102,241,0.2); font-family:'Cambria','Microsoft YaHei',serif; font-size:16px; color:var(--text,#e2e8f0); line-height:1.8;">
+      W(a,b) = (1/√|a|) ∫<sub style="font-size:10px;">−∞</sub><sup style="font-size:10px;">+∞</sup> f(t) · ψ<sup>*</sup>((t − b) / a) dt
+    </div>
+    <div style="font-family:'Microsoft YaHei',sans-serif; font-size:12px; color:var(--text-muted,#94a3b8); line-height:1.9; margin-top:10px; padding-left:8px; border-left:2px solid rgba(99,102,241,0.3);">
+      <strong style="color:var(--text,#e2e8f0);">变量说明：</strong><br/>
+      • <strong style="color:#6366f1;">W(a,b)</strong> — 小波系数，表示信号在尺度 a、位置 b 处的频率成分强度<br/>
+      • <strong style="color:#6366f1;">a</strong>（尺度参数）— 控制小波的伸缩：a 大→低频（宽窗口），a 小→高频（窄窗口）<br/>
+      • <strong style="color:#6366f1;">b</strong>（平移参数）— 控制小波在时间轴上的位置，实现时间局部化<br/>
+      • <strong style="color:#6366f1;">ψ*</strong> — 母小波 ψ 的复共轭，(1/√|a|) 为能量归一化因子<br/>
+      • <strong style="color:#6366f1;">f(t)</strong> — 输入信号（如图像的某一行像素序列）<br/>
+      <span style="color:#f59e0b;">本质：</span>用不同尺度的"放大镜"在信号上滑动，大尺度看低频轮廓，小度看高频细节。
+    </div>
+  </div>
+
+  <!-- DWT Mallat 算法公式 -->
+  <div>
+    <div style="font-family:'Microsoft YaHei',sans-serif; font-size:12px; color:#0ea5e9; font-weight:bold; margin-bottom:8px;">② 离散小波变换 (DWT) — Mallat 快速算法</div>
+    <div style="padding:16px 12px; background:rgba(14,165,233,0.08); border-radius:8px; border:1px solid rgba(14,165,233,0.2); font-family:'Cambria','Microsoft YaHei',serif; font-size:14px; color:var(--text,#e2e8f0); line-height:2.2;">
+      <div style="text-align:center;">
+        <span style="color:#0ea5e9; font-size:12px; font-family:'Microsoft YaHei',sans-serif;">分解（下采样 ↓2）：</span>
+      </div>
+      <div style="text-align:center; margin:4px 0;">
+        a<sub>j</sub>[n] = Σ<sub>k</sub> h[k − 2n] · a<sub>j−1</sub>[k] &nbsp;&nbsp;<span style="color:var(--text-muted,#94a3b8); font-size:12px;">（低频近似系数）</span>
+      </div>
+      <div style="text-align:center; margin:4px 0 12px 0;">
+        d<sub>j</sub>[n] = Σ<sub>k</sub> g[k − 2n] · a<sub>j−1</sub>[k] &nbsp;&nbsp;<span style="color:var(--text-muted,#94a3b8); font-size:12px;">（高频细节系数）</span>
+      </div>
+      <div style="text-align:center;">
+        <span style="color:#0ea5e9; font-size:12px; font-family:'Microsoft YaHei',sans-serif;">重构（上采样 ↑2）：</span>
+      </div>
+      <div style="text-align:center; margin:4px 0;">
+        a<sub>j−1</sub>[n] = Σ<sub>k</sub> h̃[n − 2k] · a<sub>j</sub>[k] + Σ<sub>k</sub> g̃[n − 2k] · d<sub>j</sub>[k]
+      </div>
+    </div>
+    <div style="font-family:'Microsoft YaHei',sans-serif; font-size:12px; color:var(--text-muted,#94a3b8); line-height:1.9; margin-top:10px; padding-left:8px; border-left:2px solid rgba(14,165,233,0.3);">
+      <strong style="color:var(--text,#e2e8f0);">变量说明：</strong><br/>
+      • <strong style="color:#0ea5e9;">h</strong> — 低通分解滤波器，<strong style="color:#0ea5e9;">g</strong> — 高通分解滤波器（g[k] = (−1)<sup>k</sup> h[N−1−k]）<br/>
+      • <strong style="color:#0ea5e9;">h̃, g̃</strong> — 对应的重构滤波器<br/>
+      • <strong style="color:#0ea5e9;">a<sub>j</sub></strong> — 第 j 层低频近似，<strong style="color:#0ea5e9;">d<sub>j</sub></strong> — 第 j 层高频细节<br/>
+      • <strong style="color:#0ea5e9;">↓2</strong> — 隔点下采样（数据量减半），<strong style="color:#0ea5e9;">↑2</strong> — 零插值上采样<br/>
+      <span style="color:#f59e0b;">本质：</span>Mallat 算法用滤波+下采样替代积分运算，将 CWT 的 O(N²) 复杂度降为 O(N log N)，是实际工程中的标准快速算法。
+    </div>
+  </div>
+</div>
+
+<!-- ===== 2.2 小波在去雨中的具体实现步骤（4步流程） ===== -->
+<div style="margin:24px 0; padding:20px; background:var(--bg-card,rgba(30,41,59,0.4)); border-radius:12px; border:1px solid rgba(16,185,129,0.25);">
+  <h4 style="color:var(--text,#e2e8f0); font-family:'Microsoft YaHei',sans-serif; font-size:15px; margin:0 0 16px 0; display:flex; align-items:center; gap:8px;">
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;flex-shrink:0;"></span>
+    小波在去雨中的具体实现步骤
+  </h4>
+
+  <!-- kg-flow 风格4步流程图 -->
+  <div class="kg-flow" style="display:flex; align-items:stretch; justify-content:center; gap:2px; flex-wrap:wrap; margin:18px 0;">
+    <!-- Step 1 -->
+    <div style="flex:1; min-width:95px; max-width:130px; padding:14px 10px; background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(99,102,241,0.05)); border:1px solid rgba(99,102,241,0.4); border-radius:10px; text-align:center;">
+      <div style="font-size:10px; color:#6366f1; font-weight:bold; margin-bottom:6px; letter-spacing:1px;">STEP 1</div>
+      <div style="font-size:13px; color:var(--text,#e2e8f0); font-weight:bold; margin-bottom:6px; font-family:'Microsoft YaHei',sans-serif;">小波分解</div>
+      <div style="font-size:10px; color:var(--text-muted,#94a3b8); line-height:1.6; font-family:'Microsoft YaHei',sans-serif;">对含雨图像执行多级 DWT，分离低频背景 (LL) 与高频雨纹 (LH/HL/HH)</div>
+    </div>
+    <div style="display:flex; align-items:center; padding:0 4px; font-size:22px; color:var(--text-muted,#94a3b8);">→</div>
+    <!-- Step 2 -->
+    <div style="flex:1; min-width:95px; max-width:130px; padding:14px 10px; background:linear-gradient(135deg,rgba(14,165,233,0.15),rgba(14,165,233,0.05)); border:1px solid rgba(14,165,233,0.4); border-radius:10px; text-align:center;">
+      <div style="font-size:10px; color:#0ea5e9; font-weight:bold; margin-bottom:6px; letter-spacing:1px;">STEP 2</div>
+      <div style="font-size:13px; color:var(--text,#e2e8f0); font-weight:bold; margin-bottom:6px; font-family:'Microsoft YaHei',sans-serif;">阈值处理</div>
+      <div style="font-size:10px; color:var(--text-muted,#94a3b8); line-height:1.6; font-family:'Microsoft YaHei',sans-serif;">对高频子带施加软/硬阈值，初步滤除雨纹噪声，保留边缘细节</div>
+    </div>
+    <div style="display:flex; align-items:center; padding:0 4px; font-size:22px; color:var(--text-muted,#94a3b8);">→</div>
+    <!-- Step 3 -->
+    <div style="flex:1; min-width:95px; max-width:130px; padding:14px 10px; background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05)); border:1px solid rgba(245,158,11,0.4); border-radius:10px; text-align:center;">
+      <div style="font-size:10px; color:#f59e0b; font-weight:bold; margin-bottom:6px; letter-spacing:1px;">STEP 3</div>
+      <div style="font-size:13px; color:var(--text,#e2e8f0); font-weight:bold; margin-bottom:6px; font-family:'Microsoft YaHei',sans-serif;">特征提取</div>
+      <div style="font-size:10px; color:var(--text-muted,#94a3b8); line-height:1.6; font-family:'Microsoft YaHei',sans-serif;">将各子带输入深度网络 (CNN/Transformer)，进一步分离雨纹与背景特征</div>
+    </div>
+    <div style="display:flex; align-items:center; padding:0 4px; font-size:22px; color:var(--text-muted,#94a3b8);">→</div>
+    <!-- Step 4 -->
+    <div style="flex:1; min-width:95px; max-width:130px; padding:14px 10px; background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05)); border:1px solid rgba(16,185,129,0.4); border-radius:10px; text-align:center;">
+      <div style="font-size:10px; color:#10b981; font-weight:bold; margin-bottom:6px; letter-spacing:1px;">STEP 4</div>
+      <div style="font-size:13px; color:var(--text,#e2e8f0); font-weight:bold; margin-bottom:6px; font-family:'Microsoft YaHei',sans-serif;">图像重建</div>
+      <div style="font-size:10px; color:var(--text-muted,#94a3b8); line-height:1.6; font-family:'Microsoft YaHei',sans-serif;">对处理后的子带执行逆小波变换 (IDWT)，重建清晰去雨图像</div>
+    </div>
+  </div>
+
+  <p style="font-family:'Microsoft YaHei',sans-serif; font-size:12px; color:var(--text-muted,#94a3b8); line-height:1.8; margin:14px 0 0 0; padding:10px 12px; background:rgba(16,185,129,0.06); border-radius:6px;">
+    <strong style="color:#10b981;">关键洞察：</strong>雨纹在频域中主要表现为高频成分，而图像边缘也属于高频。小波分解的优势在于<strong style="color:var(--text,#e2e8f0);">多尺度分离</strong>——不同方向（水平 LH、垂直 HL、对角 HH）的雨纹被分配到不同子带，使网络能更精准地区分"雨纹"与"边缘"，避免去雨时模糊边缘。
+  </p>
+</div>
+
+<!-- ===== 2.3 小波在图像压缩中的应用（JPEG2000原理） ===== -->
+<div style="margin:24px 0; padding:20px; background:var(--bg-card,rgba(30,41,59,0.4)); border-radius:12px; border:1px solid rgba(245,158,11,0.25);">
+  <h4 style="color:var(--text,#e2e8f0); font-family:'Microsoft YaHei',sans-serif; font-size:15px; margin:0 0 8px 0; display:flex; align-items:center; gap:8px;">
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></span>
+    小波在图像压缩中的应用（JPEG2000 原理）
+  </h4>
+  <p style="font-family:'Microsoft YaHei',sans-serif; font-size:12px; color:var(--text-muted,#94a3b8); line-height:1.8; margin:0 0 14px 0;">
+    JPEG2000 采用小波变换替代 JPEG 中的 DCT，核心流程为：分解 → 量化 → 熵编码 → 重建。小波压缩的优势在于<strong style="color:var(--text,#e2e8f0);">无块效应</strong>（DCT 的 8×8 分块导致块状伪影）和<strong style="color:var(--text,#e2e8f0);">天然渐进式传输</strong>（先传低频，逐步细化高频）。
+  </p>
+
+  <div style="display:flex; justify-content:center; margin-top:10px;">
+    <svg width="480" height="220" viewBox="0 0 480 220" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto;">
+      <defs>
+        <marker id="arrR" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--text-muted,#94a3b8)"/>
+        </marker>
+        <marker id="arrL" markerWidth="8" markerHeight="8" refX="2" refY="4" orient="auto">
+          <path d="M8,0 L0,4 L8,8 Z" fill="var(--text-muted,#94a3b8)"/>
+        </marker>
+        <marker id="arrD" markerWidth="8" markerHeight="8" refX="4" refY="6" orient="auto">
+          <path d="M0,0 L8,0 L4,8 Z" fill="var(--text-muted,#94a3b8)"/>
+        </marker>
+      </defs>
+
+      <!-- 行标签 -->
+      <text x="14" y="56" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="#6366f1" font-weight="bold">压缩</text>
+      <text x="14" y="166" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="#0ea5e9" font-weight="bold">解压</text>
+
+      <!-- ===== 顶行：压缩流程 (y=35, boxes 35-69) ===== -->
+      <!-- Box 1: 原始图像 -->
+      <rect x="38" y="35" width="72" height="34" rx="6" fill="rgba(99,102,241,0.12)" stroke="#6366f1" stroke-width="1"/>
+      <text x="74" y="50" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">原始图像</text>
+      <text x="74" y="62" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">I(x,y)</text>
+      <!-- Arrow 1 -->
+      <line x1="110" y1="52" x2="116" y2="52" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5" marker-end="url(#arrR)"/>
+      <!-- Box 2: 小波分解 -->
+      <rect x="122" y="35" width="72" height="34" rx="6" fill="rgba(99,102,241,0.12)" stroke="#6366f1" stroke-width="1"/>
+      <text x="158" y="50" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">小波分解</text>
+      <text x="158" y="62" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">DWT</text>
+      <!-- Arrow 2 -->
+      <line x1="194" y1="52" x2="200" y2="52" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5" marker-end="url(#arrR)"/>
+      <!-- Box 3: 量化 -->
+      <rect x="206" y="35" width="72" height="34" rx="6" fill="rgba(99,102,241,0.12)" stroke="#6366f1" stroke-width="1"/>
+      <text x="242" y="50" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">量化</text>
+      <text x="242" y="62" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">Quantize</text>
+      <!-- Arrow 3 -->
+      <line x1="278" y1="52" x2="284" y2="52" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5" marker-end="url(#arrR)"/>
+      <!-- Box 4: 熵编码 -->
+      <rect x="290" y="35" width="72" height="34" rx="6" fill="rgba(99,102,241,0.12)" stroke="#6366f1" stroke-width="1"/>
+      <text x="326" y="50" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">熵编码</text>
+      <text x="326" y="62" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">EBCOT</text>
+      <!-- Arrow 4 -->
+      <line x1="362" y1="52" x2="368" y2="52" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5" marker-end="url(#arrR)"/>
+      <!-- Box 5: 压缩码流 -->
+      <rect x="374" y="35" width="72" height="34" rx="6" fill="rgba(245,158,11,0.18)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="410" y="50" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">压缩码流</text>
+      <text x="410" y="62" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="#f59e0b">.jp2</text>
+
+      <!-- 连接箭头 (右侧, 向下) -->
+      <line x1="410" y1="69" x2="410" y2="135" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrD)"/>
+      <text x="430" y="106" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">存储/</text>
+      <text x="430" y="118" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">传输</text>
+
+      <!-- ===== 底行：解压流程 (y=140, boxes 140-174) ===== -->
+      <!-- Box 5: 压缩码流 -->
+      <rect x="374" y="140" width="72" height="34" rx="6" fill="rgba(245,158,11,0.18)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="410" y="155" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">压缩码流</text>
+      <text x="410" y="167" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="#f59e0b">.jp2</text>
+      <!-- Arrow (left) -->
+      <line x1="374" y1="157" x2="368" y2="157" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5" marker-end="url(#arrL)"/>
+      <!-- Box 4: 熵解码 -->
+      <rect x="290" y="140" width="72" height="34" rx="6" fill="rgba(14,165,233,0.12)" stroke="#0ea5e9" stroke-width="1"/>
+      <text x="326" y="155" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">熵解码</text>
+      <text x="326" y="167" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">Arith. Dec</text>
+      <!-- Arrow (left) -->
+      <line x1="290" y1="157" x2="284" y2="157" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5" marker-end="url(#arrL)"/>
+      <!-- Box 3: 反量化 -->
+      <rect x="206" y="140" width="72" height="34" rx="6" fill="rgba(14,165,233,0.12)" stroke="#0ea5e9" stroke-width="1"/>
+      <text x="242" y="155" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">反量化</text>
+      <text x="242" y="167" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">Dequant.</text>
+      <!-- Arrow (left) -->
+      <line x1="206" y1="157" x2="200" y2="157" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5" marker-end="url(#arrL)"/>
+      <!-- Box 2: 逆小波变换 -->
+      <rect x="122" y="140" width="72" height="34" rx="6" fill="rgba(14,165,233,0.12)" stroke="#0ea5e9" stroke-width="1"/>
+      <text x="158" y="155" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">逆小波变换</text>
+      <text x="158" y="167" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">IDWT</text>
+      <!-- Arrow (left) -->
+      <line x1="122" y1="157" x2="116" y2="157" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5" marker-end="url(#arrL)"/>
+      <!-- Box 1: 重建图像 -->
+      <rect x="38" y="140" width="72" height="34" rx="6" fill="rgba(14,165,233,0.12)" stroke="#0ea5e9" stroke-width="1"/>
+      <text x="74" y="155" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="11" fill="var(--text,#e2e8f0)">重建图像</text>
+      <text x="74" y="167" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">Î(x,y)</text>
+
+      <!-- 中央说明文字 -->
+      <text x="240" y="108" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)" opacity="0.6">— 可逆流水线 —</text>
+    </svg>
+  </div>
+
+  <p style="font-family:'Microsoft YaHei',sans-serif; font-size:12px; color:var(--text-muted,#94a3b8); line-height:1.8; margin:14px 0 0 0; padding:10px 12px; background:rgba(245,158,11,0.06); border-radius:6px;">
+    <strong style="color:#f59e0b;">JPEG2000 vs JPEG：</strong>JPEG 使用 8×8 DCT 分块变换，高压缩率时出现明显块效应；JPEG2000 使用全图小波变换，无块边界，且支持<strong style="color:var(--text,#e2e8f0);">感兴趣区域 (ROI) 编码</strong>——可对图像中重要区域分配更多比特。其熵编码采用 EBCOT (Embedded Block Coding with Optimized Truncation)，实现码率精确可控的嵌入式码流。
+  </p>
+</div>
+
+<!-- ===== 2.4 小波变换 vs 傅里叶变换 ===== -->
+<div style="margin:24px 0; padding:20px; background:var(--bg-card,rgba(30,41,59,0.4)); border-radius:12px; border:1px solid rgba(56,189,248,0.25);">
+  <h4 style="color:var(--text,#e2e8f0); font-family:'Microsoft YaHei',sans-serif; font-size:15px; margin:0 0 8px 0; display:flex; align-items:center; gap:8px;">
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#38bdf8;flex-shrink:0;"></span>
+    小波变换 vs 傅里叶变换：图像处理视角
+  </h4>
+  <p style="font-family:'Microsoft YaHei',sans-serif; font-size:12px; color:var(--text-muted,#94a3b8); line-height:1.8; margin:0 0 14px 0;">
+    傅里叶变换将信号分解为<strong style="color:var(--text,#e2e8f0);">全局正弦波</strong>，只能告诉你"信号中包含哪些频率"，但无法告诉你"这些频率出现在什么位置"。小波变换则同时提供<strong style="color:var(--text,#e2e8f0);">时间（空间）和频率</strong>的局部化信息——低频处时间分辨率粗但频率分辨率精，高频处时间分辨率精但频率分辨率粗，这种自适应特性被称为<strong style="color:#38bdf8;">多分辨率分析 (MRA)</strong>。
+  </p>
+
+  <div style="display:flex; justify-content:center; margin-top:10px;">
+    <svg width="480" height="300" viewBox="0 0 480 300" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto;">
+      <!-- ===== 分隔线 ===== -->
+      <line x1="240" y1="15" x2="240" y2="285" stroke="var(--text-muted,#94a3b8)" stroke-width="1" stroke-dasharray="5,5" opacity="0.3"/>
+
+      <!-- ===== 左面板：傅里叶变换 ===== -->
+      <text x="120" y="22" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="13" font-weight="bold" fill="var(--text,#e2e8f0)">傅里叶变换 (FFT)</text>
+      <text x="120" y="38" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="#fb7185">仅有频率信息，无时间定位</text>
+
+      <!-- Y轴 (频率) -->
+      <line x1="55" y1="55" x2="55" y2="255" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <!-- 无X轴 (强调无时间信息) -->
+      <line x1="55" y1="255" x2="215" y2="255" stroke="var(--text-muted,#94a3b8)" stroke-width="1" stroke-dasharray="3,4" opacity="0.4"/>
+      <text x="135" y="270" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)" opacity="0.5">(无时间轴)</text>
+
+      <!-- Y轴标签 -->
+      <text x="48" y="62" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">高频</text>
+      <text x="48" y="258" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">低频</text>
+      <text x="28" y="158" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)" transform="rotate(-90,28,158)">频率</text>
+
+      <!-- 5个均匀频率条 (相同尺寸 = 均匀分辨率) -->
+      <rect x="60" y="60" width="155" height="35" rx="3" fill="rgba(99,102,241,0.18)" stroke="#6366f1" stroke-width="1"/>
+      <rect x="60" y="98" width="155" height="35" rx="3" fill="rgba(99,102,241,0.18)" stroke="#6366f1" stroke-width="1"/>
+      <rect x="60" y="136" width="155" height="35" rx="3" fill="rgba(99,102,241,0.18)" stroke="#6366f1" stroke-width="1"/>
+      <rect x="60" y="174" width="155" height="35" rx="3" fill="rgba(99,102,241,0.18)" stroke="#6366f1" stroke-width="1"/>
+      <rect x="60" y="212" width="155" height="35" rx="3" fill="rgba(99,102,241,0.18)" stroke="#6366f1" stroke-width="1"/>
+
+      <!-- 标注: 均匀分辨率 -->
+      <text x="137" y="82" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">f₁</text>
+      <text x="137" y="120" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">f₂</text>
+      <text x="137" y="158" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">f₃</text>
+      <text x="137" y="196" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">f₄</text>
+      <text x="137" y="234" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">f₅</text>
+
+      <!-- 底部注释 -->
+      <text x="135" y="285" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">分辨率均匀</text>
+      <text x="135" y="297" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="#fb7185">丢失全部时间信息</text>
+
+      <!-- ===== 右面板：小波变换 ===== -->
+      <text x="360" y="22" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="13" font-weight="bold" fill="var(--text,#e2e8f0)">小波变换 (DWT)</text>
+      <text x="360" y="38" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="#10b981">时间-频率自适应分辨率</text>
+
+      <!-- Y轴 (频率) -->
+      <line x1="285" y1="55" x2="285" y2="255" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+      <!-- X轴 (时间) -->
+      <line x1="285" y1="255" x2="445" y2="255" stroke="var(--text-muted,#94a3b8)" stroke-width="1.5"/>
+
+      <!-- Y轴标签 -->
+      <text x="278" y="62" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">高频</text>
+      <text x="278" y="258" text-anchor="end" font-family="'Microsoft YaHei',sans-serif" font-size="9" fill="var(--text-muted,#94a3b8)">低频</text>
+      <text x="258" y="158" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)" transform="rotate(-90,258,158)">频率</text>
+      <!-- X轴标签 -->
+      <text x="365" y="270" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">时间 →</text>
+
+      <!-- 二进离散网格 (Dyadic Tiling) -->
+      <!-- Level 0: 最低频 — 1格, 宽(时间粗), 矮(频率精) -->
+      <rect x="286" y="230" width="158" height="24" fill="rgba(99,102,241,0.22)" stroke="#6366f1" stroke-width="1"/>
+      <!-- Level 1: 2格 -->
+      <rect x="286" y="190" width="79" height="39" fill="rgba(14,165,233,0.22)" stroke="#0ea5e9" stroke-width="1"/>
+      <rect x="365" y="190" width="79" height="39" fill="rgba(14,165,233,0.22)" stroke="#0ea5e9" stroke-width="1"/>
+      <!-- Level 2: 4格 -->
+      <rect x="286" y="135" width="39.5" height="54" fill="rgba(56,189,248,0.22)" stroke="#38bdf8" stroke-width="1"/>
+      <rect x="325.5" y="135" width="39.5" height="54" fill="rgba(56,189,248,0.22)" stroke="#38bdf8" stroke-width="1"/>
+      <rect x="365" y="135" width="39.5" height="54" fill="rgba(56,189,248,0.22)" stroke="#38bdf8" stroke-width="1"/>
+      <rect x="404.5" y="135" width="39.5" height="54" fill="rgba(56,189,248,0.22)" stroke="#38bdf8" stroke-width="1"/>
+      <!-- Level 3: 最高频 — 8格, 窄(时间精), 高(频率粗) -->
+      <rect x="286" y="60" width="19.75" height="74" fill="rgba(16,185,129,0.22)" stroke="#10b981" stroke-width="1"/>
+      <rect x="305.75" y="60" width="19.75" height="74" fill="rgba(16,185,129,0.22)" stroke="#10b981" stroke-width="1"/>
+      <rect x="325.5" y="60" width="19.75" height="74" fill="rgba(16,185,129,0.22)" stroke="#10b981" stroke-width="1"/>
+      <rect x="345.25" y="60" width="19.75" height="74" fill="rgba(16,185,129,0.22)" stroke="#10b981" stroke-width="1"/>
+      <rect x="365" y="60" width="19.75" height="74" fill="rgba(16,185,129,0.22)" stroke="#10b981" stroke-width="1"/>
+      <rect x="384.75" y="60" width="19.75" height="74" fill="rgba(16,185,129,0.22)" stroke="#10b981" stroke-width="1"/>
+      <rect x="404.5" y="60" width="19.75" height="74" fill="rgba(16,185,129,0.22)" stroke="#10b981" stroke-width="1"/>
+      <rect x="424.25" y="60" width="19.75" height="74" fill="rgba(16,185,129,0.22)" stroke="#10b981" stroke-width="1"/>
+
+      <!-- 标注: 左侧大括号说明 -->
+      <text x="365" y="245" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="var(--text-muted,#94a3b8)">时间窗宽 · 频率窗窄</text>
+      <text x="365" y="100" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="var(--text-muted,#94a3b8)">时间窗窄 · 频率窗宽</text>
+
+      <!-- 箭头标注: 频率分辨率递减 -->
+      <line x1="262" y1="245" x2="262" y2="65" stroke="var(--text-muted,#94a3b8)" stroke-width="0.8" opacity="0.4"/>
+      <polygon points="259,68 262,60 265,68" fill="var(--text-muted,#94a3b8)" opacity="0.4"/>
+      <text x="250" y="158" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="8" fill="var(--text-muted,#94a3b8)" opacity="0.5" transform="rotate(-90,250,158)">频率分辨率递减</text>
+
+      <!-- 底部注释 -->
+      <text x="365" y="285" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="var(--text-muted,#94a3b8)">低频: 时间粗 / 频率精</text>
+      <text x="365" y="297" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif" font-size="10" fill="#10b981">高频: 时间精 / 频率粗</text>
+    </svg>
+  </div>
+
+  <!-- 对比总结表 -->
+  <div style="margin-top:16px; overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; font-family:'Microsoft YaHei',sans-serif; font-size:11.5px;">
+      <thead>
+        <tr style="border-bottom:2px solid rgba(56,189,248,0.3);">
+          <th style="padding:8px 10px; text-align:left; color:var(--text,#e2e8f0); font-weight:bold;">对比维度</th>
+          <th style="padding:8px 10px; text-align:center; color:#6366f1; font-weight:bold;">傅里叶变换</th>
+          <th style="padding:8px 10px; text-align:center; color:#10b981; font-weight:bold;">小波变换</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(148,163,184,0.15);">
+          <td style="padding:7px 10px; color:var(--text-muted,#94a3b8);">基函数</td>
+          <td style="padding:7px 10px; text-align:center; color:var(--text,#e2e8f0);">正弦/余弦波（无限长）</td>
+          <td style="padding:7px 10px; text-align:center; color:var(--text,#e2e8f0);">有限长母小波（可伸缩平移）</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(148,163,184,0.15);">
+          <td style="padding:7px 10px; color:var(--text-muted,#94a3b8);">时间局部化</td>
+          <td style="padding:7px 10px; text-align:center; color:#fb7185;">无（全局变换）</td>
+          <td style="padding:7px 10px; text-align:center; color:#10b981;">有（自适应窗口）</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(148,163,184,0.15);">
+          <td style="padding:7px 10px; color:var(--text-muted,#94a3b8);">频率分辨率</td>
+          <td style="padding:7px 10px; text-align:center; color:var(--text,#e2e8f0);">均匀（所有频率相同）</td>
+          <td style="padding:7px 10px; text-align:center; color:var(--text,#e2e8f0);">自适应（低频精，高频粗）</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(148,163,184,0.15);">
+          <td style="padding:7px 10px; color:var(--text-muted,#94a3b8);">图像处理适用性</td>
+          <td style="padding:7px 10px; text-align:center; color:var(--text,#e2e8f0);">适合全局频率分析、周期噪声</td>
+          <td style="padding:7px 10px; text-align:center; color:var(--text,#e2e8f0);">适合多尺度边缘、纹理、去雨去噪</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 10px; color:var(--text-muted,#94a3b8);">计算复杂度</td>
+          <td style="padding:7px 10px; text-align:center; color:var(--text,#e2e8f0);">O(N log N)（FFT）</td>
+          <td style="padding:7px 10px; text-align:center; color:var(--text,#e2e8f0);">O(N log N)（Mallat）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 </div></div>
 <div class="kg-section" id="kg-s6">
 <div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>六、Contourlet & Shearlet——"看得见方向的"高级变换</h3><span class="kg-acc-icon">▼</span></div>
@@ -6636,6 +7311,213 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </div>
 
 <p><b>一句话总结</b>：Contourlet像用<b>棱镜分光</b>的方式分解方向，Shearlet像用<b>数学剪刀剪纸</b>的方式切割方向。Shearlet是Contourlet的"理论升级版"。</p>
+<div class="snippet-marker">
+  <strong>插入位置</strong>：第6章 <code>&lt;p&gt;&lt;b&gt;一句话总结&lt;/b&gt;：Contourlet像用棱镜分光…&lt;/p&gt;</code> 之后，<code>&lt;div class="kg-card" style="margin-top:12px;"&gt;</code>（Canvas 演示）之前。
+</div>
+
+
+<div class="kg-card" style="margin-top:14px;">
+<h4 style="margin-top:0;">全名与定义</h4>
+<p><b>Contourlet Transform（轮廓波变换）</b>：由 Do 和 Vetterli 于 2002 年提出，是一种多尺度、多方向的图像分解方法，通过拉普拉斯金字塔（LP）捕获点奇异性、方向滤波器组（DFB）将点奇异性连接为线/曲线奇异性，从而实现对任意方向轮廓的高效稀疏表示。</p>
+<p style="margin-top:8px;"><b>Shearlet Transform（剪切波变换）</b>：由 Easley、Labate 和 Lim 于 2008 年提出，通过剪切矩阵（Shearing Matrix）和各向异性缩放矩阵生成连续/离散基函数，在数学上证明了其对分段光滑函数的<b>最优稀疏逼近</b>（Optimal Sparse Approximation），是 Contourlet 的理论升级版。</p>
+</div>
+
+<h4>数学公式推导</h4>
+
+<div class="formula-box">
+  <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;"><b>Contourlet 变换 = LP 多尺度分解 + DFB 方向分解</b></div>
+
+  <div class="formula-label">① 拉普拉斯金字塔（LP）分解——多尺度</div>
+  <div class="formula">f &rarr; c<sub>J</sub> + &Sigma;<sub>j=1</sub><sup>J</sup> d<sub>j</sub></div>
+  <div class="formula-label" style="text-align:center;">其中 c<sub>J</sub> 为低频近似分量，d<sub>j</sub> 为第 j 层带通高频分量</div>
+
+  <div class="formula" style="margin-top:10px;">d<sub>j</sub> = f<sub>j</sub> &minus; (f<sub>j</sub>)&uarr; &nbsp;&nbsp;（带通 = 当前尺度 &minus; 上采样平滑）</div>
+
+  <div class="formula-label" style="margin-top:12px;">② 方向滤波器组（DFB）分解——多方向</div>
+  <div class="formula">d<sub>j</sub> &rarr; { d<sub>j,0</sub>, d<sub>j,1</sub>, &hellip;, d<sub>j,2<sup>l</sup><sub>j</sub>&minus;1</sub> }</div>
+  <div class="formula-label" style="text-align:center;">将第 j 层高频分解为 2<sup>l<sub>j</sub></sup> 个方向子带（l<sub>j</sub> 为方向分解级数）</div>
+
+  <div class="formula" style="margin-top:10px;font-weight:bold;">完整 Contourlet：C(f) = { c<sub>J</sub>, d<sub>j,l</sub> }<sub>j=1..J, l=0..2<sup>l<sub>j</sub></sub>&minus;1</sub></div>
+</div>
+
+<div class="formula-box">
+  <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;"><b>Shearlet 变换 = 剪切矩阵 + 各向异性缩放 + 母函数平移</b></div>
+
+  <div class="formula-label">① 各向异性缩放矩阵 A<sub>j</sub>（抛物线缩放）</div>
+  <div class="formula" style="font-family:'Cambria Math','Times New Roman',serif;">
+    A<sub>j</sub> = <span style="font-size:28px;vertical-align:middle;">[</span> 2<sup>2j</sup> &nbsp;&nbsp;&nbsp; 0 &nbsp;&nbsp; <span style="font-size:28px;vertical-align:middle;">]</span>
+  </div>
+  <div class="formula" style="font-family:'Cambria Math','Times New Roman',serif;margin-top:2px;">
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="font-size:28px;vertical-align:middle;">[</span> 0 &nbsp;&nbsp;&nbsp; 2<sup>j</sup> &nbsp;&nbsp; <span style="font-size:28px;vertical-align:middle;">]</span>
+  </div>
+
+  <div class="formula-label" style="margin-top:8px;">② 剪切矩阵 S<sub>l</sub>（方向旋转）</div>
+  <div class="formula" style="font-family:'Cambria Math','Times New Roman',serif;">
+    S<sub>l</sub> = <span style="font-size:28px;vertical-align:middle;">[</span> 1 &nbsp;&nbsp;&nbsp; l &nbsp;&nbsp; <span style="font-size:28px;vertical-align:middle;">]</span>
+  </div>
+  <div class="formula" style="font-family:'Cambria Math','Times New Roman',serif;margin-top:2px;">
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="font-size:28px;vertical-align:middle;">[</span> 0 &nbsp;&nbsp;&nbsp; 1 &nbsp;&nbsp; <span style="font-size:28px;vertical-align:middle;">]</span>
+  </div>
+  <div class="formula-label" style="text-align:center;">l 为剪切参数，取值范围 l &isin; [&minus;2<sup>j</sup>, 2<sup>j</sup>]</div>
+
+  <div class="formula-label" style="margin-top:12px;">③ Shearlet 基函数（母函数缩放+剪切+平移）</div>
+  <div class="formula" style="font-size:16px;font-weight:bold;">
+    &psi;<sub>j,l,k</sub>(x) = |det(A<sub>j</sub>)|<sup>j/2</sup> &middot; &psi;(S<sub>l</sub> A<sub>j</sub> x &minus; k)
+  </div>
+  <div class="formula-label" style="text-align:center;">
+    j = 尺度参数 &nbsp;|&nbsp; l = 方向（剪切）参数 &nbsp;|&nbsp; k = 空间平移参数 &nbsp;|&nbsp; &psi; = 母小波函数
+  </div>
+
+  <div class="formula-label" style="margin-top:12px;">④ Shearlet 正变换（内积）</div>
+  <div class="formula">SH(f) = &lang; f, &psi;<sub>j,l,k</sub> &rang; = &int; f(x) &middot; &psi;<sub>j,l,k</sub>(x) dx</div>
+</div>
+
+<h4>在去雨中的具体应用：方向性分解分离雨纹</h4>
+<div class="kg-step">
+  <strong>核心思路</strong>：雨纹具有明显的<b>方向性</b>（通常沿某一主导方向呈细长条纹），而背景图像的边缘和纹理方向各不相同。Contourlet/Shearlet 能将图像分解为多个方向子带，使雨纹能量集中在少数特定方向子带中，从而实现分离。
+</div>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>Contourlet 去雨流程</h4>
+    <p>① <b>LP 分解</b>：将含雨图像分为低频近似（背景主体）和多层高频细节；<br>
+    ② <b>DFB 方向分解</b>：对高频层做方向分解，雨纹集中在其主导方向的子带中；<br>
+    ③ <b>阈值处理</b>：对雨纹方向子带做软/硬阈值收缩，抑制雨纹系数；<br>
+    ④ <b>DFB 重建 + LP 重建</b>：逆变换得到去雨图像。</p>
+  </div>
+  <div class="kg-card">
+    <h4>Shearlet 去雨流程</h4>
+    <p>① <b>Shearlet 正变换</b>：对含雨图像做多尺度多方向分解，得到各尺度各方向的剪切系数；<br>
+    ② <b>稀疏分析</b>：雨纹系数在特定 (j, l) 方向子带中幅值大，背景系数分散且幅值小；<br>
+    ③ <b>系数修正</b>：结合统计模型（如 GMM）对雨纹方向系数做自适应收缩；<br>
+    ④ <b>Shearlet 逆变换</b>：重建得到去雨图像。</p>
+  </div>
+</div>
+
+<div class="note-box">
+  <strong>关键优势</strong>：相比小波只有 3 个方向（水平/垂直/对角），Contourlet 可提供 2<sup>l</sup> 个方向（如 l=3 时 8 个方向），Shearlet 更可通过连续剪切参数实现<b>任意方向</b>的精细分析。这使得斜向雨纹不再被混入对角子带，而是被独立分离到专属方向子带中，大幅提升去雨精度。
+</div>
+
+
+<div class="svg-wrap">
+<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:720px;display:block;">
+  <defs>
+    <marker id="arr1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--text-muted)"/>
+    </marker>
+  </defs>
+
+  
+  <text x="180" y="24" font-size="14" font-weight="bold" fill="var(--primary-light)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">Contourlet 方向子带划分</text>
+  <text x="180" y="42" font-size="11" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">DFB 将频域切分为楔形方向扇区</text>
+
+  
+  <rect x="60" y="60" width="240" height="240" fill="none" stroke="var(--border)" stroke-width="1.5" rx="4"/>
+
+  
+  
+  
+  <path d="M 180 180 L 296 180 A 116 116 0 0 0 287 136 Z" fill="#9b8bb4" opacity="0.55" stroke="var(--border)" stroke-width="0.5"/>
+  
+  <path d="M 180 180 L 287 136 A 116 116 0 0 0 262 98 Z" fill="#7a9cc6" opacity="0.55" stroke="var(--border)" stroke-width="0.5"/>
+  
+  <path d="M 180 180 L 262 98 A 116 116 0 0 0 222 71 Z" fill="#7eb0a8" opacity="0.55" stroke="var(--border)" stroke-width="0.5"/>
+  
+  <path d="M 180 180 L 222 71 A 116 116 0 0 0 180 64 Z" fill="#8ba888" opacity="0.55" stroke="var(--border)" stroke-width="0.5"/>
+  
+  <path d="M 180 180 L 180 64 A 116 116 0 0 0 138 71 Z" fill="#c9a87c" opacity="0.55" stroke="var(--border)" stroke-width="0.5"/>
+  
+  <path d="M 180 180 L 138 71 A 116 116 0 0 0 98 98 Z" fill="#bc8e8e" opacity="0.55" stroke="var(--border)" stroke-width="0.5"/>
+  
+  <path d="M 180 180 L 98 98 A 116 116 0 0 0 73 136 Z" fill="#a89bc4" opacity="0.55" stroke="var(--border)" stroke-width="0.5"/>
+  
+  <path d="M 180 180 L 73 136 A 116 116 0 0 0 64 180 Z" fill="#9b8bb4" opacity="0.35" stroke="var(--border)" stroke-width="0.5"/>
+  
+  <path d="M 180 180 L 64 180 A 116 116 0 0 0 73 224 Z" fill="#7a9cc6" opacity="0.35" stroke="var(--border)" stroke-width="0.5"/>
+  <path d="M 180 180 L 73 224 A 116 116 0 0 0 98 262 Z" fill="#7eb0a8" opacity="0.35" stroke="var(--border)" stroke-width="0.5"/>
+  <path d="M 180 180 L 98 262 A 116 116 0 0 0 138 289 Z" fill="#8ba888" opacity="0.35" stroke="var(--border)" stroke-width="0.5"/>
+  <path d="M 180 180 L 138 289 A 116 116 0 0 0 180 296 Z" fill="#c9a87c" opacity="0.35" stroke="var(--border)" stroke-width="0.5"/>
+  <path d="M 180 180 L 180 296 A 116 116 0 0 0 222 289 Z" fill="#bc8e8e" opacity="0.35" stroke="var(--border)" stroke-width="0.5"/>
+  <path d="M 180 180 L 222 289 A 116 116 0 0 0 262 262 Z" fill="#a89bc4" opacity="0.35" stroke="var(--border)" stroke-width="0.5"/>
+  <path d="M 180 180 L 262 262 A 116 116 0 0 0 287 224 Z" fill="#9b8bb4" opacity="0.55" stroke="var(--border)" stroke-width="0.5"/>
+  <path d="M 180 180 L 287 224 A 116 116 0 0 0 296 180 Z" fill="#7a9cc6" opacity="0.55" stroke="var(--border)" stroke-width="0.5"/>
+
+  
+  <circle cx="180" cy="180" r="28" fill="var(--bg-card)" stroke="var(--text-muted)" stroke-width="1" opacity="0.8"/>
+  <text x="180" y="184" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">低频</text>
+
+  
+  <text x="310" y="184" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">0°</text>
+  <text x="268" y="88" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">45°</text>
+  <text x="180" y="52" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">90°</text>
+  <text x="84" y="88" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">135°</text>
+  <text x="44" y="184" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">180°</text>
+
+  
+  <path d="M 180 180 L 287 136 A 116 116 0 0 0 262 98 Z" fill="none" stroke="#ef4444" stroke-width="2.5" opacity="0.9"/>
+  <text x="270" y="120" font-size="11" fill="#ef4444" font-weight="bold" font-family="'Microsoft YaHei',sans-serif">雨纹方向</text>
+
+  
+  <line x1="360" y1="50" x2="360" y2="320" stroke="var(--border)" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>
+
+  
+  <text x="540" y="24" font-size="14" font-weight="bold" fill="var(--primary-light)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">Shearlet 剪切方向划分</text>
+  <text x="540" y="42" font-size="11" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">剪切矩阵生成倾斜平行四边形支撑域</text>
+
+  
+  <rect x="420" y="60" width="240" height="240" fill="none" stroke="var(--border)" stroke-width="1.5" rx="4"/>
+
+  
+  
+  <polygon points="420,80 660,80 640,100 400,100" fill="#9b8bb4" opacity="0.5" stroke="var(--border)" stroke-width="0.5"/>
+  <polygon points="400,100 640,100 620,120 380,120" fill="#7a9cc6" opacity="0.5" stroke="var(--border)" stroke-width="0.5"/>
+  <polygon points="380,120 620,120 600,140 360,140" fill="#7eb0a8" opacity="0.5" stroke="var(--border)" stroke-width="0.5"/>
+  <polygon points="360,140 600,140 580,160 340,160" fill="#8ba888" opacity="0.5" stroke="var(--border)" stroke-width="0.5"/>
+  <polygon points="340,160 580,160 560,180 320,180" fill="#c9a87c" opacity="0.5" stroke="var(--border)" stroke-width="0.5"/>
+  <polygon points="320,180 560,180 540,200 300,200" fill="#bc8e8e" opacity="0.5" stroke="var(--border)" stroke-width="0.5"/>
+  <polygon points="300,200 540,200 520,220 280,220" fill="#a89bc4" opacity="0.5" stroke="var(--border)" stroke-width="0.5"/>
+  <polygon points="280,220 520,220 500,240 260,240" fill="#9b8bb4" opacity="0.35" stroke="var(--border)" stroke-width="0.5"/>
+  <polygon points="260,240 500,240 480,260 240,260" fill="#7a9cc6" opacity="0.35" stroke="var(--border)" stroke-width="0.5"/>
+  <polygon points="240,260 480,260 460,280 220,280" fill="#7eb0a8" opacity="0.35" stroke="var(--border)" stroke-width="0.5"/>
+  <polygon points="220,280 460,280 440,300 200,300" fill="#8ba888" opacity="0.35" stroke="var(--border)" stroke-width="0.5"/>
+
+  
+  <ellipse cx="430" cy="180" rx="32" ry="20" fill="var(--bg-card)" stroke="var(--text-muted)" stroke-width="1" opacity="0.8" transform="rotate(-15 430 180)"/>
+  <text x="430" y="184" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">低频</text>
+
+  
+  <text x="660" y="96" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">l=-4</text>
+  <text x="660" y="156" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">l=-1</text>
+  <text x="660" y="196" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">l=0</text>
+  <text x="660" y="236" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">l=+2</text>
+  <text x="660" y="296" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">l=+5</text>
+
+  
+  <polygon points="380,120 620,120 600,140 360,140" fill="none" stroke="#ef4444" stroke-width="2.5" opacity="0.9"/>
+  <text x="470" y="135" font-size="11" fill="#ef4444" font-weight="bold" font-family="'Microsoft YaHei',sans-serif">雨纹方向 (l=-2)</text>
+
+  
+  <text x="180" y="328" font-size="11" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">固定楔形扇区（离散方向）</text>
+  <text x="540" y="328" font-size="11" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">连续倾斜条带（任意方向）</text>
+
+  
+  <text x="360" y="184" font-size="20" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">vs</text>
+
+  
+  <rect x="60" y="340" width="12" height="12" fill="#9b8bb4" opacity="0.55" rx="2"/>
+  <text x="78" y="350" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">方向子带</text>
+  <rect x="150" y="340" width="12" height="12" fill="var(--bg-card)" stroke="var(--text-muted)" stroke-width="1" rx="2"/>
+  <text x="168" y="350" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">低频近似</text>
+  <line x1="240" y1="346" x2="262" y2="346" stroke="#ef4444" stroke-width="2.5"/>
+  <text x="268" y="350" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">雨纹主导方向子带</text>
+</svg>
+<div class="svg-caption">图：Contourlet（左）通过 DFB 产生楔形方向子带，方向数离散固定；Shearlet（右）通过剪切矩阵 S<sub>l</sub> 产生倾斜平行四边形支撑域，方向参数 l 连续可调，能更精确匹配雨纹方向</div>
+</div>
+
+
+
+<hr class="snippet-divider">
+
 
 <div class="kg-card" style="margin-top:12px;">
   <canvas id="canvas-contourlet-demo" width="500" height="140" style="width:100%;max-width:500px;height:auto;display:block;margin:0 auto;background:transparent;border-radius:8px;"></canvas>
@@ -6683,6 +7565,434 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 </div>
 
 <p><b>为什么组合？</b>小波擅长频率定位但可能在平坦区域产生伪影；TV擅长保持平坦和锐利边缘但可能丢失纹理。两者互补：小波先分频，TV在小波域里做正则化，既保留了边缘又减少了伪影。</p>
+TV正则化结合&lt;/h4&gt;</code>、首段文字和现有 SVG（到原 line 6671），将原 line 6673-6685 的 <code>kg-flow</code> 流程条和"为什么组合"段落替换为以下内容。
+</div>
+
+
+
+<h4>TV 正则化的数学公式</h4>
+
+<div class="formula-box">
+  <div class="formula-label">连续形式（连续全变分）</div>
+  <div class="formula" style="font-size:17px;font-weight:bold;">TV(u) = &int;<sub>&Omega;</sub> |&nabla;u| dx = &int;<sub>&Omega;</sub> &radic;( (&part;u/&part;x)<sup>2</sup> + (&part;u/&part;y)<sup>2</sup> ) dx</div>
+  <div class="formula-label" style="text-align:center;">&Omega; 为图像域，|&nabla;u| 为梯度幅值，TV 即梯度幅值在全域上的积分</div>
+
+  <div class="formula-label" style="margin-top:14px;">离散形式（像素级全变分）</div>
+  <div class="formula" style="font-size:16px;font-weight:bold;">TV(u) = &Sigma;<sub>i,j</sub> | u<sub>i+1,j</sub> &minus; u<sub>i,j</sub> | + | u<sub>i,j+1</sub> &minus; u<sub>i,j</sub> |</div>
+  <div class="formula-label" style="text-align:center;">即所有相邻像素差值的绝对值之和（水平差分 + 垂直差分）</div>
+
+  <div class="formula-label" style="margin-top:14px;">ROF 去噪模型（最小化目标）</div>
+  <div class="formula" style="font-size:16px;font-weight:bold;">min<sub>u</sub> &nbsp; &frac12; ||u &minus; f||<sup>2</sup><sub>2</sub> + &lambda; &middot; TV(u)</div>
+  <div class="formula-label" style="text-align:center;">f = 含噪观测图像 &nbsp;|&nbsp; u = 待求干净图像 &nbsp;|&nbsp; &lambda; = 正则化参数（平衡保真项与平滑项）</div>
+</div>
+
+<h4>TV 的来历：从 Tikhonov 到 ROF</h4>
+<div class="kg-step">
+  <strong>Rudin-Osher-Fatemi (ROF) 模型</strong>：1992 年，Leonid Rudin、Stanley Osher 和 Emad Fatemi 在论文 <i>"Nonlinear total variation based noise removal algorithms"</i> 中首次提出以全变分（TV）作为正则项的图像去噪模型。这是对经典 <b>Tikhonov 正则化</b>（1963 年）的关键改进——Tikhonov 用 <b>L2 范数</b>惩罚梯度（&int;|&nabla;u|<sup>2</sup>dx），导致边缘被过度平滑；ROF 改用 <b>L1 范数</b>惩罚梯度（&int;|&nabla;u|dx），允许边缘处存在大跳跃，从而在去噪的同时<b>保留锐利边缘</b>。
+</div>
+
+<h4>为什么 TV 能保留边缘？L2 vs L1 的本质区别</h4>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>Tikhonov 正则化（L2 范数）</h4>
+    <p><b>惩罚项</b>：&int;|&nabla;u|<sup>2</sup> dx &nbsp;（梯度的<b>平方</b>）</p>
+    <p style="margin-top:8px;"><b>问题</b>：边缘处梯度大 &rarr; 平方后惩罚<b>急剧增大</b> &rarr; 优化器为了降低总惩罚，会<b>压低边缘处梯度</b> &rarr; 边缘被磨平、模糊。</p>
+    <p style="margin-top:8px;color:var(--accent-red);"><b>结果</b>：过度平滑，边缘丢失</p>
+  </div>
+  <div class="kg-card">
+    <h4>TV 正则化（L1 范数）</h4>
+    <p><b>惩罚项</b>：&int;|&nabla;u| dx &nbsp;（梯度的<b>绝对值</b>）</p>
+    <p style="margin-top:8px;"><b>优势</b>：边缘处梯度大 &rarr; 绝对值惩罚<b>线性增长</b>（不像平方那样爆炸） &rarr; 优化器<b>容忍</b>边缘处的大跳跃 &rarr; 边缘保持锐利。</p>
+    <p style="margin-top:8px;color:var(--accent-green);"><b>结果</b>：平坦区域去噪，边缘保留</p>
+  </div>
+</div>
+
+
+<div class="svg-wrap">
+<svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:720px;display:block;">
+  
+  <text x="360" y="22" font-size="13" font-weight="bold" fill="#ef4444" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">L2 正则化（Tikhonov）：边缘被过度平滑</text>
+
+  
+  <line x1="60" y1="120" x2="660" y2="120" stroke="var(--text-muted)" stroke-width="1" opacity="0.3"/>
+  <line x1="60" y1="40" x2="60" y2="120" stroke="var(--text-muted)" stroke-width="1" opacity="0.3"/>
+  <text x="50" y="80" font-size="10" fill="var(--text-muted)" text-anchor="end" font-family="'Microsoft YaHei',sans-serif">像素值</text>
+  <text x="660" y="135" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">位置</text>
+
+  
+  <path d="M 80 100 L 340 100 L 360 55 L 640 55" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-dasharray="5 3" opacity="0.6"/>
+  <text x="200" y="115" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">真实边缘（理想阶跃）</text>
+
+  
+  <path d="M 80 100 Q 200 100 300 92 Q 340 85 360 75 Q 380 65 420 58 Q 500 55 640 55" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+  <text x="300" y="76" font-size="10" fill="#ef4444" font-family="'Microsoft YaHei',sans-serif">L2 去噪结果（边缘模糊）</text>
+
+  
+  <line x1="280" y1="100" x2="280" y2="92" stroke="#ef4444" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="440" y1="58" x2="440" y2="55" stroke="#ef4444" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="360" y="44" font-size="10" fill="#ef4444" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">边缘被"涂抹"变缓</text>
+
+  
+  <line x1="60" y1="145" x2="660" y2="145" stroke="var(--border)" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>
+
+  
+  <text x="360" y="168" font-size="13" font-weight="bold" fill="#22c55e" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">L1 正则化（TV/ROF）：边缘被锐利保留</text>
+
+  
+  <line x1="60" y1="270" x2="660" y2="270" stroke="var(--text-muted)" stroke-width="1" opacity="0.3"/>
+  <line x1="60" y1="185" x2="60" y2="270" stroke="var(--text-muted)" stroke-width="1" opacity="0.3"/>
+  <text x="50" y="230" font-size="10" fill="var(--text-muted)" text-anchor="end" font-family="'Microsoft YaHei',sans-serif">像素值</text>
+  <text x="660" y="285" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">位置</text>
+
+  
+  <path d="M 80 250 L 340 250 L 360 205 L 640 205" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-dasharray="5 3" opacity="0.6"/>
+  <text x="200" y="265" font-size="10" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">真实边缘（理想阶跃）</text>
+
+  
+  <path d="M 80 248 L 335 248 L 360 207 L 640 207" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+  <text x="300" y="240" font-size="10" fill="#22c55e" font-family="'Microsoft YaHei',sans-serif">TV 去噪结果（分段平坦，边缘锐利）</text>
+
+  
+  <line x1="360" y1="248" x2="360" y2="207" stroke="#22c55e" stroke-width="2"/>
+  <text x="372" y="230" font-size="10" fill="#22c55e" font-family="'Microsoft YaHei',sans-serif">边缘跳跃保留 ✓</text>
+
+  
+  <text x="180" y="240" font-size="10" fill="#22c55e" font-family="'Microsoft YaHei',sans-serif">平坦区无抖动 ✓</text>
+  <text x="480" y="200" font-size="10" fill="#22c55e" font-family="'Microsoft YaHei',sans-serif">平坦区无抖动 ✓</text>
+</svg>
+<div class="svg-caption">图：L2 正则化（上）对大梯度边缘施加二次惩罚，迫使边缘变缓模糊；L1/TV 正则化（下）对梯度施加线性惩罚，容忍边缘处的大跳跃，实现"分段平坦"去噪</div>
+</div>
+
+<h4>小波 + TV 联合去噪完整流程</h4>
+
+
+<div class="svg-wrap">
+<svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:760px;display:block;">
+  <defs>
+    <marker id="arr2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="var(--text-muted)"/>
+    </marker>
+  </defs>
+
+  
+  <rect x="10" y="55" width="120" height="90" rx="8" fill="#bc8e8e" opacity="0.25" stroke="#bc8e8e" stroke-width="1.5"/>
+  <text x="70" y="48" font-size="11" font-weight="bold" fill="#bc8e8e" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">含噪图像</text>
+  
+  <g opacity="0.5">
+    <circle cx="35" cy="75" r="2" fill="#bc8e8e"/><circle cx="55" cy="85" r="2" fill="#bc8e8e"/>
+    <circle cx="75" cy="70" r="2" fill="#bc8e8e"/><circle cx="95" cy="90" r="2" fill="#bc8e8e"/>
+    <circle cx="45" cy="100" r="2" fill="#bc8e8e"/><circle cx="85" cy="110" r="2" fill="#bc8e8e"/>
+    <circle cx="65" cy="120" r="2" fill="#bc8e8e"/><circle cx="100" cy="75" r="2" fill="#bc8e8e"/>
+    <circle cx="30" cy="115" r="2" fill="#bc8e8e"/><circle cx="90" cy="125" r="2" fill="#bc8e8e"/>
+  </g>
+  <text x="70" y="165" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">雨纹+噪声叠加</text>
+
+  
+  <line x1="135" y1="100" x2="165" y2="100" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  
+  <rect x="170" y="55" width="120" height="90" rx="8" fill="#7a9cc6" opacity="0.25" stroke="#7a9cc6" stroke-width="1.5"/>
+  <text x="230" y="48" font-size="11" font-weight="bold" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">小波分解 (DWT)</text>
+  
+  <rect x="185" y="68" width="40" height="28" fill="#7a9cc6" opacity="0.4" rx="2"/>
+  <text x="205" y="86" font-size="10" fill="var(--text)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">LL</text>
+  <rect x="228" y="68" width="40" height="28" fill="#7a9cc6" opacity="0.25" rx="2"/>
+  <text x="248" y="86" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">HL</text>
+  <rect x="185" y="99" width="40" height="28" fill="#7a9cc6" opacity="0.25" rx="2"/>
+  <text x="205" y="117" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">LH</text>
+  <rect x="228" y="99" width="40" height="28" fill="#7a9cc6" opacity="0.25" rx="2"/>
+  <text x="248" y="117" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">HH</text>
+  <text x="230" y="165" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">分离高低频</text>
+
+  
+  <line x1="295" y1="100" x2="325" y2="100" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  
+  <rect x="330" y="55" width="120" height="90" rx="8" fill="#c9a87c" opacity="0.25" stroke="#c9a87c" stroke-width="1.5"/>
+  <text x="390" y="48" font-size="11" font-weight="bold" fill="#c9a87c" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">TV 正则化</text>
+  
+  <line x1="345" y1="80" x2="375" y2="80" stroke="#c9a87c" stroke-width="2"/>
+  <line x1="375" y1="80" x2="380" y2="110" stroke="#c9a87c" stroke-width="2"/>
+  <line x1="380" y1="110" x2="410" y2="110" stroke="#c9a87c" stroke-width="2"/>
+  <line x1="410" y1="110" x2="415" y2="75" stroke="#c9a87c" stroke-width="2"/>
+  <line x1="415" y1="75" x2="435" y2="75" stroke="#c9a87c" stroke-width="2"/>
+  
+  <path d="M 345 82 L 350 76 L 355 84 L 360 78" fill="none" stroke="var(--text-dim)" stroke-width="0.8" stroke-dasharray="2 1" opacity="0.4"/>
+  <text x="390" y="135" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">平坦区去噪</text>
+  <text x="390" y="165" font-size="10" fill="#c9a87c" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">边缘保留 ✓</text>
+
+  
+  <line x1="455" y1="100" x2="485" y2="100" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  
+  <rect x="490" y="55" width="120" height="90" rx="8" fill="#7a9cc6" opacity="0.25" stroke="#7a9cc6" stroke-width="1.5"/>
+  <text x="550" y="48" font-size="11" font-weight="bold" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">小波重建 (IDWT)</text>
+  
+  <path d="M 510 75 L 545 100" stroke="#7a9cc6" stroke-width="1.5" opacity="0.6"/>
+  <path d="M 530 75 L 545 100" stroke="#7a9cc6" stroke-width="1.5" opacity="0.6"/>
+  <path d="M 570 75 L 555 100" stroke="#7a9cc6" stroke-width="1.5" opacity="0.6"/>
+  <path d="M 590 75 L 555 100" stroke="#7a9cc6" stroke-width="1.5" opacity="0.6"/>
+  <rect x="535" y="100" width="30" height="25" fill="#7a9cc6" opacity="0.35" rx="3"/>
+  <text x="550" y="165" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">子带合并</text>
+
+  
+  <line x1="615" y1="100" x2="645" y2="100" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  
+  <rect x="650" y="55" width="100" height="90" rx="8" fill="#8ba888" opacity="0.25" stroke="#8ba888" stroke-width="1.5"/>
+  <text x="700" y="48" font-size="11" font-weight="bold" fill="#8ba888" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">干净图像</text>
+  
+  <rect x="665" y="70" width="30" height="25" fill="#8ba888" opacity="0.3" rx="2"/>
+  <line x1="695" y1="70" x2="695" y2="130" stroke="#8ba888" stroke-width="1.5" opacity="0.5"/>
+  <rect x="700" y="75" width="35" height="30" fill="#8ba888" opacity="0.2" rx="2"/>
+  <text x="700" y="165" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">无雨无噪</text>
+
+  
+  <text x="380" y="190" font-size="11" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">小波分频 &rarr; TV 在小波域做 L1 正则化（平坦区抑制噪声，边缘保留） &rarr; 小波重建</text>
+</svg>
+<div class="svg-caption">图：小波 + TV 联合去噪完整流程——小波分解将信号分到不同频带，TV 正则化在各频带上做"分段平坦"约束，既抑制平坦区域的噪声抖动，又保留边缘处的锐利跳跃</div>
+</div>
+
+<div class="kg-step">
+  <strong>为什么小波 + TV 互补？</strong>小波擅长<b>频率定位</b>（把雨纹噪声集中到高频子带）但可能在平坦区域产生伪影振荡；TV 擅长<b>分段平坦约束</b>（消除平坦区抖动、保留锐利边缘）但单独使用可能丢失细密纹理。两者结合：小波先分频，TV 在小波域内对高频系数做 L1 正则化收缩——既利用了小波的频率选择性，又借助 TV 的边缘保持能力，实现"去噪保边"的最优平衡。
+</div>
+
+
+
+<hr class="snippet-divider">
+
+频域注意力融合详细原理                                              -->
+
+小波变换 + CNN结合&lt;/h4&gt;</code> 到 <code>&lt;/div&gt;</code>（kg-compare 结束），整体替换为以下内容。
+</div>
+
+
+<h4>7.3 小波变换 + CNN 结合</h4>
+
+<p>CNN 在<b>空间域</b>提取局部特征，小波在<b>频率域</b>做多尺度分解。两者结合有两种典型范式——小波做<b>预处理</b>（方式A）或小波<b>嵌入网络</b>（方式B），下图用蓝色标注小波部分、紫色标注 CNN 部分：</p>
+
+
+<div class="svg-wrap">
+<svg viewBox="0 0 760 460" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:760px;display:block;">
+  <defs>
+    <marker id="arr4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--text-muted)"/>
+    </marker>
+    <marker id="arr4w" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#7a9cc6"/>
+    </marker>
+    <marker id="arr4c" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#9b8bb4"/>
+    </marker>
+  </defs>
+
+  
+  <rect x="5" y="5" width="750" height="200" rx="10" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="6 3" opacity="0.4"/>
+  <text x="20" y="25" font-size="13" font-weight="bold" fill="var(--primary-light)" font-family="'Microsoft YaHei',sans-serif">方式A：小波做预处理（DWT 分解 &rarr; 子带分别送 CNN &rarr; 特征融合）</text>
+
+  
+  <rect x="20" y="55" width="70" height="60" rx="6" fill="#7a9cc6" opacity="0.2" stroke="#7a9cc6" stroke-width="1.5"/>
+  <text x="55" y="80" font-size="11" font-weight="bold" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">输入</text>
+  <text x="55" y="95" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">图像</text>
+  <text x="55" y="130" font-size="10" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">H×W×3</text>
+
+  
+  <line x1="95" y1="85" x2="125" y2="85" stroke="#7a9cc6" stroke-width="1.5" marker-end="url(#arr4w)"/>
+  <text x="110" y="77" font-size="9" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">DWT</text>
+
+  
+  <rect x="130" y="40" width="70" height="90" rx="6" fill="#7a9cc6" opacity="0.15" stroke="#7a9cc6" stroke-width="1.5"/>
+  <text x="165" y="58" font-size="10" font-weight="bold" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">小波</text>
+  <text x="165" y="72" font-size="10" font-weight="bold" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">分解</text>
+  
+  <rect x="140" y="80" width="22" height="16" fill="#7a9cc6" opacity="0.4" rx="2"/>
+  <text x="151" y="92" font-size="8" fill="var(--text)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">LL</text>
+  <rect x="164" y="80" width="22" height="16" fill="#7a9cc6" opacity="0.25" rx="2"/>
+  <text x="175" y="92" font-size="8" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">HL</text>
+  <rect x="140" y="98" width="22" height="16" fill="#7a9cc6" opacity="0.25" rx="2"/>
+  <text x="151" y="110" font-size="8" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">LH</text>
+  <rect x="164" y="98" width="22" height="16" fill="#7a9cc6" opacity="0.25" rx="2"/>
+  <text x="175" y="110" font-size="8" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">HH</text>
+
+  
+  <line x1="205" y1="88" x2="240" y2="55" stroke="#7a9cc6" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+  <line x1="205" y1="88" x2="240" y2="75" stroke="#7a9cc6" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+  <line x1="205" y1="106" x2="240" y2="95" stroke="#7a9cc6" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+  <line x1="205" y1="106" x2="240" y2="115" stroke="#7a9cc6" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+
+  
+  <text x="222" y="48" font-size="9" fill="#7a9cc6" font-family="'Microsoft YaHei',sans-serif">LL</text>
+  <text x="222" y="72" font-size="9" fill="#7a9cc6" font-family="'Microsoft YaHei',sans-serif">LH</text>
+  <text x="222" y="100" font-size="9" fill="#7a9cc6" font-family="'Microsoft YaHei',sans-serif">HL</text>
+  <text x="222" y="124" font-size="9" fill="#7a9cc6" font-family="'Microsoft YaHei',sans-serif">HH</text>
+
+  
+  <rect x="245" y="42" width="80" height="28" rx="5" fill="#9b8bb4" opacity="0.2" stroke="#9b8bb4" stroke-width="1.5"/>
+  <text x="285" y="60" font-size="10" font-weight="bold" fill="#9b8bb4" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">CNN-LL</text>
+
+  <rect x="245" y="74" width="80" height="28" rx="5" fill="#9b8bb4" opacity="0.2" stroke="#9b8bb4" stroke-width="1.5"/>
+  <text x="285" y="92" font-size="10" font-weight="bold" fill="#9b8bb4" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">CNN-LH</text>
+
+  <rect x="245" y="106" width="80" height="28" rx="5" fill="#9b8bb4" opacity="0.2" stroke="#9b8bb4" stroke-width="1.5"/>
+  <text x="285" y="124" font-size="10" font-weight="bold" fill="#9b8bb4" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">CNN-HL</text>
+
+  <rect x="245" y="138" width="80" height="28" rx="5" fill="#9b8bb4" opacity="0.2" stroke="#9b8bb4" stroke-width="1.5"/>
+  <text x="285" y="156" font-size="10" font-weight="bold" fill="#9b8bb4" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">CNN-HH</text>
+
+  
+  <line x1="330" y1="56" x2="375" y2="95" stroke="#9b8bb4" stroke-width="1.5" marker-end="url(#arr4c)"/>
+  <line x1="330" y1="88" x2="375" y2="100" stroke="#9b8bb4" stroke-width="1.5" marker-end="url(#arr4c)"/>
+  <line x1="330" y1="120" x2="375" y2="110" stroke="#9b8bb4" stroke-width="1.5" marker-end="url(#arr4c)"/>
+  <line x1="330" y1="152" x2="375" y2="115" stroke="#9b8bb4" stroke-width="1.5" marker-end="url(#arr4c)"/>
+
+  
+  <rect x="380" y="70" width="90" height="60" rx="6" fill="#c9a87c" opacity="0.2" stroke="#c9a87c" stroke-width="1.5"/>
+  <text x="425" y="95" font-size="11" font-weight="bold" fill="#c9a87c" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">特征融合</text>
+  <text x="425" y="112" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">Concat+Conv</text>
+  <text x="425" y="145" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">4路特征拼接</text>
+
+  
+  <line x1="475" y1="100" x2="515" y2="100" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+  
+  <rect x="520" y="70" width="80" height="60" rx="6" fill="#7a9cc6" opacity="0.15" stroke="#7a9cc6" stroke-width="1.5"/>
+  <text x="560" y="95" font-size="11" font-weight="bold" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">IDWT</text>
+  <text x="560" y="112" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">小波重建</text>
+
+  
+  <line x1="605" y1="100" x2="640" y2="100" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+  
+  <rect x="645" y="70" width="70" height="60" rx="6" fill="#8ba888" opacity="0.2" stroke="#8ba888" stroke-width="1.5"/>
+  <text x="680" y="95" font-size="11" font-weight="bold" fill="#8ba888" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">输出</text>
+  <text x="680" y="112" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">去雨图</text>
+
+  
+  <text x="380" y="180" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">代表：DAWN+（小波域向量分解 + 方向注意力）</text>
+
+  
+  <rect x="20" y="178" width="10" height="10" fill="#7a9cc6" opacity="0.5" rx="2"/>
+  <text x="35" y="187" font-size="9" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">小波</text>
+  <rect x="65" y="178" width="10" height="10" fill="#9b8bb4" opacity="0.5" rx="2"/>
+  <text x="80" y="187" font-size="9" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">CNN</text>
+  <rect x="110" y="178" width="10" height="10" fill="#c9a87c" opacity="0.5" rx="2"/>
+  <text x="125" y="187" font-size="9" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">融合</text>
+
+  
+  <line x1="20" y1="215" x2="740" y2="215" stroke="var(--border)" stroke-width="1" stroke-dasharray="4 4" opacity="0.4"/>
+
+  
+  <rect x="5" y="225" width="750" height="225" rx="10" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="6 3" opacity="0.4"/>
+  <text x="20" y="245" font-size="13" font-weight="bold" fill="var(--primary-light)" font-family="'Microsoft YaHei',sans-serif">方式B：小波嵌入网络（可学习小波层作为网络中间层，端到端训练）</text>
+
+  
+  <rect x="20" y="285" width="60" height="50" rx="6" fill="#7a9cc6" opacity="0.2" stroke="#7a9cc6" stroke-width="1.5"/>
+  <text x="50" y="307" font-size="10" font-weight="bold" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">输入</text>
+  <text x="50" y="322" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">H×W×C</text>
+
+  
+  <line x1="85" y1="310" x2="110" y2="310" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+  
+  <rect x="115" y="285" width="75" height="50" rx="6" fill="#9b8bb4" opacity="0.2" stroke="#9b8bb4" stroke-width="1.5"/>
+  <text x="152" y="307" font-size="10" font-weight="bold" fill="#9b8bb4" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">CNN层</text>
+  <text x="152" y="322" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">Conv+ReLU</text>
+
+  
+  <line x1="195" y1="310" x2="220" y2="310" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+  
+  <rect x="225" y="275" width="90" height="70" rx="6" fill="#7a9cc6" opacity="0.25" stroke="#7a9cc6" stroke-width="2"/>
+  <text x="270" y="297" font-size="10" font-weight="bold" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">可学习</text>
+  <text x="270" y="312" font-size="10" font-weight="bold" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">小波层</text>
+  <text x="270" y="328" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">Learnable DWT</text>
+  <text x="270" y="340" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">(参数可训练)</text>
+
+  
+  <rect x="232" y="348" width="18" height="12" fill="#7a9cc6" opacity="0.4" rx="1"/>
+  <rect x="252" y="348" width="18" height="12" fill="#7a9cc6" opacity="0.25" rx="1"/>
+  <rect x="272" y="348" width="18" height="12" fill="#7a9cc6" opacity="0.25" rx="1"/>
+  <rect x="292" y="348" width="18" height="12" fill="#7a9cc6" opacity="0.25" rx="1"/>
+
+  
+  <line x1="320" y1="310" x2="345" y2="310" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+  
+  <rect x="350" y="285" width="75" height="50" rx="6" fill="#9b8bb4" opacity="0.2" stroke="#9b8bb4" stroke-width="1.5"/>
+  <text x="387" y="307" font-size="10" font-weight="bold" fill="#9b8bb4" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">CNN层</text>
+  <text x="387" y="322" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">特征提取</text>
+
+  
+  <line x1="430" y1="310" x2="455" y2="310" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+  
+  <rect x="460" y="275" width="90" height="70" rx="6" fill="#7a9cc6" opacity="0.25" stroke="#7a9cc6" stroke-width="2"/>
+  <text x="505" y="297" font-size="10" font-weight="bold" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">可学习</text>
+  <text x="505" y="312" font-size="10" font-weight="bold" fill="#7a9cc6" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">逆小波</text>
+  <text x="505" y="328" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">Learnable IDWT</text>
+  <text x="505" y="340" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">(参数可训练)</text>
+
+  
+  <rect x="467" y="348" width="18" height="12" fill="#7a9cc6" opacity="0.4" rx="1"/>
+  <rect x="487" y="348" width="18" height="12" fill="#7a9cc6" opacity="0.3" rx="1"/>
+  <rect x="507" y="348" width="18" height="12" fill="#7a9cc6" opacity="0.3" rx="1"/>
+  <rect x="527" y="348" width="18" height="12" fill="#7a9cc6" opacity="0.4" rx="1"/>
+  <line x1="475" y1="360" x2="537" y2="360" stroke="#7a9cc6" stroke-width="1" opacity="0.5"/>
+
+  
+  <line x1="555" y1="310" x2="580" y2="310" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+  
+  <rect x="585" y="285" width="75" height="50" rx="6" fill="#9b8bb4" opacity="0.2" stroke="#9b8bb4" stroke-width="1.5"/>
+  <text x="622" y="307" font-size="10" font-weight="bold" fill="#9b8bb4" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">CNN层</text>
+  <text x="622" y="322" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">特征重建</text>
+
+  
+  <line x1="665" y1="310" x2="690" y2="310" stroke="var(--text-muted)" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+  
+  <rect x="695" y="285" width="55" height="50" rx="6" fill="#8ba888" opacity="0.2" stroke="#8ba888" stroke-width="1.5"/>
+  <text x="722" y="307" font-size="10" font-weight="bold" fill="#8ba888" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">输出</text>
+  <text x="722" y="322" font-size="9" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">去雨图</text>
+
+  
+  <text x="380" y="395" font-size="10" fill="var(--text-muted)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">代表：MFFDNet（CSAB 通道注意力分离高低频 + 可学习小波层端到端训练）</text>
+
+  
+  <rect x="115" y="410" width="560" height="24" rx="4" fill="rgba(99,102,241,0.06)" stroke="var(--primary)" stroke-width="1" stroke-dasharray="4 2" opacity="0.5"/>
+  <text x="395" y="426" font-size="11" fill="var(--primary-light)" text-anchor="middle" font-family="'Microsoft YaHei',sans-serif">⇄ 端到端反向传播：小波层参数与 CNN 参数联合优化（梯度同时流过小波层和 CNN 层）</text>
+
+  
+  <rect x="20" y="415" width="10" height="10" fill="#7a9cc6" opacity="0.5" rx="2"/>
+  <text x="35" y="424" font-size="9" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">小波(可学习)</text>
+  <rect x="100" y="415" width="10" height="10" fill="#9b8bb4" opacity="0.5" rx="2"/>
+  <text x="115" y="424" font-size="9" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">CNN</text>
+  <rect x="145" y="415" width="10" height="10" fill="#8ba888" opacity="0.5" rx="2"/>
+  <text x="160" y="424" font-size="9" fill="var(--text-muted)" font-family="'Microsoft YaHei',sans-serif">输出</text>
+</svg>
+<div class="svg-caption">图：小波 + CNN 两种结合方式——方式A（上）先用固定 DWT 分解为 4 子带再分别送 CNN，小波作为预处理；方式B（下）将可学习小波层嵌入网络中间，与 CNN 联合端到端训练，蓝色=小波部分，紫色=CNN部分</div>
+</div>
+
+<div class="kg-compare">
+  <div class="kg-card">
+    <h4>方式A：小波做预处理</h4>
+    <p>先用小波分解出 LL/LH/HL/HH 四个子带 &rarr; 把每个子带当作不同的"输入通道"喂给 CNN &rarr; CNN 在不同子带上分别学习特征 &rarr; 融合后小波重建。</p>
+    <p style="margin-top:6px;font-size:12px;color:var(--text-muted);">特点：小波变换<b>固定不可学习</b>，作为前端信号处理步骤。代表：DAWN+（小波域向量分解 + 方向注意力）</p>
+  </div>
+  <div class="kg-card">
+    <h4>方式B：小波嵌入网络</h4>
+    <p>把小波变换作为网络中的一个<b>可学习层</b>嵌入 CNN &rarr; 网络自动学习如何做小波分解和重建 &rarr; 与 CNN 参数联合端到端训练。</p>
+    <p style="margin-top:6px;font-size:12px;color:var(--text-muted);">特点：小波滤波器参数<b>可训练</b>，梯度可反向传播通过小波层。代表：MFFDNet（CSAB 通道注意力分离高低频）</p>
+  </div>
+</div>
+
+
+
+<hr class="snippet-divider">
+
+混合域整体架构图                                                   -->
+
 
 <h4>7.2 频域注意力融合</h4>
 
@@ -6750,6 +8060,164 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 
 <div class="kg-accordion-header" onclick="kgToggleAcc(this)"><h3>八、稀疏表示与字典学习——用"最少的关键词"描述图像</h3><span class="kg-acc-icon">▼</span></div>
 <div class="kg-accordion-body">
+<div class="kg-card" style="margin-top:16px;">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 410" width="560" style="max-width:100%;font-family:'Microsoft YaHei',sans-serif;">
+    
+    <text x="280" y="26" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#1a202c)">稀疏表示核心概念：y = D · α</text>
+
+    
+    <text x="150" y="56" text-anchor="middle" font-size="13" font-weight="bold" fill="#6366f1">字典 D (m×n, 过完备)</text>
+    
+    <g>
+      
+      <rect x="78" y="70" width="18" height="18" fill="#6366f1" opacity="0.55" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="96" y="70" width="18" height="18" fill="#6366f1" opacity="0.25" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="114" y="70" width="18" height="18" fill="#6366f1" opacity="0.7" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="132" y="70" width="18" height="18" fill="#6366f1" opacity="0.3" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="150" y="70" width="18" height="18" fill="#6366f1" opacity="0.6" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="168" y="70" width="18" height="18" fill="#6366f1" opacity="0.35" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="186" y="70" width="18" height="18" fill="#6366f1" opacity="0.5" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="204" y="70" width="18" height="18" fill="#6366f1" opacity="0.28" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      
+      <rect x="78" y="88" width="18" height="18" fill="#6366f1" opacity="0.3" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="96" y="88" width="18" height="18" fill="#6366f1" opacity="0.65" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="114" y="88" width="18" height="18" fill="#6366f1" opacity="0.4" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="132" y="88" width="18" height="18" fill="#6366f1" opacity="0.55" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="150" y="88" width="18" height="18" fill="#6366f1" opacity="0.3" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="168" y="88" width="18" height="18" fill="#6366f1" opacity="0.7" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="186" y="88" width="18" height="18" fill="#6366f1" opacity="0.35" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="204" y="88" width="18" height="18" fill="#6366f1" opacity="0.5" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      
+      <rect x="78" y="106" width="18" height="18" fill="#6366f1" opacity="0.6" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="96" y="106" width="18" height="18" fill="#6366f1" opacity="0.3" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="114" y="106" width="18" height="18" fill="#6366f1" opacity="0.55" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="132" y="106" width="18" height="18" fill="#6366f1" opacity="0.7" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="150" y="106" width="18" height="18" fill="#6366f1" opacity="0.4" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="168" y="106" width="18" height="18" fill="#6366f1" opacity="0.5" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="186" y="106" width="18" height="18" fill="#6366f1" opacity="0.28" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="204" y="106" width="18" height="18" fill="#6366f1" opacity="0.65" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      
+      <rect x="78" y="124" width="18" height="18" fill="#6366f1" opacity="0.35" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="96" y="124" width="18" height="18" fill="#6366f1" opacity="0.55" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="114" y="124" width="18" height="18" fill="#6366f1" opacity="0.3" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="132" y="124" width="18" height="18" fill="#6366f1" opacity="0.6" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="150" y="124" width="18" height="18" fill="#6366f1" opacity="0.45" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="168" y="124" width="18" height="18" fill="#6366f1" opacity="0.3" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="186" y="124" width="18" height="18" fill="#6366f1" opacity="0.7" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="204" y="124" width="18" height="18" fill="#6366f1" opacity="0.4" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      
+      <rect x="78" y="142" width="18" height="18" fill="#6366f1" opacity="0.5" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="96" y="142" width="18" height="18" fill="#6366f1" opacity="0.3" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="114" y="142" width="18" height="18" fill="#6366f1" opacity="0.65" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="132" y="142" width="18" height="18" fill="#6366f1" opacity="0.35" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="150" y="142" width="18" height="18" fill="#6366f1" opacity="0.55" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="168" y="142" width="18" height="18" fill="#6366f1" opacity="0.4" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="186" y="142" width="18" height="18" fill="#6366f1" opacity="0.6" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="204" y="142" width="18" height="18" fill="#6366f1" opacity="0.3" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      
+      <rect x="78" y="160" width="18" height="18" fill="#6366f1" opacity="0.4" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="96" y="160" width="18" height="18" fill="#6366f1" opacity="0.6" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="114" y="160" width="18" height="18" fill="#6366f1" opacity="0.3" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="132" y="160" width="18" height="18" fill="#6366f1" opacity="0.5" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="150" y="160" width="18" height="18" fill="#6366f1" opacity="0.65" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="168" y="160" width="18" height="18" fill="#6366f1" opacity="0.35" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="186" y="160" width="18" height="18" fill="#6366f1" opacity="0.45" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <rect x="204" y="160" width="18" height="18" fill="#6366f1" opacity="0.7" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+    </g>
+
+    
+    <text x="240" y="129" text-anchor="middle" font-size="20" font-weight="bold" fill="var(--text-muted,#64748b)">×</text>
+
+    
+    <text x="278" y="56" text-anchor="middle" font-size="13" font-weight="bold" fill="#f59e0b">稀疏编码 α (n×1)</text>
+    <g>
+      
+      <rect x="268" y="70" width="20" height="18" fill="#94a3b8" opacity="0.35" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <text x="278" y="83" text-anchor="middle" font-size="11" fill="var(--text-muted,#64748b)">0</text>
+
+      <rect x="268" y="88" width="20" height="18" fill="#f59e0b" opacity="0.85" stroke="#f59e0b" stroke-width="0.8"/>
+      <text x="278" y="101" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">α₂</text>
+
+      <rect x="268" y="106" width="20" height="18" fill="#94a3b8" opacity="0.35" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <text x="278" y="119" text-anchor="middle" font-size="11" fill="var(--text-muted,#64748b)">0</text>
+
+      <rect x="268" y="124" width="20" height="18" fill="#94a3b8" opacity="0.35" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <text x="278" y="137" text-anchor="middle" font-size="11" fill="var(--text-muted,#64748b)">0</text>
+
+      <rect x="268" y="142" width="20" height="18" fill="#fb7185" opacity="0.85" stroke="#fb7185" stroke-width="0.8"/>
+      <text x="278" y="155" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">α₅</text>
+
+      <rect x="268" y="160" width="20" height="18" fill="#94a3b8" opacity="0.35" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <text x="278" y="173" text-anchor="middle" font-size="11" fill="var(--text-muted,#64748b)">0</text>
+    </g>
+    
+    <g>
+      <rect x="268" y="178" width="20" height="18" fill="#10b981" opacity="0.85" stroke="#10b981" stroke-width="0.8"/>
+      <text x="278" y="191" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">α₇</text>
+
+      <rect x="268" y="196" width="20" height="18" fill="#94a3b8" opacity="0.35" stroke="var(--text-muted,#64748b)" stroke-width="0.6"/>
+      <text x="278" y="209" text-anchor="middle" font-size="11" fill="var(--text-muted,#64748b)">0</text>
+    </g>
+
+    
+    <text x="308" y="129" text-anchor="middle" font-size="20" font-weight="bold" fill="var(--text-muted,#64748b)">=</text>
+
+    
+    <text x="346" y="56" text-anchor="middle" font-size="13" font-weight="bold" fill="#10b981">信号 y (m×1)</text>
+    <g>
+      <rect x="336" y="70" width="20" height="18" fill="#10b981" opacity="0.55" stroke="#10b981" stroke-width="0.7"/>
+      <text x="346" y="83" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">y₁</text>
+      <rect x="336" y="88" width="20" height="18" fill="#10b981" opacity="0.7" stroke="#10b981" stroke-width="0.7"/>
+      <text x="346" y="101" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">y₂</text>
+      <rect x="336" y="106" width="20" height="18" fill="#10b981" opacity="0.45" stroke="#10b981" stroke-width="0.7"/>
+      <text x="346" y="119" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">y₃</text>
+      <rect x="336" y="124" width="20" height="18" fill="#10b981" opacity="0.6" stroke="#10b981" stroke-width="0.7"/>
+      <text x="346" y="137" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">y₄</text>
+      <rect x="336" y="142" width="20" height="18" fill="#10b981" opacity="0.5" stroke="#10b981" stroke-width="0.7"/>
+      <text x="346" y="155" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">y₅</text>
+      <rect x="336" y="160" width="20" height="18" fill="#10b981" opacity="0.65" stroke="#10b981" stroke-width="0.7"/>
+      <text x="346" y="173" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">y₆</text>
+    </g>
+
+    
+    <text x="430" y="90" font-size="11" fill="var(--text-muted,#64748b)">· α 中仅少数</text>
+    <text x="430" y="106" font-size="11" fill="var(--text-muted,#64748b)">  分量非零 (K ≪ n)</text>
+    <text x="430" y="126" font-size="11" fill="var(--text-muted,#64748b)">· D 列数远大于</text>
+    <text x="430" y="142" font-size="11" fill="var(--text-muted,#64748b)">  行数 (n ≫ m)</text>
+    <text x="430" y="162" font-size="11" fill="var(--text-muted,#64748b)">· 目标: 以最少</text>
+    <text x="430" y="178" font-size="11" fill="var(--text-muted,#64748b)">  原子重建信号</text>
+
+    
+    <line x1="40" y1="232" x2="520" y2="232" stroke="var(--text-muted,#64748b)" stroke-width="0.6" opacity="0.4"/>
+
+    
+    <text x="280" y="254" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--text,#1a202c)">K-SVD 交替优化流程</text>
+
+    
+    <rect x="50" y="272" width="200" height="78" rx="8" fill="#0ea5e9" opacity="0.12" stroke="#0ea5e9" stroke-width="1.2"/>
+    <text x="150" y="294" text-anchor="middle" font-size="12" font-weight="bold" fill="#0ea5e9">步骤 1：固定字典 D</text>
+    <text x="150" y="314" text-anchor="middle" font-size="11" fill="var(--text,#1a202c)">优化稀疏编码 α</text>
+    <text x="150" y="332" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">(OMP / 匹配追踪)</text>
+    <text x="150" y="346" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">min ‖y − Dα‖₀  s.t. ‖α‖₀ ≤ K</text>
+
+    
+    <line x1="252" y1="311" x2="298" y2="311" stroke="#6366f1" stroke-width="1.6"/>
+    <polygon points="298,311 290,307 290,315" fill="#6366f1"/>
+
+    
+    <rect x="300" y="272" width="200" height="78" rx="8" fill="#a855f7" opacity="0.12" stroke="#a855f7" stroke-width="1.2"/>
+    <text x="400" y="294" text-anchor="middle" font-size="12" font-weight="bold" fill="#a855f7">步骤 2：固定编码 α</text>
+    <text x="400" y="314" text-anchor="middle" font-size="11" fill="var(--text,#1a202c)">逐列更新字典 D</text>
+    <text x="400" y="332" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">(SVD 分解误差矩阵)</text>
+    <text x="400" y="346" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">d_k ← 第一左奇异向量</text>
+
+    
+    <path d="M 400 350 Q 400 390 280 390 Q 150 390 150 350" fill="none" stroke="#fb7185" stroke-width="1.6" stroke-dasharray="5,3"/>
+    <polygon points="150,350 146,358 154,358" fill="#fb7185"/>
+    <text x="275" y="404" text-anchor="middle" font-size="10" fill="#fb7185">循环迭代直至收敛</text>
+  </svg>
+</div>
+
 
 <div class="kg-img-wrap">
   <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-sparse-dict-lowrank.webp" type="image/webp"><img src="reading-notes/assets/knowledge-sparse-dict-lowrank-thumb.webp" data-full="reading-notes/assets/knowledge-sparse-dict-lowrank.webp" alt="稀疏表示、字典学习与低秩表示" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
@@ -6937,8 +8405,106 @@ const KNOWLEDGE_HTML = `<div class="kg-layout"><nav class="kg-toc" id="kgToc">
 <p>如果说前向传播是"考试做题"，那反向传播就是"老师批改后告诉你哪里错了"。</p>
 
 <div class="kg-img-wrap">
-  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-backprop.webp" type="image/webp"><img src="reading-notes/assets/knowledge-backprop-thumb.webp" data-full="reading-notes/assets/knowledge-backprop.webp" alt="反向传播原理" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
-  <div class="kg-caption">图：前向传播（蓝箭头→）信号从输入流向输出；反向传播（红箭头←）梯度从输出流回输入</div>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" width="600" style="max-width:100%;font-family:'Microsoft YaHei',sans-serif;">
+    
+    <text x="300" y="24" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#1a202c)">反向传播算法：前向计算与梯度回传</text>
+
+    
+    <text x="110" y="52" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-muted,#64748b)">输入层</text>
+    <text x="300" y="52" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-muted,#64748b)">隐藏层</text>
+    <text x="490" y="52" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-muted,#64748b)">输出层</text>
+
+    
+    <g stroke="#0ea5e9" stroke-width="1.1" opacity="0.55">
+      
+      <line x1="118" y1="120" x2="292" y2="100"/>
+      <line x1="118" y1="120" x2="292" y2="150"/>
+      <line x1="118" y1="120" x2="292" y2="200"/>
+      <line x1="118" y1="120" x2="292" y2="250"/>
+      <line x1="118" y1="180" x2="292" y2="100"/>
+      <line x1="118" y1="180" x2="292" y2="150"/>
+      <line x1="118" y1="180" x2="292" y2="200"/>
+      <line x1="118" y1="180" x2="292" y2="250"/>
+      <line x1="118" y1="240" x2="292" y2="100"/>
+      <line x1="118" y1="240" x2="292" y2="150"/>
+      <line x1="118" y1="240" x2="292" y2="200"/>
+      <line x1="118" y1="240" x2="292" y2="250"/>
+      
+      <line x1="308" y1="100" x2="482" y2="150"/>
+      <line x1="308" y1="100" x2="482" y2="210"/>
+      <line x1="308" y1="150" x2="482" y2="150"/>
+      <line x1="308" y1="150" x2="482" y2="210"/>
+      <line x1="308" y1="200" x2="482" y2="150"/>
+      <line x1="308" y1="200" x2="482" y2="210"/>
+      <line x1="308" y1="250" x2="482" y2="150"/>
+      <line x1="308" y1="250" x2="482" y2="210"/>
+    </g>
+
+    
+    <g stroke="#ef4444" stroke-width="1.3" opacity="0.75" stroke-dasharray="4,3">
+      
+      <line x1="482" y1="158" x2="312" y2="108"/>
+      <line x1="482" y1="218" x2="312" y2="258"/>
+    </g>
+
+    
+    
+    <g>
+      <circle cx="110" cy="120" r="13" fill="#0ea5e9" opacity="0.85" stroke="#0ea5e9" stroke-width="1.2"/>
+      <text x="110" y="124" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">x₁</text>
+      <circle cx="110" cy="180" r="13" fill="#0ea5e9" opacity="0.85" stroke="#0ea5e9" stroke-width="1.2"/>
+      <text x="110" y="184" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">x₂</text>
+      <circle cx="110" cy="240" r="13" fill="#0ea5e9" opacity="0.85" stroke="#0ea5e9" stroke-width="1.2"/>
+      <text x="110" y="244" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="bold">x₃</text>
+    </g>
+    
+    <g>
+      <circle cx="300" cy="100" r="13" fill="#6366f1" opacity="0.85" stroke="#6366f1" stroke-width="1.2"/>
+      <text x="300" y="104" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">h₁</text>
+      <circle cx="300" cy="150" r="13" fill="#6366f1" opacity="0.85" stroke="#6366f1" stroke-width="1.2"/>
+      <text x="300" y="154" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">h₂</text>
+      <circle cx="300" cy="200" r="13" fill="#6366f1" opacity="0.85" stroke="#6366f1" stroke-width="1.2"/>
+      <text x="300" y="204" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">h₃</text>
+      <circle cx="300" cy="250" r="13" fill="#6366f1" opacity="0.85" stroke="#6366f1" stroke-width="1.2"/>
+      <text x="300" y="254" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">h₄</text>
+    </g>
+    
+    <g>
+      <circle cx="490" cy="150" r="13" fill="#fb7185" opacity="0.85" stroke="#fb7185" stroke-width="1.2"/>
+      <text x="490" y="154" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">o₁</text>
+      <circle cx="490" cy="210" r="13" fill="#fb7185" opacity="0.85" stroke="#fb7185" stroke-width="1.2"/>
+      <text x="490" y="214" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="bold">o₂</text>
+    </g>
+
+    
+    <g fill="#0ea5e9">
+      <text x="205" y="86" text-anchor="middle" font-size="11" font-weight="bold">前向传播 →</text>
+      <text x="205" y="100" text-anchor="middle" font-size="10">z = w·x + b</text>
+      <text x="205" y="113" text-anchor="middle" font-size="10">a = σ(z)</text>
+    </g>
+    
+    <line x1="170" y1="78" x2="240" y2="78" stroke="#0ea5e9" stroke-width="1.4"/>
+    <polygon points="240,78 232,74 232,82" fill="#0ea5e9"/>
+
+    
+    <g fill="#ef4444">
+      <text x="395" y="280" text-anchor="middle" font-size="11" font-weight="bold">← 反向传播</text>
+      <text x="395" y="294" text-anchor="middle" font-size="10">∂L/∂w (链式法则)</text>
+    </g>
+    
+    <line x1="430" y1="288" x2="360" y2="288" stroke="#ef4444" stroke-width="1.4"/>
+    <polygon points="360,288 368,284 368,292" fill="#ef4444"/>
+
+    
+    <rect x="455" y="300" width="70" height="26" rx="5" fill="#fb7185" opacity="0.15" stroke="#fb7185" stroke-width="1"/>
+    <text x="490" y="317" text-anchor="middle" font-size="11" fill="#fb7185" font-weight="bold">L = Loss</text>
+
+    
+    <rect x="60" y="324" width="480" height="30" rx="6" fill="#6366f1" opacity="0.08" stroke="#6366f1" stroke-width="0.8"/>
+    <text x="300" y="344" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text,#1a202c)">
+      链式法则： ∂L/∂w = (∂L/∂a) × (∂a/∂z) × (∂z/∂w)
+    </text>
+  </svg>
 </div>
 
 <h4>10.1 前向传播：做题</h4>
@@ -8220,8 +9786,127 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-accordion-body">
 
 <div class="kg-img-wrap">
-  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-self-attention-arch.webp" type="image/webp"><img src="reading-notes/assets/knowledge-self-attention-arch-thumb.webp" data-full="reading-notes/assets/knowledge-self-attention-arch.webp" alt="自注意力机制架构演进" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
-  <div class="kg-caption">图：自注意力机制——从NLP的Transformer到CV的视觉注意力</div>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 440" width="600" style="max-width:100%;font-family:'Microsoft YaHei',sans-serif;">
+    
+    <text x="300" y="24" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#1a202c)">Self-Attention：Q / K / V 计算流程</text>
+
+    
+    
+    <rect x="30" y="50" width="90" height="34" rx="6" fill="#0ea5e9" opacity="0.18" stroke="#0ea5e9" stroke-width="1.2"/>
+    <text x="75" y="71" text-anchor="middle" font-size="12" font-weight="bold" fill="#0ea5e9">输入序列 X</text>
+
+    
+    <line x1="75" y1="84" x2="75" y2="100" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <line x1="40" y1="100" x2="180" y2="100" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <line x1="40" y1="100" x2="40" y2="114" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <line x1="110" y1="100" x2="110" y2="114" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <line x1="180" y1="100" x2="180" y2="114" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+
+    
+    <rect x="15" y="114" width="50" height="30" rx="5" fill="#6366f1" opacity="0.2" stroke="#6366f1" stroke-width="1.1"/>
+    <text x="40" y="133" text-anchor="middle" font-size="12" font-weight="bold" fill="#6366f1">Q</text>
+    
+    <rect x="85" y="114" width="50" height="30" rx="5" fill="#10b981" opacity="0.2" stroke="#10b981" stroke-width="1.1"/>
+    <text x="110" y="133" text-anchor="middle" font-size="12" font-weight="bold" fill="#10b981">K</text>
+    
+    <rect x="155" y="114" width="50" height="30" rx="5" fill="#f59e0b" opacity="0.2" stroke="#f59e0b" stroke-width="1.1"/>
+    <text x="180" y="133" text-anchor="middle" font-size="12" font-weight="bold" fill="#f59e0b">V</text>
+
+    <text x="110" y="156" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">线性变换 W_Q / W_K / W_V</text>
+
+    
+    <line x1="40" y1="144" x2="75" y2="170" stroke="#6366f1" stroke-width="1.1"/>
+    <line x1="110" y1="144" x2="75" y2="170" stroke="#10b981" stroke-width="1.1"/>
+    <rect x="35" y="170" width="80" height="30" rx="6" fill="#a855f7" opacity="0.15" stroke="#a855f7" stroke-width="1.2"/>
+    <text x="75" y="189" text-anchor="middle" font-size="11" font-weight="bold" fill="#a855f7">Q · Kᵀ</text>
+    <text x="75" y="216" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">注意力分数</text>
+
+    
+    <line x1="75" y1="200" x2="75" y2="222" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="75,222 71,214 79,214" fill="var(--text-muted,#64748b)"/>
+    <rect x="35" y="222" width="80" height="28" rx="6" fill="#0ea5e9" opacity="0.13" stroke="#0ea5e9" stroke-width="1.1"/>
+    <text x="75" y="240" text-anchor="middle" font-size="11" fill="#0ea5e9">Scale (÷√d_k)</text>
+
+    
+    <line x1="75" y1="250" x2="75" y2="262" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="75,262 71,254 79,254" fill="var(--text-muted,#64748b)"/>
+    <rect x="35" y="262" width="80" height="28" rx="6" fill="#fb7185" opacity="0.15" stroke="#fb7185" stroke-width="1.1"/>
+    <text x="75" y="280" text-anchor="middle" font-size="11" font-weight="bold" fill="#fb7185">Softmax</text>
+
+    
+    <line x1="75" y1="290" x2="75" y2="302" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="75,302 71,294 79,294" fill="var(--text-muted,#64748b)"/>
+    <line x1="180" y1="144" x2="110" y2="310" stroke="#f59e0b" stroke-width="1.1" stroke-dasharray="3,2"/>
+    <rect x="35" y="302" width="80" height="28" rx="6" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1.1"/>
+    <text x="75" y="320" text-anchor="middle" font-size="11" font-weight="bold" fill="#10b981">× V</text>
+
+    
+    <line x1="75" y1="330" x2="75" y2="342" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="75,342 71,334 79,334" fill="var(--text-muted,#64748b)"/>
+    <rect x="30" y="342" width="90" height="32" rx="6" fill="#6366f1" opacity="0.2" stroke="#6366f1" stroke-width="1.3"/>
+    <text x="75" y="362" text-anchor="middle" font-size="12" font-weight="bold" fill="#6366f1">Attention 输出</text>
+
+    
+    <rect x="15" y="388" width="230" height="40" rx="6" fill="#a855f7" opacity="0.08" stroke="#a855f7" stroke-width="0.8"/>
+    <text x="130" y="406" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text,#1a202c)">Scaled Dot-Product Attention</text>
+    <text x="130" y="422" text-anchor="middle" font-size="11" fill="#a855f7">Attention(Q,K,V) = softmax(QKᵀ/√d_k)·V</text>
+
+    
+    <line x1="265" y1="40" x2="265" y2="430" stroke="var(--text-muted,#64748b)" stroke-width="0.6" opacity="0.4" stroke-dasharray="4,3"/>
+
+    
+    <text x="430" y="40" text-anchor="middle" font-size="14" font-weight="bold" fill="#a855f7">Multi-Head Attention</text>
+
+    
+    <rect x="300" y="60" width="260" height="26" rx="5" fill="#0ea5e9" opacity="0.12" stroke="#0ea5e9" stroke-width="1"/>
+    <text x="430" y="77" text-anchor="middle" font-size="11" fill="#0ea5e9">输入序列 X (复制 h 份)</text>
+
+    
+    <line x1="430" y1="86" x2="370" y2="110" stroke="var(--text-muted,#64748b)" stroke-width="1"/>
+    <line x1="430" y1="86" x2="430" y2="110" stroke="var(--text-muted,#64748b)" stroke-width="1"/>
+    <line x1="430" y1="86" x2="490" y2="110" stroke="var(--text-muted,#64748b)" stroke-width="1"/>
+
+    <rect x="330" y="110" width="80" height="40" rx="6" fill="#6366f1" opacity="0.16" stroke="#6366f1" stroke-width="1.1"/>
+    <text x="370" y="128" text-anchor="middle" font-size="10" font-weight="bold" fill="#6366f1">Head 1</text>
+    <text x="370" y="142" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">Attention</text>
+
+    <rect x="390" y="110" width="80" height="40" rx="6" fill="#10b981" opacity="0.16" stroke="#10b981" stroke-width="1.1"/>
+    <text x="430" y="128" text-anchor="middle" font-size="10" font-weight="bold" fill="#10b981">Head 2</text>
+    <text x="430" y="142" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">Attention</text>
+
+    <rect x="450" y="110" width="80" height="40" rx="6" fill="#f59e0b" opacity="0.16" stroke="#f59e0b" stroke-width="1.1"/>
+    <text x="490" y="128" text-anchor="middle" font-size="10" font-weight="bold" fill="#f59e0b">Head h</text>
+    <text x="490" y="142" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">Attention</text>
+
+    <text x="430" y="170" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">· · ·  h 个头并行计算  · · ·</text>
+
+    
+    <line x1="370" y1="150" x2="430" y2="184" stroke="var(--text-muted,#64748b)" stroke-width="1"/>
+    <line x1="430" y1="150" x2="430" y2="184" stroke="var(--text-muted,#64748b)" stroke-width="1"/>
+    <line x1="490" y1="150" x2="430" y2="184" stroke="var(--text-muted,#64748b)" stroke-width="1"/>
+    <polygon points="430,184 426,176 434,176" fill="var(--text-muted,#64748b)"/>
+
+    <rect x="370" y="184" width="120" height="32" rx="6" fill="#fb7185" opacity="0.16" stroke="#fb7185" stroke-width="1.2"/>
+    <text x="430" y="204" text-anchor="middle" font-size="11" font-weight="bold" fill="#fb7185">Concat 拼接</text>
+
+    
+    <line x1="430" y1="216" x2="430" y2="228" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="430,228 426,220 434,220" fill="var(--text-muted,#64748b)"/>
+    <rect x="360" y="228" width="140" height="32" rx="6" fill="#a855f7" opacity="0.16" stroke="#a855f7" stroke-width="1.2"/>
+    <text x="430" y="248" text-anchor="middle" font-size="11" font-weight="bold" fill="#a855f7">Linear 线性变换 W^O</text>
+
+    
+    <line x1="430" y1="260" x2="430" y2="272" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="430,272 426,264 434,264" fill="var(--text-muted,#64748b)"/>
+    <rect x="365" y="272" width="130" height="34" rx="6" fill="#6366f1" opacity="0.2" stroke="#6366f1" stroke-width="1.3"/>
+    <text x="430" y="293" text-anchor="middle" font-size="12" font-weight="bold" fill="#6366f1">Multi-Head 输出</text>
+
+    
+    <rect x="290" y="320" width="280" height="46" rx="6" fill="#a855f7" opacity="0.08" stroke="#a855f7" stroke-width="0.8"/>
+    <text x="430" y="340" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text,#1a202c)">多头注意力</text>
+    <text x="430" y="358" text-anchor="middle" font-size="10" fill="#a855f7">MultiHead = Concat(head₁,...,head_h) W^O</text>
+    <text x="430" y="374" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">其中 head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)</text>
+  </svg>
 </div>
 
 <p>人在看一幅画时，不会平均地给每个像素分配精力——注意力会集中在重要区域（人脸、文字、异常物体）。<b>自注意力机制让神经网络学会了"看哪里"</b>。本章追踪自注意力从NLP（语言）到CV（视觉）的进化历程。</p>
@@ -8576,6 +10261,163 @@ canvas[id^="canvas-"]:hover {
 </svg>
 <div style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:6px;">图解：四元数旋转顺序不同→结果不同（不可交换）；RQ修改j²=+1后→乘法可交换</div>
 </div>
+<div style="margin:16px auto;max-width:560px;">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 400" width="560" style="max-width:100%;font-family:'Microsoft YaHei',sans-serif;">
+    
+    <text x="280" y="24" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#1a202c)">四元数(RQ)在神经网络中的数据流</text>
+
+    
+    <g font-size="10" fill="var(--text-muted,#64748b)">
+      <rect x="40" y="38" width="12" height="12" fill="#94a3b8" opacity="0.8"/>
+      <text x="56" y="48">实部 a</text>
+      <rect x="110" y="38" width="12" height="12" fill="#fb7185" opacity="0.8"/>
+      <text x="126" y="48">i 分量</text>
+      <rect x="180" y="38" width="12" height="12" fill="#10b981" opacity="0.8"/>
+      <text x="196" y="48">j 分量</text>
+      <rect x="250" y="38" width="12" height="12" fill="#0ea5e9" opacity="0.8"/>
+      <text x="266" y="48">k 分量</text>
+    </g>
+
+    
+    <text x="280" y="76" text-anchor="middle" font-size="13" font-weight="bold" fill="#a855f7">RQ 网络：四元数统一处理流程</text>
+
+    
+    <g>
+      <rect x="30" y="92" width="16" height="40" fill="#fb7185" opacity="0.7" stroke="#fb7185" stroke-width="0.8"/>
+      <text x="38" y="142" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">R</text>
+      <rect x="48" y="92" width="16" height="40" fill="#10b981" opacity="0.7" stroke="#10b981" stroke-width="0.8"/>
+      <text x="56" y="142" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">G</text>
+      <rect x="66" y="92" width="16" height="40" fill="#0ea5e9" opacity="0.7" stroke="#0ea5e9" stroke-width="0.8"/>
+      <text x="74" y="142" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">B</text>
+    </g>
+    <text x="56" y="84" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">RGB 输入</text>
+
+    
+    <line x1="92" y1="112" x2="118" y2="112" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="118,112 110,108 110,116" fill="var(--text-muted,#64748b)"/>
+
+    
+    <rect x="120" y="92" width="86" height="40" rx="5" fill="#f59e0b" opacity="0.16" stroke="#f59e0b" stroke-width="1.1"/>
+    <text x="163" y="110" text-anchor="middle" font-size="10" font-weight="bold" fill="#f59e0b">C-Zero</text>
+    <text x="163" y="124" text-anchor="middle" font-size="10" font-weight="bold" fill="#f59e0b">Padding</text>
+
+    
+    <line x1="206" y1="112" x2="232" y2="112" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="232,112 224,108 224,116" fill="var(--text-muted,#64748b)"/>
+
+    
+    <g>
+      <rect x="234" y="92" width="20" height="40" fill="#94a3b8" opacity="0.8" stroke="#94a3b8" stroke-width="0.8"/>
+      <text x="244" y="116" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">a</text>
+      <rect x="254" y="92" width="20" height="40" fill="#fb7185" opacity="0.8" stroke="#fb7185" stroke-width="0.8"/>
+      <text x="264" y="116" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">b</text>
+      <rect x="274" y="92" width="20" height="40" fill="#10b981" opacity="0.8" stroke="#10b981" stroke-width="0.8"/>
+      <text x="284" y="116" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">c</text>
+      <rect x="294" y="92" width="20" height="40" fill="#0ea5e9" opacity="0.8" stroke="#0ea5e9" stroke-width="0.8"/>
+      <text x="304" y="116" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">d</text>
+    </g>
+    <text x="274" y="84" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">RQ: a + bi + cj + dk</text>
+
+    
+    <line x1="324" y1="112" x2="350" y2="112" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="350,112 342,108 342,116" fill="var(--text-muted,#64748b)"/>
+
+    
+    <rect x="352" y="92" width="70" height="40" rx="5" fill="#a855f7" opacity="0.16" stroke="#a855f7" stroke-width="1.1"/>
+    <text x="387" y="110" text-anchor="middle" font-size="10" font-weight="bold" fill="#a855f7">RQ 卷积</text>
+    <text x="387" y="124" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">Hamilton 积</text>
+
+    
+    <line x1="422" y1="112" x2="448" y2="112" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="448,112 440,108 440,116" fill="var(--text-muted,#64748b)"/>
+
+    
+    <rect x="450" y="92" width="70" height="40" rx="5" fill="#6366f1" opacity="0.16" stroke="#6366f1" stroke-width="1.1"/>
+    <text x="485" y="110" text-anchor="middle" font-size="10" font-weight="bold" fill="#6366f1">RQ 激活</text>
+    <text x="485" y="124" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">GHR</text>
+
+    
+    <line x1="520" y1="112" x2="540" y2="112" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="540,112 532,108 532,116" fill="var(--text-muted,#64748b)"/>
+    <rect x="540" y="96" width="14" height="32" fill="#a855f7" opacity="0.5" stroke="#a855f7" stroke-width="0.8"/>
+    <text x="547" y="148" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">输出</text>
+
+    
+    <line x1="30" y1="170" x2="530" y2="170" stroke="var(--text-muted,#64748b)" stroke-width="0.6" opacity="0.4"/>
+
+    
+    <text x="280" y="194" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text,#1a202c)">实值网络 vs RQ 网络处理方式对比</text>
+
+    
+    <text x="150" y="218" text-anchor="middle" font-size="12" font-weight="bold" fill="#fb7185">实值网络：3 通道独立处理</text>
+    
+    <g>
+      <rect x="50" y="232" width="16" height="24" fill="#fb7185" opacity="0.7"/>
+      <line x1="66" y1="244" x2="120" y2="244" stroke="#fb7185" stroke-width="1.4"/>
+      <polygon points="120,244 112,240 112,248" fill="#fb7185"/>
+      <rect x="120" y="232" width="50" height="24" rx="4" fill="#fb7185" opacity="0.14" stroke="#fb7185" stroke-width="1"/>
+      <text x="145" y="248" text-anchor="middle" font-size="9" fill="#fb7185">Conv_R</text>
+      <line x1="170" y1="244" x2="220" y2="244" stroke="#fb7185" stroke-width="1.4"/>
+      <polygon points="220,244 212,240 212,248" fill="#fb7185"/>
+      <rect x="220" y="232" width="40" height="24" rx="4" fill="#fb7185" opacity="0.14" stroke="#fb7185" stroke-width="1"/>
+      <text x="240" y="248" text-anchor="middle" font-size="9" fill="#fb7185">Act</text>
+    </g>
+    <g>
+      <rect x="50" y="262" width="16" height="24" fill="#10b981" opacity="0.7"/>
+      <line x1="66" y1="274" x2="120" y2="274" stroke="#10b981" stroke-width="1.4"/>
+      <polygon points="120,274 112,270 112,278" fill="#10b981"/>
+      <rect x="120" y="262" width="50" height="24" rx="4" fill="#10b981" opacity="0.14" stroke="#10b981" stroke-width="1"/>
+      <text x="145" y="278" text-anchor="middle" font-size="9" fill="#10b981">Conv_G</text>
+      <line x1="170" y1="274" x2="220" y2="274" stroke="#10b981" stroke-width="1.4"/>
+      <polygon points="220,274 212,270 212,278" fill="#10b981"/>
+      <rect x="220" y="262" width="40" height="24" rx="4" fill="#10b981" opacity="0.14" stroke="#10b981" stroke-width="1"/>
+      <text x="240" y="278" text-anchor="middle" font-size="9" fill="#10b981">Act</text>
+    </g>
+    <g>
+      <rect x="50" y="292" width="16" height="24" fill="#0ea5e9" opacity="0.7"/>
+      <line x1="66" y1="304" x2="120" y2="304" stroke="#0ea5e9" stroke-width="1.4"/>
+      <polygon points="120,304 112,300 112,308" fill="#0ea5e9"/>
+      <rect x="120" y="292" width="50" height="24" rx="4" fill="#0ea5e9" opacity="0.14" stroke="#0ea5e9" stroke-width="1"/>
+      <text x="145" y="308" text-anchor="middle" font-size="9" fill="#0ea5e9">Conv_B</text>
+      <line x1="170" y1="304" x2="220" y2="304" stroke="#0ea5e9" stroke-width="1.4"/>
+      <polygon points="220,304 212,300 212,308" fill="#0ea5e9"/>
+      <rect x="220" y="292" width="40" height="24" rx="4" fill="#0ea5e9" opacity="0.14" stroke="#0ea5e9" stroke-width="1"/>
+      <text x="240" y="308" text-anchor="middle" font-size="9" fill="#0ea5e9">Act</text>
+    </g>
+    <text x="150" y="334" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">通道间无交互, 参数量 ×3</text>
+
+    
+    <text x="290" y="278" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text-muted,#64748b)">VS</text>
+
+    
+    <text x="430" y="218" text-anchor="middle" font-size="12" font-weight="bold" fill="#a855f7">RQ 网络：1 个 4 分量单元统一处理</text>
+    
+    <g>
+      <rect x="345" y="232" width="14" height="84" fill="#94a3b8" opacity="0.8" stroke="#94a3b8" stroke-width="0.6"/>
+      <rect x="359" y="232" width="14" height="84" fill="#fb7185" opacity="0.8" stroke="#fb7185" stroke-width="0.6"/>
+      <rect x="373" y="232" width="14" height="84" fill="#10b981" opacity="0.8" stroke="#10b981" stroke-width="0.6"/>
+      <rect x="387" y="232" width="14" height="84" fill="#0ea5e9" opacity="0.8" stroke="#0ea5e9" stroke-width="0.6"/>
+      <text x="373" y="226" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">a+bi+cj+dk</text>
+    </g>
+    <line x1="401" y1="274" x2="430" y2="274" stroke="#a855f7" stroke-width="1.6"/>
+    <polygon points="430,274 422,270 422,278" fill="#a855f7"/>
+    <rect x="430" y="258" width="70" height="32" rx="5" fill="#a855f7" opacity="0.16" stroke="#a855f7" stroke-width="1.2"/>
+    <text x="465" y="272" text-anchor="middle" font-size="10" font-weight="bold" fill="#a855f7">RQ Conv</text>
+    <text x="465" y="284" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">统一处理</text>
+    <line x1="500" y1="274" x2="520" y2="274" stroke="#a855f7" stroke-width="1.6"/>
+    <polygon points="520,274 512,270 512,278" fill="#a855f7"/>
+    <rect x="520" y="258" width="36" height="32" rx="5" fill="#6366f1" opacity="0.16" stroke="#6366f1" stroke-width="1.2"/>
+    <text x="538" y="278" text-anchor="middle" font-size="9" font-weight="bold" fill="#6366f1">RQ</text>
+    <text x="538" y="288" text-anchor="middle" font-size="9" fill="#6366f1">Act</text>
+    <text x="430" y="334" text-anchor="middle" font-size="10" fill="var(--text-muted,#64748b)">通道耦合, 参数量 ↓, 表达力 ↑</text>
+
+    
+    <rect x="30" y="354" width="500" height="38" rx="6" fill="#10b981" opacity="0.08" stroke="#10b981" stroke-width="0.8"/>
+    <text x="280" y="372" text-anchor="middle" font-size="11" fill="var(--text,#1a202c)">RQ 网络将 RGB 视为四元数虚部, 实部补零, 用 Hamilton 乘积实现卷积,</text>
+    <text x="280" y="387" text-anchor="middle" font-size="11" fill="var(--text,#1a202c)">在保留通道间颜色耦合关系的同时大幅减少参数量。</text>
+  </svg>
+</div>
+
 
 <div class="kg-step">
   <strong>4维：约化双四元数 (Reduced Quaternion, RQ)</strong>——本文主角。同样是4维，但 i的平方=k的平方=-1（椭圆虚数），而 j的平方=+1（双曲虚数）。关键是：<b>乘法可交换</b>！这让它能像复数一样支持卷积定理和傅里叶变换，同时又能处理3D空间的多通道信号。
@@ -8860,8 +10702,148 @@ canvas[id^="canvas-"]:hover {
 <p>RQ-D2UNet（Reduced Quaternion Dual-branch Dual U-Net）是本文提出的去雨网络。它的核心思想是"分而治之"——用两个分支分别处理雨纹和背景，再用注意力机制让它们协同工作。下面我们一层层拆解这个架构。</p>
 
 <div class="kg-img-wrap">
-  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-rq-d2unet-arch.webp" type="image/webp"><img src="reading-notes/assets/knowledge-rq-d2unet-arch-thumb.webp" data-full="reading-notes/assets/knowledge-rq-d2unet-arch.webp" alt="RQ-D2UNet整体架构图" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
-  <div class="kg-caption">图：RQ-D2UNet三阶段架构——通道填充头 到 双分支U-Net主干 到 三阶段重建尾</div>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" width="640" style="max-width:100%;font-family:'Microsoft YaHei',sans-serif;">
+    
+    <text x="320" y="22" text-anchor="middle" font-size="16" font-weight="bold" fill="var(--text,#1a202c)">RQ-D²UNet 完整架构</text>
+
+    
+    <rect x="20" y="180" width="56" height="36" rx="5" fill="#0ea5e9" opacity="0.18" stroke="#0ea5e9" stroke-width="1.2"/>
+    <text x="48" y="195" text-anchor="middle" font-size="10" font-weight="bold" fill="#0ea5e9">输入</text>
+    <text x="48" y="208" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">RGB</text>
+
+    <line x1="76" y1="198" x2="98" y2="198" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="98,198 90,194 90,202" fill="var(--text-muted,#64748b)"/>
+
+    
+    <rect x="100" y="180" width="56" height="36" rx="5" fill="#f59e0b" opacity="0.16" stroke="#f59e0b" stroke-width="1.2"/>
+    <text x="128" y="195" text-anchor="middle" font-size="9" font-weight="bold" fill="#f59e0b">C-Zero</text>
+    <text x="128" y="208" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">Padding</text>
+
+    <line x1="156" y1="198" x2="178" y2="198" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="178,198 170,194 170,202" fill="var(--text-muted,#64748b)"/>
+
+    
+    
+    <text x="270" y="56" text-anchor="middle" font-size="11" font-weight="bold" fill="#0ea5e9">雨纹分支 (Rain Branch)</text>
+    
+    <rect x="185" y="68" width="44" height="24" rx="4" fill="#0ea5e9" opacity="0.22" stroke="#0ea5e9" stroke-width="1"/>
+    <text x="207" y="84" text-anchor="middle" font-size="8" fill="#0ea5e9">Enc1</text>
+    <rect x="245" y="76" width="40" height="20" rx="4" fill="#0ea5e9" opacity="0.3" stroke="#0ea5e9" stroke-width="1"/>
+    <text x="265" y="90" text-anchor="middle" font-size="8" fill="#0ea5e9">Enc2</text>
+    <rect x="301" y="82" width="36" height="18" rx="4" fill="#0ea5e9" opacity="0.38" stroke="#0ea5e9" stroke-width="1"/>
+    <text x="319" y="95" text-anchor="middle" font-size="8" fill="#0ea5e9">Enc3</text>
+    
+    <rect x="352" y="86" width="30" height="14" rx="4" fill="#0ea5e9" opacity="0.5" stroke="#0ea5e9" stroke-width="1.2"/>
+    <text x="367" y="97" text-anchor="middle" font-size="8" fill="#fff" font-weight="bold">Bot</text>
+    
+    <rect x="395" y="82" width="36" height="18" rx="4" fill="#0ea5e9" opacity="0.38" stroke="#0ea5e9" stroke-width="1"/>
+    <text x="413" y="95" text-anchor="middle" font-size="8" fill="#0ea5e9">Dec3</text>
+    <rect x="447" y="76" width="40" height="20" rx="4" fill="#0ea5e9" opacity="0.3" stroke="#0ea5e9" stroke-width="1"/>
+    <text x="467" y="90" text-anchor="middle" font-size="8" fill="#0ea5e9">Dec2</text>
+    <rect x="503" y="68" width="44" height="24" rx="4" fill="#0ea5e9" opacity="0.22" stroke="#0ea5e9" stroke-width="1"/>
+    <text x="525" y="84" text-anchor="middle" font-size="8" fill="#0ea5e9">Dec1</text>
+    
+    <line x1="229" y1="80" x2="503" y2="80" stroke="#0ea5e9" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
+    <line x1="285" y1="86" x2="447" y2="86" stroke="#0ea5e9" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
+    <line x1="337" y1="91" x2="395" y2="91" stroke="#0ea5e9" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
+
+    
+    <line x1="178" y1="198" x2="207" y2="92" stroke="#0ea5e9" stroke-width="1" opacity="0.6"/>
+
+    
+    <text x="270" y="316" text-anchor="middle" font-size="11" font-weight="bold" fill="#10b981">背景分支 (Background Branch)</text>
+    <rect x="185" y="280" width="44" height="24" rx="4" fill="#10b981" opacity="0.22" stroke="#10b981" stroke-width="1"/>
+    <text x="207" y="296" text-anchor="middle" font-size="8" fill="#10b981">Enc1</text>
+    <rect x="245" y="288" width="40" height="20" rx="4" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="1"/>
+    <text x="265" y="302" text-anchor="middle" font-size="8" fill="#10b981">Enc2</text>
+    <rect x="301" y="294" width="36" height="18" rx="4" fill="#10b981" opacity="0.38" stroke="#10b981" stroke-width="1"/>
+    <text x="319" y="307" text-anchor="middle" font-size="8" fill="#10b981">Enc3</text>
+    <rect x="352" y="298" width="30" height="14" rx="4" fill="#10b981" opacity="0.5" stroke="#10b981" stroke-width="1.2"/>
+    <text x="367" y="309" text-anchor="middle" font-size="8" fill="#fff" font-weight="bold">Bot</text>
+    <rect x="395" y="294" width="36" height="18" rx="4" fill="#10b981" opacity="0.38" stroke="#10b981" stroke-width="1"/>
+    <text x="413" y="307" text-anchor="middle" font-size="8" fill="#10b981">Dec3</text>
+    <rect x="447" y="288" width="40" height="20" rx="4" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="1"/>
+    <text x="467" y="302" text-anchor="middle" font-size="8" fill="#10b981">Dec2</text>
+    <rect x="503" y="280" width="44" height="24" rx="4" fill="#10b981" opacity="0.22" stroke="#10b981" stroke-width="1"/>
+    <text x="525" y="296" text-anchor="middle" font-size="8" fill="#10b981">Dec1</text>
+    <line x1="229" y1="292" x2="503" y2="292" stroke="#10b981" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
+    <line x1="285" y1="298" x2="447" y2="298" stroke="#10b981" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
+    <line x1="337" y1="303" x2="395" y2="303" stroke="#10b981" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
+
+    <line x1="178" y1="198" x2="207" y2="280" stroke="#10b981" stroke-width="1" opacity="0.6"/>
+
+    
+    <text x="367" y="128" text-anchor="middle" font-size="9" fill="var(--text-muted,#64748b)">虚线 = skip connection</text>
+
+    
+    
+    <line x1="547" y1="80" x2="575" y2="190" stroke="#0ea5e9" stroke-width="1.2"/>
+    <line x1="547" y1="292" x2="575" y2="206" stroke="#10b981" stroke-width="1.2"/>
+
+    <rect x="560" y="170" width="64" height="56" rx="6" fill="#f59e0b" opacity="0.18" stroke="#f59e0b" stroke-width="1.4"/>
+    <text x="592" y="190" text-anchor="middle" font-size="10" font-weight="bold" fill="#f59e0b">DBJRM</text>
+    <text x="592" y="204" text-anchor="middle" font-size="8" fill="var(--text-muted,#64748b)">双分支交互</text>
+    <text x="592" y="216" text-anchor="middle" font-size="8" fill="var(--text-muted,#64748b)">雨纹↔背景</text>
+
+    
+    <circle cx="560" cy="190" r="3" fill="#f59e0b"/>
+    <circle cx="560" cy="206" r="3" fill="#f59e0b"/>
+
+    
+    <line x1="592" y1="226" x2="592" y2="250" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="592,250 588,242 596,242" fill="var(--text-muted,#64748b)"/>
+
+    
+    <rect x="548" y="252" width="88" height="40" rx="6" fill="#a855f7" opacity="0.18" stroke="#a855f7" stroke-width="1.4"/>
+    <text x="592" y="270" text-anchor="middle" font-size="10" font-weight="bold" fill="#a855f7">RQ-SCformer</text>
+    <text x="592" y="284" text-anchor="middle" font-size="8" fill="var(--text-muted,#64748b)">RQ + 空间-通道</text>
+
+    
+    <line x1="592" y1="292" x2="592" y2="306" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="592,306 588,298 596,298" fill="var(--text-muted,#64748b)"/>
+
+    
+    <rect x="20" y="348" width="180" height="30" rx="5" fill="#0ea5e9" opacity="0.14" stroke="#0ea5e9" stroke-width="1"/>
+    <text x="110" y="362" text-anchor="middle" font-size="10" font-weight="bold" fill="#0ea5e9">阶段 1：粗重建</text>
+    <text x="110" y="374" text-anchor="middle" font-size="8" fill="var(--text-muted,#64748b)">Stage 1 Coarse</text>
+
+    <rect x="220" y="348" width="180" height="30" rx="5" fill="#6366f1" opacity="0.16" stroke="#6366f1" stroke-width="1"/>
+    <text x="310" y="362" text-anchor="middle" font-size="10" font-weight="bold" fill="#6366f1">阶段 2：细化</text>
+    <text x="310" y="374" text-anchor="middle" font-size="8" fill="var(--text-muted,#64748b)">Stage 2 Refine</text>
+
+    <rect x="420" y="348" width="180" height="30" rx="5" fill="#a855f7" opacity="0.2" stroke="#a855f7" stroke-width="1"/>
+    <text x="510" y="362" text-anchor="middle" font-size="10" font-weight="bold" fill="#a855f7">阶段 3：精修输出</text>
+    <text x="510" y="374" text-anchor="middle" font-size="8" fill="var(--text-muted,#64748b)">Stage 3 Fine</text>
+
+    
+    <line x1="200" y1="363" x2="220" y2="363" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="220,363 212,359 212,367" fill="var(--text-muted,#64748b)"/>
+    <line x1="400" y1="363" x2="420" y2="363" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="420,363 412,359 412,367" fill="var(--text-muted,#64748b)"/>
+
+    
+    <path d="M 548 272 Q 400 330 200 348" fill="none" stroke="#a855f7" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.7"/>
+
+    
+    <line x1="600" y1="363" x2="624" y2="363" stroke="var(--text-muted,#64748b)" stroke-width="1.2"/>
+    <polygon points="624,363 616,359 616,367" fill="var(--text-muted,#64748b)"/>
+    <rect x="624" y="350" width="14" height="26" rx="3" fill="#10b981" opacity="0.5" stroke="#10b981" stroke-width="0.8"/>
+    <text x="631" y="338" text-anchor="middle" font-size="8" fill="var(--text-muted,#64748b)">输出</text>
+
+    
+    <g font-size="9" fill="var(--text-muted,#64748b)">
+      <rect x="30" y="394" width="10" height="10" fill="#0ea5e9" opacity="0.5"/>
+      <text x="44" y="403">雨纹分支</text>
+      <rect x="110" y="394" width="10" height="10" fill="#10b981" opacity="0.5"/>
+      <text x="124" y="403">背景分支</text>
+      <rect x="190" y="394" width="10" height="10" fill="#f59e0b" opacity="0.5"/>
+      <text x="204" y="403">DBJRM 交互</text>
+      <rect x="290" y="394" width="10" height="10" fill="#a855f7" opacity="0.5"/>
+      <text x="304" y="403">RQ-SCformer</text>
+      <line x1="390" y1="399" x2="410" y2="399" stroke="#6366f1" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="414" y="403">skip connection</text>
+    </g>
+  </svg>
 </div>
 
 <h4>25.1 三阶段架构总览</h4>
@@ -9820,6 +11802,9 @@ waitForEcharts(function(){
 }
 // Initialize on page load
 initKgECharts();
+
+// Initialize SVG click-to-zoom
+initSvgClickZoom();
 </script>
 
 </body>
