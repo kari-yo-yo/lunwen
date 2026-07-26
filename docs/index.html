@@ -2388,9 +2388,10 @@ body { position: relative; }
   background: rgba(0,0,0,0.88); z-index: 10000;
   display: flex; align-items: center; justify-content: center;
   padding: 40px; box-sizing: border-box;
-  opacity: 0; transition: opacity 0.3s ease;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
-.svg-zoom-overlay.active { opacity: 1; }
+.svg-zoom-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
 .svg-zoom-overlay svg, .svg-zoom-overlay img {
   max-width: 92%; max-height: 90%; border-radius: 8px;
   box-shadow: 0 0 40px rgba(0,0,0,0.5);
