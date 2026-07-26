@@ -6115,13 +6115,15 @@ function initSvgClickZoom() {
   // 初始绑定
   attachSvgClicks(document);
 
-  // 知识框架面板打开后重新绑定
-  var origOpen = window.openKnowledge;
-  if (typeof origOpen === 'function') {
-    window.openKnowledge = function() {
-      origOpen.apply(this, arguments);
+  // 知识框架面板打开后重新绑定（通过按钮事件，不包装 openKnowledge）
+  var btnKnowledge = document.getElementById('btnKnowledge');
+  if (btnKnowledge) {
+    btnKnowledge.addEventListener('click', function() {
+      // 等待 KNOWLEDGE_HTML 注入 DOM 后再绑定
       setTimeout(function() { attachSvgClicks(document); }, 300);
-    };
+      // 再延迟一次确保 ECharts 和 Canvas 初始化完成后绑定
+      setTimeout(function() { attachSvgClicks(document); }, 600);
+    });
   }
 
   // 返回 attachSvgClicks 供外部调用
