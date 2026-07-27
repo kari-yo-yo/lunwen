@@ -6048,7 +6048,7 @@ function initKgImageLazyLoad() {
 }
 
 // ============================================================
-// SVG / Image Click-to-Zoom (点击放大)
+// SVG / Image Click-to-Zoom (点击放大) — 事件委托版
 // ============================================================
 function initSvgClickZoom() {
   // 创建遮罩层
@@ -6066,6 +6066,32 @@ function initSvgClickZoom() {
     setTimeout(function() { contentDiv.innerHTML = ''; }, 300);
   }
 
+  function openZoomSvg(svg) {
+    var clone = svg.cloneNode(true);
+    clone.style.width = 'auto';
+    clone.style.height = 'auto';
+    clone.style.maxWidth = '92%';
+    clone.style.maxHeight = '90%';
+    contentDiv.innerHTML = '';
+    contentDiv.appendChild(clone);
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function openZoomImg(img) {
+    var fullSrc = img.getAttribute('data-full') || img.src;
+    var fullImg = new Image();
+    fullImg.src = fullSrc;
+    fullImg.style.maxWidth = '92%';
+    fullImg.style.maxHeight = '90%';
+    fullImg.style.borderRadius = '8px';
+    contentDiv.innerHTML = '';
+    contentDiv.appendChild(fullImg);
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  // 关闭按钮和遮罩点击
   overlay.addEventListener('click', function(e) {
     if (e.target === overlay || e.target === closeBtn) closeZoom();
   });
@@ -6073,61 +6099,54 @@ function initSvgClickZoom() {
     if (e.key === 'Escape' && overlay.classList.contains('active')) closeZoom();
   });
 
-  // 为知识框架内的 SVG 添加点击放大
-  function attachSvgClicks(container) {
-    if (!container) container = document;
-    // SVG 元素
-    var svgs = container.querySelectorAll('.kg-section svg, .kg-concept-card svg, .guide-body svg');
-    svgs.forEach(function(svg) {
-      if (svg.dataset.zoomAttached) return;
-      svg.dataset.zoomAttached = '1';
-      svg.addEventListener('click', function() {
-        var clone = svg.cloneNode(true);
-        clone.style.width = 'auto';
-        clone.style.height = 'auto';
-        clone.style.maxWidth = '92%';
-        clone.style.maxHeight = '90%';
-        contentDiv.innerHTML = '';
-        contentDiv.appendChild(clone);
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-      });
-    });
+  // ===== 事件委托：在 document 上监听，无需关心元素何时注入 =====
+  document.addEventListener('click', function(e) {
+    // 1. 点击 SVG 元素（或其子元素）放大
+    var svgEl = e.target.closest('svg');
+    if (svgEl) {
+      // 确认 SVG 在知识框架/指南面板内
+      var parent = svgEl.closest('.kg-section, .kg-concept-card, .guide-body, .kg-img-wrap');
+      if (parent) {
+        e.preventDefault();
+        e.stopPropagation();
+        openZoomSvg(svgEl);
+        return;
+      }
+    }
 
-    // 带有 data-full 的图片也支持点击放大
-    var imgs = container.querySelectorAll('.kg-img[data-full], .kg-img-wrap img[data-full]');
-    imgs.forEach(function(img) {
-      if (img.dataset.zoomAttached) return;
-      img.dataset.zoomAttached = '1';
-      img.style.cursor = 'zoom-in';
-      img.addEventListener('click', function() {
-        var fullSrc = img.dataset.full || img.src;
-        var fullImg = new Image();
-        fullImg.src = fullSrc;
-        contentDiv.innerHTML = '';
-        contentDiv.appendChild(fullImg);
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-      });
-    });
-  }
+    // 2. 点击 kg-img-wrap 内任何元素（包括 picture/source/img）都放大
+    var imgWrap = e.target.closest('.kg-img-wrap');
+    if (imgWrap) {
+      var imgEl = imgWrap.querySelector('img[data-full]') || imgWrap.querySelector('img');
+      if (imgEl) {
+        e.preventDefault();
+        e.stopPropagation();
+        openZoomImg(imgEl);
+        return;
+      }
+    }
 
-  // 初始绑定
-  attachSvgClicks(document);
+    // 3. 点击带 data-full 的独立图片放大
+    var imgWithData = e.target.closest('img[data-full]');
+    if (imgWithData) {
+      e.preventDefault();
+      e.stopPropagation();
+      openZoomImg(imgWithData);
+      return;
+    }
 
-  // 知识框架面板打开后重新绑定（通过按钮事件，不包装 openKnowledge）
-  var btnKnowledge = document.getElementById('btnKnowledge');
-  if (btnKnowledge) {
-    btnKnowledge.addEventListener('click', function() {
-      // 等待 KNOWLEDGE_HTML 注入 DOM 后再绑定
-      setTimeout(function() { attachSvgClicks(document); }, 300);
-      // 再延迟一次确保 ECharts 和 Canvas 初始化完成后绑定
-      setTimeout(function() { attachSvgClicks(document); }, 600);
-    });
-  }
+    // 4. 点击 .kg-img 类图片放大
+    var kgImg = e.target.closest('img.kg-img');
+    if (kgImg) {
+      e.preventDefault();
+      e.stopPropagation();
+      openZoomImg(kgImg);
+      return;
+    }
+  }, true); // 使用捕获阶段确保先于其他监听器执行
 
-  // 返回 attachSvgClicks 供外部调用
-  return attachSvgClicks;
+  // 返回空函数保持接口兼容
+  return function() {};
 }
 function updateGreeting() {
   const hour = new Date().getHours();
