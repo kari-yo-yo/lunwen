@@ -10208,7 +10208,7 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-accordion-body">
 <p>2015年，何恺明团队用一篇<a href="https://arxiv.org/abs/1512.03385" target="_blank" rel="noopener">Deep Residual Learning for Image Recognition</a>横扫ILSVRC和COCO竞赛，ResNet-152用152层的深度将错误率降到3.57%，首次超越人类水平。这篇论文的核心思想——残差连接（Residual Connection）——不仅解决了深度网络训练难题，更成为后续几乎所有深度模型的基础组件。如果说BatchNorm是梯度的"稳压器"，那残差连接就是梯度的"高速公路"。</p>
 <div class="kg-img-wrap">
-  <picture class="kg-picture"><source srcset="knowledge-residual.webp" type="image/webp"><img src="knowledge-residual.webp" data-full="knowledge-residual.webp" alt="残差连接示意图" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-residual.webp" type="image/webp"><img src="reading-notes/assets/knowledge-residual-thumb.webp" data-full="reading-notes/assets/knowledge-residual.webp" alt="残差连接示意图" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：残差连接结构示意——输入x通过"跳跃连接"绕过卷积层直接与输出相加</div>
 </div>
 <h4>19.1 退化问题：为什么更深反而更差？</h4>
@@ -10252,7 +10252,7 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-accordion-body">
 <p>自然语言处理（NLP）曾是独立于计算机视觉的学科，拥有自己的理论和工具链。但2017年Transformer的出现打破了这道墙——BERT、GPT系列证明了自注意力在语言建模上的强大能力，随后ViT（2020）将同样的思想迁移到图像领域，一举超越CNN。今天，理解NLP的核心概念已经成为CV研究者的必修课，因为SOTA模型不再是"纯CNN"或"纯Transformer"，而是两者的深度融合。</p>
 <div class="kg-img-wrap">
-  <picture class="kg-picture"><source srcset="knowledge-nlp.webp" type="image/webp"><img src="knowledge-nlp.webp" data-full="knowledge-nlp.webp" alt="NLP到CV的迁移示意" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-nlp.webp" type="image/webp"><img src="reading-notes/assets/knowledge-nlp-thumb.webp" data-full="reading-notes/assets/knowledge-nlp.webp" alt="NLP到CV的迁移示意" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：从NLP到CV的技术迁移路径——Tokenization、Embedding、Attention、Transformer架构逐步渗透到视觉领域</div>
 </div>
 <h4>20.1 Tokenization：将文本切成"积木"</h4>
@@ -12416,6 +12416,90 @@ waitForEcharts(function(){
   })();
 
   console.log('[ECharts] All 10 interactive charts initialized');
+  
+  // 11. Residual Gradient Comparison
+  (function(){
+    var d=document.getElementById('echarts-residual-gradient-div');if(!d)return;
+    var ch=echarts.init(d);var layers=[];
+    for(var i=1;i<=20;i++)layers.push('L'+i);
+    var withRes=[],withoutRes=[];
+    for(var i=0;i<20;i++){
+      withoutRes.push(+(1.0*Math.pow(0.75,i)).toFixed(4));
+      withRes.push(+(0.3+0.7*Math.pow(0.85,i)).toFixed(4));
+    }
+    ch.setOption(Object.assign({},base,{
+      tooltip:{trigger:'axis',formatter:function(p){var s='';p.forEach(function(it){s+=it.seriesName+': '+it.value+'<br>';});return s;}},
+      legend:{data:['有残差连接','无残差连接'],textStyle:{color:C.muted,fontSize:11},top:5},
+      grid:{left:55,right:20,top:40,bottom:35},
+      xAxis:{type:'category',data:layers,axisLabel:{color:C.dim,fontSize:10},name:'Layer',nameTextStyle:{color:C.muted}},
+      yAxis:{type:'value',name:'Gradient Norm',nameTextStyle:{color:C.muted},axisLabel:{color:C.dim,fontSize:10},splitLine:{lineStyle:{color:C.border}}},
+      series:[
+        {name:'有残差连接',type:'line',data:withRes,smooth:true,lineStyle:{color:C.green,width:2.5},itemStyle:{color:C.green},symbol:'circle',symbolSize:5,
+          areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(52,211,153,0.25)'},{offset:1,color:'rgba(52,211,153,0)'}])}},
+        {name:'无残差连接',type:'line',data:withoutRes,smooth:true,lineStyle:{color:C.orange,width:2.5,type:'dashed'},itemStyle:{color:C.orange},symbol:'circle',symbolSize:5,
+          areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(249,115,22,0.2)'},{offset:1,color:'rgba(249,115,22,0)'}])}}
+      ]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+  
+  // 12. Transformer Self-Attention Heatmap
+  (function(){
+    var d=document.getElementById('echarts-transformer-attention-div');if(!d)return;
+    var ch=echarts.init(d);
+    var tokens=['The','cat','sat','on','the','mat','.');
+    var raw=[
+      [0.7,0.1,0.05,0.02,0.08,0.03,0.02],
+      [0.15,0.6,0.1,0.03,0.05,0.05,0.02],
+      [0.05,0.25,0.5,0.05,0.03,0.1,0.02],
+      [0.02,0.05,0.1,0.55,0.05,0.2,0.03],
+      [0.1,0.05,0.02,0.03,0.7,0.08,0.02],
+      [0.03,0.1,0.08,0.15,0.1,0.5,0.04],
+      [0.05,0.05,0.05,0.05,0.05,0.05,0.7]
+    ];
+    var data=[];
+    for(var r=0;r<raw.length;r++)for(var c=0;c<raw[r].length;c++)data.push([c,r,raw[r][c]]);
+    ch.setOption(Object.assign({},base,{
+      tooltip:{formatter:function(p){return tokens[p.data[1]]+' → '+tokens[p.data[0]]+': '+p.data[2];}},
+      grid:{left:55,right:30,top:10,bottom:60},
+      xAxis:{type:'category',data:tokens,axisLabel:{color:C.muted,fontSize:12,rotate:30}},
+      yAxis:{type:'category',data:tokens,axisLabel:{color:C.muted,fontSize:12}},
+      visualMap:{min:0,max:0.75,calculable:true,inRange:{color:['#0f172a','#312e81','#6366f1','#818cf8','#c7d2fe']},orient:'horizontal',left:'center',bottom:0,itemWidth:12,textStyle:{color:C.muted,fontSize:10}},
+      series:[{type:'heatmap',data:data,label:{show:true,color:C.text,fontSize:10,formatter:function(p){return p.data[2]>0.3?p.data[2]:'';}},emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.5)'}}}]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+  
+  // 13. Rain Radar Chart
+  (function(){
+    var d=document.getElementById('echarts-rain-radar');if(!d)return;
+    var ch=echarts.init(d);
+    ch.setOption(Object.assign({},base,{
+      tooltip:{trigger:'item'},
+      legend:{data:['RQ-D2UNet','MPRNet','Restormer','SCGN','DRSformer'],bottom:0,textStyle:{color:C.muted,fontSize:11},itemWidth:12,itemHeight:8},
+      radar:{
+        indicator:[
+          {name:'PSNR(dB)',max:35},
+          {name:'SSIM',max:1.0},
+          {name:'1-LPIPS',max:1.0},
+          {name:'速度(FPS)',max:100},
+          {name:'轻量级',max:1.0}
+        ],
+        center:['50%','46%'],radius:'60%',shape:'polygon',splitNumber:5,
+        axisName:{color:C.muted,fontSize:11},
+        splitLine:{lineStyle:{color:'rgba(99,102,241,0.15)'}},
+        splitArea:{areaStyle:{color:['rgba(99,102,241,0.02)','rgba(99,102,241,0.05)']}},
+        axisLine:{lineStyle:{color:'rgba(99,102,241,0.2)'}}
+      },
+      series:[{type:'radar',data:[
+        {value:[32.5,0.97,0.88,25,0.75],name:'RQ-D2UNet',lineStyle:{color:'#6366f1',width:2},itemStyle:{color:'#6366f1'},areaStyle:{color:'rgba(99,102,241,0.15)'}},
+        {value:[33.2,0.98,0.92,8,0.35],name:'MPRNet',lineStyle:{color:'#f59e0b',width:2},itemStyle:{color:'#f59e0b'},areaStyle:{color:'rgba(245,158,11,0.1)'}},
+        {value:[33.8,0.98,0.93,15,0.5],name:'Restormer',lineStyle:{color:'#22c55e',width:2},itemStyle:{color:'#22c55e'},areaStyle:{color:'rgba(34,197,94,0.1)'}},
+        {value:[31.8,0.96,0.85,45,0.85],name:'SCGN',lineStyle:{color:'#06b6d4',width:2},itemStyle:{color:'#06b6d4'},areaStyle:{color:'rgba(6,182,212,0.1)'}},
+        {value:[33.5,0.98,0.91,18,0.6],name:'DRSformer',lineStyle:{color:'#a855f7',width:2},itemStyle:{color:'#a855f7'},areaStyle:{color:'rgba(168,85,247,0.1)'}}
+      ]}]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+  
+  console.log('[ECharts] All 13 interactive charts initialized (including residual, transformer, radar)');
 });
 }
 // Initialize on page load
