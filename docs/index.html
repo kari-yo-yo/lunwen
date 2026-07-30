@@ -5389,6 +5389,7 @@ startTweenLoop();
 
 // Replace openKnowledge with Tween version
 var _origOpenKnowledge = openKnowledge;
+var _kgInitDone = false;
 openKnowledge = function() {
   var panel = document.getElementById('knowledgePanel');
   knowledgeBody.innerHTML = KNOWLEDGE_HTML;
@@ -5402,7 +5403,10 @@ openKnowledge = function() {
     document.getElementById('guidePanel').style.display = 'none';
   }
   
-  tweenOpenPanel(panel, function() {
+  _kgInitDone = false;
+  function kgInit() {
+    if (_kgInitDone) return;
+    _kgInitDone = true;
     kgInitTracking();
     setTimeout(initKgImageLazyLoad, 100);
     setTimeout(initAllECharts, 300);
@@ -5414,7 +5418,11 @@ openKnowledge = function() {
       initLossDemo();
       initContourletDemo();
     }, 500);
-  });
+  }
+  
+  tweenOpenPanel(panel, kgInit);
+  // Fallback: ensure initialization happens even if tween callback fails
+  setTimeout(kgInit, 800);
   
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
@@ -12216,7 +12224,7 @@ function waitForEcharts(cb){
 }
 waitForEcharts(function(){
   // Dispose existing instances to prevent duplicates
-  var ids=['echarts-freq-demo-div','echarts-notch-demo-div','echarts-wavelet-demo-div','echarts-sparse-demo-div','echarts-backprop-demo-div','echarts-init-demo-div','echarts-lr-demo-div','echarts-bn-demo-div','echarts-attention-demo-div','echarts-se-demo-div','echarts-residual-gradient-div','echarts-transformer-attention-div'];
+  var ids=['echarts-freq-demo-div','echarts-notch-demo-div','echarts-wavelet-demo-div','echarts-sparse-demo-div','echarts-backprop-demo-div','echarts-init-demo-div','echarts-lr-demo-div','echarts-bn-demo-div','echarts-attention-demo-div','echarts-se-demo-div','echarts-residual-gradient-div','echarts-transformer-attention-div','echarts-overfitting-demo-div','echarts-conv-demo-div'];
   ids.forEach(function(id){var el=document.getElementById(id);if(el){var inst=echarts.getInstanceByDom(el);if(inst)inst.dispose();}});
   // -- Theme colors --
   var C={
@@ -12471,7 +12479,88 @@ waitForEcharts(function(){
     }));window.addEventListener('resize',function(){ch.resize();});
   })();
   
-  console.log('[ECharts] All 12 interactive charts initialized (including residual, transformer; radar handled by initRainRadar)');
+  // 13. Overfitting vs Normal Fit Loss Curves
+  (function(){
+    var d=document.getElementById('echarts-overfitting-demo-div');if(!d)return;
+    var ch=echarts.init(d);var epochs=[];
+    for(var i=1;i<=50;i++)epochs.push(i);
+    var normalTrain=[],normalVal=[],overfitTrain=[],overfitVal=[];
+    for(var j=0;j<epochs.length;j++){
+      var e=epochs[j];
+      normalTrain.push(+(1.8*Math.exp(-0.12*e)+0.15+0.02*Math.random()).toFixed(4));
+      normalVal.push(+(1.8*Math.exp(-0.10*e)+0.16+0.03*Math.random()).toFixed(4));
+      overfitTrain.push(+(2.0*Math.exp(-0.18*e)+0.02+0.005*Math.random()).toFixed(4));
+      if(e<20){overfitVal.push(+(2.0*Math.exp(-0.10*e)+0.15+0.03*Math.random()).toFixed(4));}
+      else{overfitVal.push(+(0.15+(e-20)*0.012+0.03*Math.random()).toFixed(4));}
+    }
+    ch.setOption(Object.assign({},base,{
+      backgroundColor:'transparent',
+      title:{text:'训练/验证 Loss 曲线对比',left:'center',top:8,textStyle:{fontSize:14,color:'#e0e0e0'}},
+      legend:{bottom:5,textStyle:{color:'#aaa',fontSize:11},data:['正常-训练Loss','正常-验证Loss','过拟合-训练Loss','过拟合-验证Loss']},
+      grid:{top:50,bottom:50,left:50,right:20},
+      xAxis:{type:'category',data:epochs,name:'Epoch',nameTextStyle:{color:'#aaa'},axisLabel:{color:'#aaa',fontSize:10},axisLine:{lineStyle:{color:'#444'}}},
+      yAxis:{type:'value',name:'Loss',nameTextStyle:{color:'#aaa'},axisLabel:{color:'#aaa'},min:0,splitLine:{lineStyle:{color:'#333',type:'dashed'}}},
+      series:[
+        {name:'正常-训练Loss',type:'line',data:normalTrain,smooth:true,lineStyle:{color:'#4fc3f7',width:2},symbol:'none'},
+        {name:'正常-验证Loss',type:'line',data:normalVal,smooth:true,lineStyle:{color:'#81c784',width:2},symbol:'none'},
+        {name:'过拟合-训练Loss',type:'line',data:overfitTrain,smooth:true,lineStyle:{color:'#e57373',width:2,type:'dashed'},symbol:'none'},
+        {name:'过拟合-验证Loss',type:'line',data:overfitVal,smooth:true,lineStyle:{color:'#ff8a65',width:2,type:'dashed'},symbol:'none'}
+      ],
+      tooltip:{trigger:'axis'}
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  // 14. Convolution Operation Visualization
+  (function(){
+    var d=document.getElementById('echarts-conv-demo-div');if(!d)return;
+    var ch=echarts.init(d);
+    var input5x5=[[1,2,0,1,0],[0,3,1,2,1],[2,1,0,3,0],[1,0,2,1,1],[0,1,1,0,2]];
+    var kernel3x3=[[1,0,-1],[1,0,-1],[1,0,-1]];
+    var output3x3=[];
+    for(var r=0;r<3;r++){output3x3[r]=[];for(var c=0;c<3;c++){var sum=0;for(var kr=0;kr<3;kr++){for(var kc=0;kc<3;kc++){sum+=input5x5[r+kr][c+kc]*kernel3x3[kr][kc];}}output3x3[r][c]=sum;}}
+    var inputData=[];
+    for(var ri=0;ri<5;ri++){for(var ci=0;ci<5;ci++){inputData.push([ci,4-ri,input5x5[ri][ci]]);}}
+    var kernelData=[];
+    for(var rk=0;rk<3;rk++){for(var ck=0;ck<3;ck++){kernelData.push([ck,2-rk,kernel3x3[rk][ck]]);}}
+    var outputData=[];
+    for(var ro=0;ro<3;ro++){for(var co=0;co<3;co++){outputData.push([co,2-ro,output3x3[ro][co]]);}}
+    ch.setOption(Object.assign({},base,{
+      title:{text:'卷积操作可视化 — 3×3 卷积核 × 5×5 输入 → 3×3 输出',left:'center',top:5,textStyle:{fontSize:13,color:'#e0e0e0'}},
+      grid:[
+        {left:'5%',top:'40%',width:'28%',height:'55%'},
+        {left:'36%',top:'25%',width:'28%',height:'30%'},
+        {left:'67%',top:'40%',width:'28%',height:'55%'}
+      ],
+      xAxis:[
+        {gridIndex:0,type:'category',data:['0','1','2','3','4'],position:'top',axisLabel:{color:'#aaa',fontSize:10},axisLine:{show:false},splitLine:{show:false}},
+        {gridIndex:1,type:'category',data:['0','1','2'],position:'top',axisLabel:{color:'#aaa',fontSize:10},axisLine:{show:false},splitLine:{show:false}},
+        {gridIndex:2,type:'category',data:['0','1','2'],position:'top',axisLabel:{color:'#aaa',fontSize:10},axisLine:{show:false},splitLine:{show:false}}
+      ],
+      yAxis:[
+        {gridIndex:0,type:'category',data:['4','3','2','1','0'],axisLabel:{color:'#aaa',fontSize:10},axisLine:{show:false},splitLine:{show:false}},
+        {gridIndex:1,type:'category',data:['2','1','0'],axisLabel:{color:'#aaa',fontSize:10},axisLine:{show:false},splitLine:{show:false}},
+        {gridIndex:2,type:'category',data:['2','1','0'],axisLabel:{color:'#aaa',fontSize:10},axisLine:{show:false},splitLine:{show:false}}
+      ],
+      visualMap:[
+        {min:-4,max:4,calculable:false,orient:'horizontal',left:'center',bottom:0,inRange:{color:['#1a237e','#42a5f5','#eeeeee','#ef9a9a','#b71c1c']},seriesIndex:0,show:false},
+        {min:-1,max:1,calculable:false,orient:'horizontal',left:'center',bottom:0,inRange:{color:['#b71c1c','#eeeeee','#1a237e']},seriesIndex:1,show:false},
+        {min:-4,max:4,calculable:false,orient:'horizontal',left:'center',bottom:0,inRange:{color:['#1a237e','#42a5f5','#eeeeee','#ef9a9a','#b71c1c']},seriesIndex:2,show:false}
+      ],
+      series:[
+        {name:'输入 5×5',type:'heatmap',data:inputData,xAxisIndex:0,yAxisIndex:0,label:{show:true,color:'#fff',fontSize:11,fontWeight:'bold'},emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.5)'}}},
+        {name:'卷积核 3×3',type:'heatmap',data:kernelData,xAxisIndex:1,yAxisIndex:1,label:{show:true,color:'#fff',fontSize:11,fontWeight:'bold'},emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.5)'}}},
+        {name:'输出 3×3',type:'heatmap',data:outputData,xAxisIndex:2,yAxisIndex:2,label:{show:true,color:'#fff',fontSize:11,fontWeight:'bold'},emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.5)'}}}
+      ],
+      graphic:[
+        {type:'text',left:'16%',top:'32%',style:{text:'输入矩阵 5×5',fill:'#aaa',fontSize:12,fontWeight:'bold'}},
+        {type:'text',left:'47%',top:'12%',style:{text:'卷积核 3×3\n(垂直边缘检测)',fill:'#aaa',fontSize:11,textAlign:'center'}},
+        {type:'text',left:'78%',top:'32%',style:{text:'输出特征图 3×3',fill:'#aaa',fontSize:12,fontWeight:'bold'}},
+        {type:'text',left:'60%',top:'30%',style:{text:'→',fill:'#ff9800',fontSize:22,fontWeight:'bold'}}
+      ]
+    }));window.addEventListener('resize',function(){ch.resize();});
+  })();
+
+  console.log('[ECharts] All 14 interactive charts initialized (including overfitting, conv, residual, transformer; radar handled by initRainRadar)');
 });
 }
 // initKgECharts is called via setTimeout when knowledge panel opens (see openKnowledge)
