@@ -9897,7 +9897,7 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-accordion-body">
 <p>正则化（Regularization）是机器学习中防止过拟合的核心技术家族。过拟合的本质是模型"背下了"训练数据中的噪声和偶然模式，而非学到真正的泛化规律——就像学生死记硬背题库而不会举一反三。正则化通过在损失函数中引入额外约束，迫使模型保持"谦逊"，在训练集表现和泛化能力之间找到平衡。</p>
 <div class="kg-img-wrap">
-  <picture class="kg-picture"><source srcset="knowledge-regularization.webp" type="image/webp"><img src="knowledge-regularization.webp" data-full="knowledge-regularization.webp" alt="正则化方法对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-regularization.webp" type="image/webp"><img src="reading-notes/assets/knowledge-regularization-thumb.webp" data-full="reading-notes/assets/knowledge-regularization.webp" alt="正则化方法对比" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：四种主流正则化方法——L1/L2权重约束、Dropout神经元随机丢弃、数据增强、Early Stopping</div>
 </div>
 
@@ -9983,7 +9983,7 @@ canvas[id^="canvas-"]:hover {
 <div class="kg-accordion-body">
 <p>卷积神经网络（Convolutional Neural Network, CNN）是深度学习在计算机视觉领域取得突破性进展的基石。从1998年LeNet-5识别手写数字，到2012年AlexNet在ImageNet上的惊人表现，再到如今架构日益精巧的ResNet和EfficientNet，CNN的核心思想始终未变：<strong>局部连接、权重共享、层次化特征提取</strong>。这三条设计原则使CNN天然适配图像的二维结构，用远少于全连接网络的参数量捕获空间模式。</p>
 <div class="kg-img-wrap">
-  <picture class="kg-picture"><source srcset="knowledge-cnn.webp" type="image/webp"><img src="knowledge-cnn.webp" data-full="knowledge-cnn.webp" alt="CNN架构示意" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
+  <picture class="kg-picture"><source srcset="reading-notes/assets/knowledge-cnn.webp" type="image/webp"><img src="reading-notes/assets/knowledge-cnn-thumb.webp" data-full="reading-notes/assets/knowledge-cnn.webp" alt="CNN架构示意" class="kg-img kg-img-lazy" loading="lazy" decoding="async"></picture>
   <div class="kg-caption">图：经典CNN架构——卷积层提取特征，池化层降维，全连接层分类输出</div>
 </div>
 
@@ -12216,7 +12216,7 @@ function waitForEcharts(cb){
 }
 waitForEcharts(function(){
   // Dispose existing instances to prevent duplicates
-  var ids=['echarts-freq-demo-div','echarts-notch-demo-div','echarts-wavelet-demo-div','echarts-sparse-demo-div','echarts-backprop-demo-div','echarts-init-demo-div','echarts-lr-demo-div','echarts-bn-demo-div','echarts-attention-demo-div','echarts-se-demo-div','echarts-residual-gradient-div','echarts-transformer-attention-div','echarts-rain-radar'];
+  var ids=['echarts-freq-demo-div','echarts-notch-demo-div','echarts-wavelet-demo-div','echarts-sparse-demo-div','echarts-backprop-demo-div','echarts-init-demo-div','echarts-lr-demo-div','echarts-bn-demo-div','echarts-attention-demo-div','echarts-se-demo-div','echarts-residual-gradient-div','echarts-transformer-attention-div'];
   ids.forEach(function(id){var el=document.getElementById(id);if(el){var inst=echarts.getInstanceByDom(el);if(inst)inst.dispose();}});
   // -- Theme colors --
   var C={
